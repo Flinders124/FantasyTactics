@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="UnitDefinition" load_steps=6 format=3]
+[ext_resource type="Script" path="res://scripts/unit_definition.gd" id="1"]
+[ext_resource type="Resource" path="res://definitions/ranged.tres" id="2"]
+[ext_resource type="Resource" path="res://definitions/crippling_shot.tres" id="3"]
+[ext_resource type="Resource" path="res://definitions/mend.tres" id="4"]
+[ext_resource type="Resource" path="res://definitions/fireburst.tres" id="5"]
+[resource]
+script = ExtResource("1")
+visual_id = "ranger"
+selection_id = "ranger"
+role = "Ranger"
+display_name = "Scout"
+maximum_health = 14
+initiative = 12
+movement_allowance = 6.0
+basic_attack = ExtResource("2")
+
+abilities = [ExtResource("3"), ExtResource("4"), ExtResource("5")]

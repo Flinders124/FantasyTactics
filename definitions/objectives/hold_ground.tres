@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="ObjectiveDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/objective_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+stable_id = "hold_ground"
+display_name = "Hold Ground"
+kind = 1
+description = "Control the marked zone at three consecutive round ends. At least one hero and no enemies must be inside."

@@ -1,0 +1,66 @@
+[
+  {
+    "id": "knight",
+    "triangles": 3771,
+    "surfaces": 7,
+    "bones": 18,
+    "bytes": 640300,
+    "clips": [
+      "Idle",
+      "Walk",
+      "Run",
+      "Attack",
+      "Cast",
+      "Hit",
+      "Death"
+    ]
+  },
+  {
+    "id": "ashfang_raider",
+    "triangles": 3891,
+    "surfaces": 8,
+    "bones": 18,
+    "bytes": 658336,
+    "clips": [
+      "Idle",
+      "Walk",
+      "Run",
+      "Attack",
+      "Cast",
+      "Hit",
+      "Death"
+    ]
+  },
+  {
+    "id": "hollow_gravebound",
+    "triangles": 4061,
+    "surfaces": 8,
+    "bones": 18,
+    "bytes": 682768,
+    "clips": [
+      "Idle",
+      "Walk",
+      "Run",
+      "Attack",
+      "Cast",
+      "Hit",
+      "Death"
+    ]
+  },
+  {
+    "id": "verdant_thornblade",
+    "triangles": 3317,
+    "surfaces": 7,
+    "bones": 18,
+    "bytes": 575012,
+    "clips": [
+      "Idle",
+      "Walk",
+      "Run",
+      "Attack",
+      "Cast",
+      "Hit",
+      "Death"
+    ]
+  }
+]

@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="CampaignItemDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/campaign_item_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+stable_id = "reachguard"
+display_name = "Reachguard Sword"
+slot = "weapon"
+compatible_heroes = PackedStringArray("knight")
+cost = 16
+description = "+0.35 m basic reach, +2 health; -1 basic damage."
+modifiers = {"basic_range": 0.35, "health": 2, "basic_damage": -1}

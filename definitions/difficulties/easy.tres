@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="DifficultyDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/difficulty_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+stable_id = "easy"
+display_name = "Easy"
+description = "Two Raiders. Enemy health and offensive damage x0.85, rounded to nearest HP. Smaller tactical search; all combat rules unchanged."
+enemy_health_multiplier = 0.85
+enemy_damage_multiplier = 0.85
+elimination_roster = PackedStringArray("raider", "raider")
+hold_roster = PackedStringArray("raider", "raider")
+extraction_roster = PackedStringArray("raider", "raider")
+candidate_limit = 16
+raw_candidate_limit = 32
+path_query_limit = 32
+action_query_limit = 512
+ring_samples = 6

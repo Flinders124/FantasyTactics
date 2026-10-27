@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="FactionDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/faction_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+stable_id = "verdant"
+display_name = "Verdant Covenant"
+description = "Mobile thornblades and stalkers threaten flanks while tenders heal behind sentinels. The grovekeeper announces thorn eruptions."
+introduction_stage = 2
+regular_ids = PackedStringArray("verdant_thornblade", "verdant_sentinel", "verdant_stalker", "verdant_tender")
+elite_id = "verdant_grovekeeper"
+opening_template = PackedStringArray("verdant_thornblade", "verdant_stalker", "verdant_tender", "verdant_sentinel")
+reinforcement_template = PackedStringArray("verdant_sentinel", "verdant_stalker", "verdant_thornblade", "verdant_tender")
+elite_support = PackedStringArray("verdant_thornblade", "verdant_stalker")
+easy_budget = 3
+standard_budget = 4
+hard_budget = 5
+later_stage_budget = 1
+
+primary_color = Color(0.27450980392156865, 0.21568627450980393, 0.13725490196078433, 1)
+accent_color = Color(0.2823529411764706, 0.5058823529411764, 0.28627450980392155, 1)

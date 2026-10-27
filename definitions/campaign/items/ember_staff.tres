@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="CampaignItemDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/campaign_item_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+stable_id = "ember_staff"
+display_name = "Ember Staff"
+slot = "weapon"
+compatible_heroes = PackedStringArray("mage")
+cost = 18
+description = "+1 basic/offensive ability damage; -2 health."
+modifiers = {"offense": 1, "health": -2}

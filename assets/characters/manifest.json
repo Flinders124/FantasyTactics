@@ -1,0 +1,92 @@
+[
+  {
+    "role": "knight",
+    "triangles": 1818,
+    "materials": 7,
+    "joints": 18,
+    "bytes": 282300,
+    "animations": [
+      "Idle",
+      "Walk",
+      "Attack",
+      "Cast",
+      "Hit",
+      "Death"
+    ]
+  },
+  {
+    "role": "ranger",
+    "triangles": 1708,
+    "materials": 7,
+    "joints": 18,
+    "bytes": 266944,
+    "animations": [
+      "Idle",
+      "Walk",
+      "Attack",
+      "Cast",
+      "Hit",
+      "Death"
+    ]
+  },
+  {
+    "role": "mage",
+    "triangles": 1774,
+    "materials": 8,
+    "joints": 18,
+    "bytes": 276572,
+    "animations": [
+      "Idle",
+      "Walk",
+      "Attack",
+      "Cast",
+      "Hit",
+      "Death"
+    ]
+  },
+  {
+    "role": "cleric",
+    "triangles": 1934,
+    "materials": 7,
+    "joints": 18,
+    "bytes": 299024,
+    "animations": [
+      "Idle",
+      "Walk",
+      "Attack",
+      "Cast",
+      "Hit",
+      "Death"
+    ]
+  },
+  {
+    "role": "raider",
+    "triangles": 1824,
+    "materials": 7,
+    "joints": 18,
+    "bytes": 283188,
+    "animations": [
+      "Idle",
+      "Walk",
+      "Attack",
+      "Cast",
+      "Hit",
+      "Death"
+    ]
+  },
+  {
+    "role": "sentinel",
+    "triangles": 1708,
+    "materials": 7,
+    "joints": 18,
+    "bytes": 266952,
+    "animations": [
+      "Idle",
+      "Walk",
+      "Attack",
+      "Cast",
+      "Hit",
+      "Death"
+    ]
+  }
+]

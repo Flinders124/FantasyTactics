@@ -1,0 +1,9 @@
+Original Fantasy Tactics ruined-courtyard meshes, materials and procedural
+modelling source, created specifically for this project in 2026.
+
+The environment meshes, native resource exports, materials and editable source
+in this directory are dedicated to the public domain under CC0 1.0 Universal.
+You may use, modify and redistribute them, including commercially, without
+attribution. No third-party environment content was included.
+
+SPDX-License-Identifier: CC0-1.0

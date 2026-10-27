@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="UnitDefinition" load_steps=6 format=3]
+[ext_resource type="Script" path="res://scripts/unit_definition.gd" id="1"]
+[ext_resource type="Resource" path="res://definitions/ranged.tres" id="2"]
+[ext_resource type="Resource" path="res://definitions/tactics_support.tres" id="3"]
+[ext_resource type="Resource" path="res://definitions/mend.tres" id="5"]
+
+[ext_resource type="Resource" path="res://definitions/fireburst.tres" id="6"]
+
+[resource]
+script = ExtResource("1")
+enemy_id = "ashfang_shaman"
+faction_id = "ashfang"
+visual_id = "ashfang_shaman"
+role = "Healer"
+role_icon = "HEAL"
+display_name = "Ashfang Shaman"
+maximum_health = 11
+initiative = 10
+movement_allowance = 5
+basic_attack = ExtResource("2")
+tactical_profile = ExtResource("3")
+abilities = [ExtResource("5"), ExtResource("6")]
+is_elite = false
+encounter_cost = 2
+introduction_stage = 1
+strengths = "Restores injured allies"
+weaknesses = "Fragile support"

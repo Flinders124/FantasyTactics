@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/ability_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+stable_id = "mend"
+display_name = "Mend"
+description = "Restore up to 6 health to a living injured friend, including yourself."
+attack_type = 1
+minimum_range = 0.0
+maximum_range = 6.0
+magnitude = 6
+cooldown_turns = 2
+effect = 1
+targeting = 1

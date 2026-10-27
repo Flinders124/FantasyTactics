@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="UnitDefinition" load_steps=7 format=3]
+[ext_resource type="Script" path="res://scripts/unit_definition.gd" id="1"]
+[ext_resource type="Resource" path="res://definitions/ranged.tres" id="2"]
+[ext_resource type="Resource" path="res://definitions/crippling_shot.tres" id="3"]
+[ext_resource type="Resource" path="res://definitions/mend.tres" id="4"]
+[ext_resource type="Resource" path="res://definitions/fireburst.tres" id="5"]
+[ext_resource type="Resource" path="res://definitions/tactics_support.tres" id="6"]
+[resource]
+script = ExtResource("1")
+visual_id = "sentinel"
+display_name = "Sentinel"
+maximum_health = 18
+initiative = 12
+movement_allowance = 6.0
+basic_attack = ExtResource("2")
+
+abilities = [ExtResource("3"), ExtResource("4"), ExtResource("5")]
+tactical_profile = ExtResource("6")

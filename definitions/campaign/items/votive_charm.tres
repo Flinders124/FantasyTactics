@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="CampaignItemDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/campaign_item_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+stable_id = "votive_charm"
+display_name = "Votive Charm"
+slot = "garb"
+compatible_heroes = PackedStringArray("knight", "ranger", "cleric")
+cost = 12
+description = "+1 healing; -1 health."
+modifiers = {"healing": 1, "health": -1}

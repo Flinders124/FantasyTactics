@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="UnitDefinition" load_steps=5 format=3]
+[ext_resource type="Script" path="res://scripts/unit_definition.gd" id="1"]
+[ext_resource type="Resource" path="res://definitions/ranged.tres" id="2"]
+[ext_resource type="Resource" path="res://definitions/tactics_ranged.tres" id="3"]
+[ext_resource type="Resource" path="res://definitions/crippling_shot.tres" id="5"]
+
+[resource]
+script = ExtResource("1")
+enemy_id = "hollow_archer"
+faction_id = "hollow"
+visual_id = "hollow_archer"
+role = "Archer"
+role_icon = "BOW"
+display_name = "Hollow Archer"
+maximum_health = 10
+initiative = 11
+movement_allowance = 5
+basic_attack = ExtResource("2")
+tactical_profile = ExtResource("3")
+abilities = [ExtResource("5")]
+is_elite = false
+encounter_cost = 1
+introduction_stage = 1
+strengths = "Ranged slowing shots"
+weaknesses = "Fragile at close range"
+

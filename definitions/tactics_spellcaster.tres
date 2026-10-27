@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="EnemyTacticalProfile" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/enemy_tactical_profile.gd" id="1"]
+[resource]
+script = ExtResource("1")
+role = 3
+preferred_distance = 6.0
+distance_weight = 0.6
+exposure_weight = 0.4
+multi_target_bonus = 8.0

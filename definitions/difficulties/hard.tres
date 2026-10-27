@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="DifficultyDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/difficulty_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+stable_id = "hard"
+display_name = "Hard"
+description = "Raider and Sentinel. Enemy health x1.10, offensive damage x1.15, rounded to nearest HP. Broader bounded tactical search; no extra actions or movement."
+enemy_health_multiplier = 1.1
+enemy_damage_multiplier = 1.15
+candidate_limit = 32
+raw_candidate_limit = 64
+path_query_limit = 64
+action_query_limit = 1024
+ring_samples = 10

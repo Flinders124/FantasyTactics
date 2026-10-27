@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="UnitDefinition" load_steps=5 format=3]
+[ext_resource type="Script" path="res://scripts/unit_definition.gd" id="1"]
+[ext_resource type="Resource" path="res://definitions/melee.tres" id="2"]
+[ext_resource type="Resource" path="res://definitions/tactics_melee.tres" id="3"]
+[ext_resource type="Resource" path="res://definitions/power_strike.tres" id="5"]
+
+[resource]
+script = ExtResource("1")
+enemy_id = "hollow_gravebound"
+faction_id = "hollow"
+visual_id = "hollow_gravebound"
+role = "Infantry"
+role_icon = "BLADE"
+display_name = "Hollow Gravebound"
+maximum_health = 14
+initiative = 8
+movement_allowance = 4.5
+basic_attack = ExtResource("2")
+tactical_profile = ExtResource("3")
+abilities = [ExtResource("5")]
+is_elite = false
+encounter_cost = 1
+introduction_stage = 1
+strengths = "Steady melee pressure"
+weaknesses = "Limited mobility"
+

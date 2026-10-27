@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="UnitDefinition" load_steps=6 format=3]
+[ext_resource type="Script" path="res://scripts/unit_definition.gd" id="1"]
+[ext_resource type="Resource" path="res://definitions/ranged.tres" id="2"]
+[ext_resource type="Resource" path="res://definitions/tactics_spellcaster.tres" id="3"]
+[ext_resource type="Resource" path="res://definitions/crippling_shot.tres" id="5"]
+[ext_resource type="Resource" path="res://definitions/abilities/elite_hollow.tres" id="6"]
+[resource]
+script = ExtResource("1")
+enemy_id = "hollow_castellan"
+faction_id = "hollow"
+visual_id = "hollow_castellan"
+role = "Elite"
+role_icon = "CROWN"
+display_name = "Hollow Castellan"
+maximum_health = 25
+initiative = 10
+movement_allowance = 4.5
+basic_attack = ExtResource("2")
+tactical_profile = ExtResource("3")
+abilities = [ExtResource("5"), ExtResource("6")]
+is_elite = true
+encounter_cost = 3
+introduction_stage = 3
+strengths = "Slowing shots and grave burst"
+weaknesses = "Minimum bow range and slow movement"
+

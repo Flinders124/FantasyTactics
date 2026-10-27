@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="CampaignItemDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/campaign_item_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+stable_id = "trail_mantle"
+display_name = "Trail Mantle"
+slot = "garb"
+compatible_heroes = PackedStringArray("knight", "ranger", "mage", "cleric")
+cost = 14
+description = "+0.5 m movement; -2 health."
+modifiers = {"movement": 0.5, "health": -2}

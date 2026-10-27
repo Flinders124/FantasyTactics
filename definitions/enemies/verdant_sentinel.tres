@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="UnitDefinition" load_steps=5 format=3]
+[ext_resource type="Script" path="res://scripts/unit_definition.gd" id="1"]
+[ext_resource type="Resource" path="res://definitions/melee.tres" id="2"]
+[ext_resource type="Resource" path="res://definitions/tactics_melee.tres" id="3"]
+[ext_resource type="Resource" path="res://definitions/power_strike.tres" id="5"]
+
+[resource]
+script = ExtResource("1")
+enemy_id = "verdant_sentinel"
+faction_id = "verdant"
+visual_id = "verdant_sentinel"
+role = "Defender"
+role_icon = "SHIELD"
+display_name = "Verdant Sentinel"
+maximum_health = 17
+initiative = 9
+movement_allowance = 4.5
+basic_attack = ExtResource("2")
+tactical_profile = ExtResource("3")
+abilities = [ExtResource("5")]
+is_elite = false
+encounter_cost = 2
+introduction_stage = 2
+strengths = "Protects fragile allies"
+weaknesses = "Slow pursuit"
+

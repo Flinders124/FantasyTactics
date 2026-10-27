@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/ability_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+stable_id = "fireburst"
+display_name = "Fireburst"
+description = "Ground burst: 3 damage within 2.5 m. Hits allies and caster! Select ground, then click again to confirm."
+attack_type = 1
+targeting = 2
+maximum_range = 8.0
+minimum_range = 0.0
+magnitude = 3
+cooldown_turns = 2
+area_radius = 2.5
+affected_factions = 7
+area_obstruction_mask = 8
+blast_origin_offset = 0.15

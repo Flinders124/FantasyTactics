@@ -1,0 +1,338 @@
+[
+  {
+    "id": "knight",
+    "triangles": 3771,
+    "surfaces": 7,
+    "bones": 18,
+    "bytes": 262876,
+    "clips": [
+      "Idle",
+      "Walk",
+      "Run",
+      "Attack",
+      "Cast",
+      "Hit",
+      "Death"
+    ]
+  },
+  {
+    "id": "ranger",
+    "triangles": 3539,
+    "surfaces": 7,
+    "bones": 18,
+    "bytes": 201364,
+    "clips": [
+      "Idle",
+      "Walk",
+      "Run",
+      "Attack",
+      "Cast",
+      "Hit",
+      "Death"
+    ]
+  },
+  {
+    "id": "mage",
+    "triangles": 3625,
+    "surfaces": 7,
+    "bones": 18,
+    "bytes": 215600,
+    "clips": [
+      "Idle",
+      "Walk",
+      "Run",
+      "Attack",
+      "Cast",
+      "Hit",
+      "Death"
+    ]
+  },
+  {
+    "id": "cleric",
+    "triangles": 3711,
+    "surfaces": 7,
+    "bones": 18,
+    "bytes": 261440,
+    "clips": [
+      "Idle",
+      "Walk",
+      "Run",
+      "Attack",
+      "Cast",
+      "Hit",
+      "Death"
+    ]
+  },
+  {
+    "id": "raider",
+    "triangles": 3747,
+    "surfaces": 7,
+    "bones": 18,
+    "bytes": 262044,
+    "clips": [
+      "Idle",
+      "Walk",
+      "Run",
+      "Attack",
+      "Cast",
+      "Hit",
+      "Death"
+    ]
+  },
+  {
+    "id": "sentinel",
+    "triangles": 3539,
+    "surfaces": 7,
+    "bones": 18,
+    "bytes": 201368,
+    "clips": [
+      "Idle",
+      "Walk",
+      "Run",
+      "Attack",
+      "Cast",
+      "Hit",
+      "Death"
+    ]
+  },
+  {
+    "id": "ashfang_raider",
+    "triangles": 3763,
+    "surfaces": 8,
+    "bones": 18,
+    "bytes": 275756,
+    "clips": [
+      "Idle",
+      "Walk",
+      "Run",
+      "Attack",
+      "Cast",
+      "Hit",
+      "Death"
+    ]
+  },
+  {
+    "id": "ashfang_shieldguard",
+    "triangles": 3891,
+    "surfaces": 8,
+    "bones": 18,
+    "bytes": 284284,
+    "clips": [
+      "Idle",
+      "Walk",
+      "Run",
+      "Attack",
+      "Cast",
+      "Hit",
+      "Death"
+    ]
+  },
+  {
+    "id": "ashfang_bowhunter",
+    "triangles": 3575,
+    "surfaces": 8,
+    "bones": 18,
+    "bytes": 210696,
+    "clips": [
+      "Idle",
+      "Walk",
+      "Run",
+      "Attack",
+      "Cast",
+      "Hit",
+      "Death"
+    ]
+  },
+  {
+    "id": "ashfang_shaman",
+    "triangles": 3661,
+    "surfaces": 7,
+    "bones": 18,
+    "bytes": 224232,
+    "clips": [
+      "Idle",
+      "Walk",
+      "Run",
+      "Attack",
+      "Cast",
+      "Hit",
+      "Death"
+    ]
+  },
+  {
+    "id": "ashfang_chieftain",
+    "triangles": 3883,
+    "surfaces": 8,
+    "bones": 18,
+    "bytes": 285944,
+    "clips": [
+      "Idle",
+      "Walk",
+      "Run",
+      "Attack",
+      "Cast",
+      "Hit",
+      "Death"
+    ]
+  },
+  {
+    "id": "hollow_gravebound",
+    "triangles": 4061,
+    "surfaces": 8,
+    "bones": 18,
+    "bytes": 335828,
+    "clips": [
+      "Idle",
+      "Walk",
+      "Run",
+      "Attack",
+      "Cast",
+      "Hit",
+      "Death"
+    ]
+  },
+  {
+    "id": "hollow_archer",
+    "triangles": 4005,
+    "surfaces": 8,
+    "bones": 18,
+    "bytes": 284104,
+    "clips": [
+      "Idle",
+      "Walk",
+      "Run",
+      "Attack",
+      "Cast",
+      "Hit",
+      "Death"
+    ]
+  },
+  {
+    "id": "hollow_adept",
+    "triangles": 4091,
+    "surfaces": 7,
+    "bones": 18,
+    "bytes": 297648,
+    "clips": [
+      "Idle",
+      "Walk",
+      "Run",
+      "Attack",
+      "Cast",
+      "Hit",
+      "Death"
+    ]
+  },
+  {
+    "id": "hollow_warden",
+    "triangles": 4239,
+    "surfaces": 8,
+    "bones": 18,
+    "bytes": 350892,
+    "clips": [
+      "Idle",
+      "Walk",
+      "Run",
+      "Attack",
+      "Cast",
+      "Hit",
+      "Death"
+    ]
+  },
+  {
+    "id": "hollow_castellan",
+    "triangles": 4181,
+    "surfaces": 8,
+    "bones": 18,
+    "bytes": 346000,
+    "clips": [
+      "Idle",
+      "Walk",
+      "Run",
+      "Attack",
+      "Cast",
+      "Hit",
+      "Death"
+    ]
+  },
+  {
+    "id": "verdant_thornblade",
+    "triangles": 3317,
+    "surfaces": 7,
+    "bones": 18,
+    "bytes": 195180,
+    "clips": [
+      "Idle",
+      "Walk",
+      "Run",
+      "Attack",
+      "Cast",
+      "Hit",
+      "Death"
+    ]
+  },
+  {
+    "id": "verdant_stalker",
+    "triangles": 3683,
+    "surfaces": 8,
+    "bones": 18,
+    "bytes": 207064,
+    "clips": [
+      "Idle",
+      "Walk",
+      "Run",
+      "Attack",
+      "Cast",
+      "Hit",
+      "Death"
+    ]
+  },
+  {
+    "id": "verdant_tender",
+    "triangles": 3769,
+    "surfaces": 6,
+    "bones": 18,
+    "bytes": 219816,
+    "clips": [
+      "Idle",
+      "Walk",
+      "Run",
+      "Attack",
+      "Cast",
+      "Hit",
+      "Death"
+    ]
+  },
+  {
+    "id": "verdant_sentinel",
+    "triangles": 3891,
+    "surfaces": 7,
+    "bones": 18,
+    "bytes": 267028,
+    "clips": [
+      "Idle",
+      "Walk",
+      "Run",
+      "Attack",
+      "Cast",
+      "Hit",
+      "Death"
+    ]
+  },
+  {
+    "id": "verdant_grovekeeper",
+    "triangles": 3889,
+    "surfaces": 6,
+    "bones": 18,
+    "bytes": 230012,
+    "clips": [
+      "Idle",
+      "Walk",
+      "Run",
+      "Attack",
+      "Cast",
+      "Hit",
+      "Death"
+    ]
+  }
+]

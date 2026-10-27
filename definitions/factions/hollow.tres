@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="FactionDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/faction_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+stable_id = "hollow"
+display_name = "Hollow Court"
+description = "Gravebound infantry and wardens hold space while archers and adepts punish exposed or clustered heroes. The castellan commands a grave eruption."
+introduction_stage = 1
+regular_ids = PackedStringArray("hollow_gravebound", "hollow_warden", "hollow_archer", "hollow_adept")
+elite_id = "hollow_castellan"
+opening_template = PackedStringArray("hollow_gravebound", "hollow_archer", "hollow_adept", "hollow_warden")
+reinforcement_template = PackedStringArray("hollow_warden", "hollow_archer", "hollow_gravebound", "hollow_adept")
+elite_support = PackedStringArray("hollow_gravebound", "hollow_archer")
+easy_budget = 3
+standard_budget = 4
+hard_budget = 5
+later_stage_budget = 1
+
+primary_color = Color(0.1607843137254902, 0.2235294117647059, 0.26666666666666666, 1)
+accent_color = Color(0.5529411764705883, 0.9098039215686274, 0.8313725490196079, 1)

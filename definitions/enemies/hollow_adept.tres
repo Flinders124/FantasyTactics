@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="UnitDefinition" load_steps=5 format=3]
+[ext_resource type="Script" path="res://scripts/unit_definition.gd" id="1"]
+[ext_resource type="Resource" path="res://definitions/ranged.tres" id="2"]
+[ext_resource type="Resource" path="res://definitions/tactics_spellcaster.tres" id="3"]
+[ext_resource type="Resource" path="res://definitions/fireburst.tres" id="5"]
+
+[resource]
+script = ExtResource("1")
+enemy_id = "hollow_adept"
+faction_id = "hollow"
+visual_id = "hollow_adept"
+role = "Caster"
+role_icon = "RUNE"
+display_name = "Hollow Adept"
+maximum_health = 11
+initiative = 10
+movement_allowance = 5
+basic_attack = ExtResource("2")
+tactical_profile = ExtResource("3")
+abilities = [ExtResource("5")]
+is_elite = false
+encounter_cost = 2
+introduction_stage = 1
+strengths = "Punishes clustered targets"
+weaknesses = "Friendly fire and low health"
+

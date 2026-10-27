@@ -1,0 +1,47 @@
+[
+	{
+		"classification": "blocking",
+		"id": "fountain",
+		"triangles": 160
+	},
+	{
+		"classification": "blocking",
+		"id": "statue",
+		"triangles": 368
+	},
+	{
+		"classification": "nonblocking inaccessible-boundary or flush ground",
+		"id": "bench",
+		"triangles": 192
+	},
+	{
+		"classification": "nonblocking inaccessible-boundary or flush ground",
+		"id": "barrel",
+		"triangles": 144
+	},
+	{
+		"classification": "nonblocking inaccessible-boundary or flush ground",
+		"id": "crate",
+		"triangles": 320
+	},
+	{
+		"classification": "nonblocking inaccessible-boundary or flush ground",
+		"id": "cart",
+		"triangles": 272
+	},
+	{
+		"classification": "nonblocking inaccessible-boundary or flush ground",
+		"id": "facade",
+		"triangles": 384
+	},
+	{
+		"classification": "nonblocking inaccessible-boundary or flush ground",
+		"id": "cracks",
+		"triangles": 14
+	},
+	{
+		"classification": "nonblocking inaccessible-boundary or flush ground",
+		"id": "leaves",
+		"triangles": 24
+	}
+]

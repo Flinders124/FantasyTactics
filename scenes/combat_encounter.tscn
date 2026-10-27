@@ -1,0 +1,59 @@
+[gd_scene load_steps=14 format=3]
+[ext_resource type="Script" path="res://scripts/combat_encounter.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/turn_manager.gd" id="2"]
+[ext_resource type="Script" path="res://scripts/combat_controller.gd" id="3"]
+[ext_resource type="Script" path="res://scripts/tactical_camera.gd" id="4"]
+[ext_resource type="Script" path="res://scripts/combat_hud.gd" id="5"]
+[ext_resource type="Script" path="res://scripts/navigation_service.gd" id="6"]
+[ext_resource type="Script" path="res://scripts/movement_motor.gd" id="7"]
+[ext_resource type="Script" path="res://scripts/player_controller.gd" id="8"]
+[ext_resource type="Script" path="res://scripts/enemy_controller.gd" id="9"]
+[ext_resource type="Script" path="res://scripts/combat_log.gd" id="10"]
+[ext_resource type="Script" path="res://scripts/combat_presentation.gd" id="11"]
+[sub_resource type="NavigationMesh" id="Nav"]
+geometry_parsed_geometry_type = 1
+cell_size = 0.25
+cell_height = 0.25
+agent_radius = 0.5
+agent_height = 1.75
+agent_max_climb = 0.25
+[sub_resource type="Environment" id="Environment"]
+background_mode = 1
+background_color = Color(0.12, 0.14, 0.18, 1)
+ambient_light_source = 3
+ambient_light_color = Color(0.8, 0.85, 1, 1)
+ambient_light_energy = 0.7
+
+[node name="CombatEncounter" type="Node3D"]
+script = ExtResource("1")
+[node name="NavigationRegion3D" type="NavigationRegion3D" parent="."]
+navigation_mesh = SubResource("Nav")
+[node name="Units" type="Node3D" parent="."]
+[node name="NavigationService" type="Node" parent="."]
+script = ExtResource("6")
+[node name="MovementMotor" type="Node" parent="."]
+script = ExtResource("7")
+[node name="PlayerController" type="Node3D" parent="."]
+script = ExtResource("8")
+[node name="TurnManager" type="Node" parent="."]
+script = ExtResource("2")
+[node name="EnemyController" type="Node" parent="."]
+script = ExtResource("9")
+[node name="CombatController" type="Node" parent="."]
+script = ExtResource("3")
+[node name="TacticalCamera" type="Node3D" parent="."]
+script = ExtResource("4")
+[node name="Camera3D" type="Camera3D" parent="TacticalCamera"]
+current = true
+fov = 55.0
+[node name="HUD" type="CanvasLayer" parent="."]
+script = ExtResource("5")
+[node name="CombatLog" type="Node" parent="."]
+script = ExtResource("10")
+[node name="CombatPresentation" type="CanvasLayer" parent="."]
+script = ExtResource("11")
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment")
+[node name="Sun" type="DirectionalLight3D" parent="."]
+rotation_degrees = Vector3(-55, -30, 0)
+light_energy = 1.2

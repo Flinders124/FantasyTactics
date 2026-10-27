@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="UnitDefinition" load_steps=6 format=3]
+[ext_resource type="Script" path="res://scripts/unit_definition.gd" id="1"]
+[ext_resource type="Resource" path="res://definitions/ranged.tres" id="2"]
+[ext_resource type="Resource" path="res://definitions/tactics_ranged.tres" id="3"]
+[ext_resource type="Resource" path="res://definitions/crippling_shot.tres" id="5"]
+
+[resource]
+script = ExtResource("1")
+enemy_id = "ashfang_bowhunter"
+faction_id = "ashfang"
+visual_id = "ashfang_bowhunter"
+role = "Archer"
+role_icon = "BOW"
+display_name = "Ashfang Bowhunter"
+maximum_health = 10
+initiative = 13
+movement_allowance = 5.5
+basic_attack = ExtResource("2")
+tactical_profile = ExtResource("3")
+abilities = [ExtResource("5")]
+is_elite = false
+encounter_cost = 1
+introduction_stage = 0
+strengths = "Ranged control"
+weaknesses = "Weak when engaged"

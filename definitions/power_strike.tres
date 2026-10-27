@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/ability_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+stable_id = "power_strike"
+display_name = "Power Strike"
+description = "Deal 7 melee damage. Uses your one action."
+attack_type = 0
+minimum_range = 0.0
+maximum_range = 1.5
+magnitude = 7
+cooldown_turns = 2
+effect = 0
+targeting = 0

@@ -1,0 +1,26 @@
+[
+  {
+    "cpu_wall_frame_ms_median": 1.413,
+    "cpu_wall_frame_ms_p95": 2.596,
+    "draw_calls": 1062,
+    "objects": 1413,
+    "option": "A",
+    "primitives": 235090
+  },
+  {
+    "cpu_wall_frame_ms_median": 1.448,
+    "cpu_wall_frame_ms_p95": 2.7,
+    "draw_calls": 1092,
+    "objects": 1461,
+    "option": "B",
+    "primitives": 243006
+  },
+  {
+    "cpu_wall_frame_ms_median": 1.385,
+    "cpu_wall_frame_ms_p95": 2.117,
+    "draw_calls": 956,
+    "objects": 1320,
+    "option": "C",
+    "primitives": 234136
+  }
+]

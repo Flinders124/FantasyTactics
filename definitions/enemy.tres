@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="UnitDefinition" load_steps=5 format=3]
+[ext_resource type="Script" path="res://scripts/unit_definition.gd" id="1"]
+[ext_resource type="Resource" path="res://definitions/melee.tres" id="2"]
+[ext_resource type="Resource" path="res://definitions/power_strike.tres" id="3"]
+[ext_resource type="Resource" path="res://definitions/tactics_melee.tres" id="4"]
+[resource]
+script = ExtResource("1")
+visual_id = "raider"
+display_name = "Raider"
+maximum_health = 16
+initiative = 14
+movement_allowance = 6.0
+basic_attack = ExtResource("2")
+
+abilities = [ExtResource("3")]
+tactical_profile = ExtResource("4")

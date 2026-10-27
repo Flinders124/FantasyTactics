@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="AttackDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/attack_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+display_name = "Focus Bolt"
+attack_type = 1
+maximum_range = 8.0
+minimum_range = 0.0
+damage = 4

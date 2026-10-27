@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="CampaignUpgradeDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/campaign_upgrade_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+stable_id = "mage_3_0"
+hero_id = "mage"
+required_level = 3
+display_name = "Warded Robes"
+description = "+3 maximum health"
+modifiers = {"health": 3}

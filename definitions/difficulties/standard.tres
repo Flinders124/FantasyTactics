@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="DifficultyDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/difficulty_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+stable_id = "standard"
+display_name = "Standard"
+description = "Established balance: Raider and Sentinel, unchanged health, damage and tactical search."
+enemy_health_multiplier = 1
+enemy_damage_multiplier = 1
+

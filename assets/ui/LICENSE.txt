@@ -1,0 +1,1 @@
+Original vector interface symbols created for Fantasy Tactics. Project-owned artwork. No third-party images or fonts added. Typography uses Godot bundled default font; see Godot third-party notices included with the distribution.
