@@ -1,0 +1,33 @@
+# Godot-generated caches. Keep .uid and asset .import files in Git.
+.godot/
+.import/
+.mono/
+
+# Local exports, build output, and generated verification reports.
+/build/
+/builds/
+/dist/
+/releases/
+/verification/
+/export_templates/
+*.exe
+*.pck
+*.log
+
+# Credentials and local environment values.
+export_credentials.cfg
+.env
+.env.*
+!.env.example
+*.pfx
+*.p12
+
+# Editor/OS temporary files and authoring backups.
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.tmp
+*.temp
+*.bak
+*.blend1
+*.blend2
