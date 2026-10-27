@@ -31,3 +31,12 @@ Desktop.ini
 *.bak
 *.blend1
 *.blend2
+
+# Keep only the finished trailer and its context; working captures stay local.
+/brag-output/*
+!/brag-output/*.md
+!/brag-output/brag.mp4
+!/brag-output/brag.jpg
+!/brag-output/share-copy.txt
+!/brag-output/motion-verification.json
+!/brag-output/final-media.json

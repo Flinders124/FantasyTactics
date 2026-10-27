@@ -1,0 +1,51 @@
+{
+  "old_freeze_detection": {
+    "spans": [
+      [
+        6.33333,
+        7.0
+      ],
+      [
+        7.36667,
+        7.7
+      ],
+      [
+        7.83333,
+        8.26667
+      ],
+      [
+        8.26667,
+        11.0
+      ],
+      [
+        11.1667,
+        13.5
+      ],
+      [
+        13.7333,
+        16.0
+      ],
+      [
+        16.5667,
+        20.0
+      ]
+    ],
+    "total_seconds": 12.2,
+    "longest_seconds": 3.4333
+  },
+  "new_freeze_detection": {
+    "spans": [],
+    "total_seconds": 0,
+    "longest_seconds": 0
+  },
+  "fps": "60/1",
+  "video_frames": 1200,
+  "video_duration": 20.0,
+  "width": 1920,
+  "height": 1080,
+  "minimum_frame_interval": 0.016666,
+  "maximum_frame_interval": 0.016667,
+  "original_audio_sha256": "SHA256=130ddbcde766638f1c448f8e3c8062ceb6838dae9c463bd127429480f91e7bb9",
+  "revised_audio_sha256": "SHA256=130ddbcde766638f1c448f8e3c8062ceb6838dae9c463bd127429480f91e7bb9",
+  "audio_identical": true
+}

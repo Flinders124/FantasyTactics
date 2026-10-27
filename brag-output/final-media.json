@@ -1,0 +1,28 @@
+{
+    "programs": [
+
+    ],
+    "streams": [
+        {
+            "codec_name": "h264",
+            "profile": "High",
+            "width": 1920,
+            "height": 1080,
+            "level": 42,
+            "r_frame_rate": "60/1",
+            "duration": "20.000000",
+            "nb_frames": "1200"
+        },
+        {
+            "codec_name": "aac",
+            "profile": "LC",
+            "r_frame_rate": "0/0",
+            "duration": "20.010000",
+            "nb_frames": "939"
+        }
+    ],
+    "format": {
+        "duration": "20.010000",
+        "size": "16263982"
+    }
+}
