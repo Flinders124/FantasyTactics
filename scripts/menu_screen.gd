@@ -351,7 +351,9 @@ func _refresh_setup() -> void:
 	var roster:=FactionCatalog.roster(resolved,difficulty.stable_id,3,model.elite_choice,seed_value)
 	if model.imported_configuration!=null:
 		resolved=model.imported_configuration.faction_id
-		roster=model.imported_configuration.resolved_enemy_ids
+		if model.uses_frozen_roster(seed_value): roster=model.imported_configuration.resolved_enemy_ids
+		elif resolved=="legacy": roster=difficulty.roster_for(objective.stable_id,seed_value)
+		else: roster=FactionCatalog.roster(resolved,difficulty.stable_id,model.imported_configuration.campaign_stage,model.elite_choice,seed_value)
 	var faction_name:=FactionCatalog.find(resolved).display_name if FactionCatalog.find(resolved)!=null else "Legacy opposing party"
 	summary_label.text="Party: %s\n%s / %s / %s\nSeed: %d%s\n%s%s · %d enemies:\n%s"%[" + ".join(names) if not names.is_empty() else "Choose two",EncounterOptions.presets()[model.preset_index].display_name,objective.display_name,difficulty.display_name,seed_value," (random)" if model.seed_text.strip_edges().is_empty() else "",faction_name," · ELITE" if model.elite_choice else "",roster.size(),difficulty.roster_summary(roster)]
 

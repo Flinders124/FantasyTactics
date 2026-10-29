@@ -18,7 +18,7 @@ func run() -> void:
 	# Each pair enters real generated combat with the correct fresh definitions.
 	for first in range(4):
 		for second in range(first+1,4):
-			var state := CampaignState.new(7,"standard")
+			var state: CampaignState = LegacyCampaignFixture.new(7,"standard")
 			flow.campaign.state=state
 			var ids := PackedStringArray([names[first],names[second]])
 			var config := state.commit(state.offers[0].id,ids)
@@ -46,7 +46,7 @@ func run() -> void:
 			check(flow.retired.is_empty(),"Old campaign encounter/AI retires before next deployment")
 	check(flow.party.selected==skirmish_draft,"Campaign deployments preserve the independent skirmish draft")
 	# Abandon while navigation is still being prepared: confirmation must exist.
-	var early := CampaignState.new(9,"standard"); flow.campaign.state=early
+	var early: CampaignState = LegacyCampaignFixture.new(9,"standard"); flow.campaign.state=early
 	flow.start_configuration(early.commit(early.offers[0].id,["mage","cleric"]))
 	flow.request_transition("main_menu")
 	check(flow.menu_guide!=null and paused,"Loading abandonment has a responsive confirmation and pause owner")
@@ -55,7 +55,7 @@ func run() -> void:
 	flow.menu_guide.confirm_button.pressed.emit(); await settle()
 	check(early.resolutions==1 and early.active.is_empty() and flow.screen=="campaign_debrief" and not paused,"Loading cancellation resolves once and cleans the pause")
 	# Extraction failure keeps tactical rules even though the persistent hero survives.
-	var extraction := CampaignState.new(7,"easy"); flow.campaign.state=extraction
+	var extraction: CampaignState = LegacyCampaignFixture.new(7,"easy"); flow.campaign.state=extraction
 	var extraction_offer: Dictionary={}
 	for value in extraction.offers:
 		if value.objective==2: extraction_offer=value
@@ -69,7 +69,7 @@ func run() -> void:
 	check(extraction.resolutions==once,"Duplicate encounter result cannot apply strategic consequences twice")
 	flow.campaign.show_debrief(); await settle()
 	# Simultaneous tactical elimination is still DRAW; the campaign treats it as failure.
-	var draw_case := CampaignState.new(12,"standard"); flow.campaign.state=draw_case
+	var draw_case: CampaignState = LegacyCampaignFixture.new(12,"standard"); flow.campaign.state=draw_case
 	flow.start_configuration(draw_case.commit(draw_case.offers[0].id,["mage","ranger"])); await wait_ready()
 	combat=flow.combat.get_node("CombatController")
 	flow.combat.get_node("EnemyController").enabled=false

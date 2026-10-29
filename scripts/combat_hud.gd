@@ -23,6 +23,9 @@ var label: Label
 var button: Button
 var move_button: Button
 var ability_buttons: Array[Button] = []
+var rescue_buttons: Array[Button] = []
+var rescue_row: HBoxContainer
+const SURVIVAL_HELP: String = "Downed heroes bleed out after 3 future round-end checks; the round they fall does not count. Stabilise stops bleeding. Carry halves movement; Drop and Extract each cost one shared action. Extract in the marked retreat zone. Unrescued losses are permanent. Victory recovers conscious and stabilised heroes; retreat preserves only extracted heroes."
 var attack_button: Button
 var restart_button: Button
 var preview_label: Label
@@ -127,6 +130,7 @@ func bind(encounter_controller: CombatController) -> void:
 	name_label = _text(active, "", 26)
 	name_label.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
 	faction_label = _text(active, "", 14, GOLD)
+	faction_label.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
 	health_bar = ProgressBar.new()
 	health_bar.custom_minimum_size.y = 14
 	health_bar.show_percentage = false
@@ -165,6 +169,19 @@ func bind(encounter_controller: CombatController) -> void:
 			if player != null and unit != null and slot < unit.definition.abilities.size():
 				player.select_ability(unit.definition.abilities[slot].stable_id))
 		ability_buttons.append(ability_button)
+	rescue_row = HBoxContainer.new()
+	rescue_row.add_theme_constant_override("separation", 8)
+	ability_panel.add_child(rescue_row)
+	rescue_row.visible = controller.survival_enabled
+	for index in range(PlayerController.RESCUE_NAMES.size()):
+		var kind := index
+		var rescue := _button(rescue_row, PlayerController.RESCUE_NAMES[kind])
+		rescue.add_theme_font_size_override("font_size", 14)
+		rescue.toggle_mode = kind < 2
+		rescue.tooltip_text = ["Stop an adjacent ally's bleeding.", "Pick up an adjacent downed ally.", "Put down the ally you are carrying.", "Leave the battle from its retreat zone, taking any carried ally."][kind] + "\nCosts 1 shared action.\n" + SURVIVAL_HELP
+		rescue.pressed.connect(func() -> void:
+			if player != null: player.target_rescue(kind))
+		rescue_buttons.append(rescue)
 	preview_label = _text(actions, "", 15)
 	preview_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	attack_preview_label = _text(actions, "", 15)
@@ -292,7 +309,7 @@ func _show_feedback(message: String) -> void:
 	var tip := ""
 	if "line of sight" in message.to_lower() or "obstruct" in message.to_lower(): tip="Reposition for a clear line. Walls block attacks; living units also block ranged shots."
 	elif "out of" in message.to_lower() and "range" in message.to_lower(): tip="Move closer, or choose another target. Invalid actions spend nothing."
-	elif "full health" in message.to_lower(): tip="Mend restores missing health only. It cannot resurrect a defeated unit."
+	elif "full health" in message.to_lower(): tip="Healing restores missing health and can revive downed or stabilised allies in campaign battles. Permanent deaths cannot be reversed."
 	elif "no action remaining" in message.to_lower(): tip="Basic attacks and abilities share one action. You may still move with remaining metres."
 	feedback_label.text = ControlBindings.instructions(message)+("\n"+tip if not tip.is_empty() else "")
 	feedback_label.visible = not message.is_empty()
@@ -305,7 +322,7 @@ func show_attack_preview(target_name: String, distance: float, valid: bool, mess
 	if ability != null:
 		attack = ability
 	var ranged := attack != null and attack.attack_type == AttackDefinition.Type.RANGED
-	attack_preview_label.text = "" if message.is_empty() else ("%s · %.2f m %s · %s\n" % [target_name, distance, "range" if ability != null and ability.effect == AbilityDefinition.Effect.HEAL else ("shot" if ranged else "gap"), "TARGET OK" if valid else "INVALID"] if not target_name.is_empty() else "") + message
+	attack_preview_label.text = "" if message.is_empty() else ("%s · %.2f m %s · %s\n" % [target_name, distance, "range" if ability != null or (player != null and player.selected_rescue >= 0) else ("shot" if ranged else "gap"), "TARGET OK" if valid else "INVALID"] if not target_name.is_empty() else "") + message
 	attack_preview_label.visible = not message.is_empty()
 	attack_preview_label.add_theme_color_override("font_color", Color(0.45, 1, 0.75) if valid else Color(1, 0.65, 0.45))
 
@@ -366,7 +383,7 @@ func _refresh() -> void:
 	_refresh_initiative(active)
 	name_label.text = active.definition.display_name if active != null else "Preparing…"
 	if active != null:
-		faction_label.text = ("HERO" if active.faction == CombatUnit.Faction.HERO else "ENEMY") + " · " + active.role_label().to_upper()
+		faction_label.text = ("HERO" if active.faction == CombatUnit.Faction.HERO else "ENEMY") + " · " + active.definition.role + " · " + active.role_label().to_upper()
 		health_bar.max_value = active.definition.maximum_health
 		health_bar.value = active.health
 		var fill := health_bar.get_theme_stylebox("fill") as StyleBoxFlat
@@ -384,12 +401,19 @@ func _refresh() -> void:
 		if not item.visible:
 			continue
 		var ability := active.definition.abilities[index]
-		OathUI.decorate(item,"health" if ability.effect==AbilityDefinition.Effect.HEAL else "fireburst" if ability.targeting==AbilityDefinition.Target.GROUND else "slow" if ability.applied_status!=null else "attack")
+		OathUI.decorate(item,"aegisbearer" if ability.effect==AbilityDefinition.Effect.WARD else "chainbinder" if ability.effect in [AbilityDefinition.Effect.PULL,AbilityDefinition.Effect.TOW] else "health" if ability.effect==AbilityDefinition.Effect.HEAL else "fireburst" if ability.targeting==AbilityDefinition.Target.GROUND else "slow" if ability.applied_status!=null else "attack")
 		var cooldown := active.cooldown_remaining(ability.stable_id)
 		item.text = "%s [%s]\n%s" % [ability.display_name, ControlBindings.label("ability_"+str(index+1)), "COOLDOWN" if cooldown > 0 else "1 action"]
 		item.tooltip_text = "%s\nCosts 1 shared action · blocks next %d owner turns\n%s" % [ability.description, ability.cooldown_turns, "Ready in %d owner turn start(s)" % cooldown if cooldown > 0 else ("Ready" if available and active.action_available else "Unavailable: action spent or not your turn")]
 		item.disabled = not available or not active.action_available or cooldown > 0
 		item.set_pressed_no_signal(player != null and player.selected_ability_id == ability.stable_id and available)
+	rescue_row.visible = controller.survival_enabled
+	for index in rescue_buttons.size():
+		var rescue := rescue_buttons[index]
+		rescue.disabled = not available or not active.action_available
+		rescue.set_pressed_no_signal(available and player != null and player.selected_rescue == index)
+	var ability_panel := root.get_node("AbilitiesPanel") as Control
+	ability_panel.offset_top = -288 if controller.survival_enabled and active!=null and not active.definition.abilities.is_empty() else -244
 	button.disabled = not available
 	var minimum_move := controller.motor.arrival_tolerance if controller.motor != null else 0.005
 	move_button.disabled = not available or active.movement_remaining <= minimum_move
@@ -398,7 +422,7 @@ func _refresh() -> void:
 	overlay_restart.disabled = restart_button.disabled
 	var selected_mode := player.mode if player != null else PlayerController.Mode.NONE
 	move_button.set_pressed_no_signal(available and selected_mode == PlayerController.Mode.MOVE)
-	attack_button.set_pressed_no_signal(available and selected_mode == PlayerController.Mode.ATTACK and player.selected_ability_id.is_empty())
+	attack_button.set_pressed_no_signal(available and selected_mode == PlayerController.Mode.ATTACK and player.selected_ability_id.is_empty() and player.selected_rescue < 0)
 	result_label.text = ""
 	if terminal:
 		result_label.text = controller.outcome_reason
@@ -417,6 +441,8 @@ func _refresh() -> void:
 		var ability := active.ability_by_id(player.selected_ability_id)
 		if ability != null:
 			reason = ("%s · select ground, then click ground again to CONFIRM. Esc cancels." if ability.targeting == AbilityDefinition.Target.GROUND else "%s selected · hover a unit, then click to use.") % ability.display_name
+	if available and player != null and player.selected_rescue >= 0:
+		reason = PlayerController.RESCUE_NAMES[player.selected_rescue] + " selected · hover a downed ally, then click to confirm. Esc cancels."
 	mode_label.text = ControlBindings.instructions(reason).replace("Esc cancels",ControlBindings.label("cancel")+" cancels")
 	mode_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	button.tooltip_text = "End this hero's turn [%s]" % ControlBindings.label("end_turn") if available else reason
@@ -504,7 +530,7 @@ func add_guidance(encounter: CombatEncounter) -> void:
 	objective_label.mouse_filter=Control.MOUSE_FILTER_PASS
 	label.tooltip_text="Movement follows the full navigation route. Basic attacks and abilities share ONE action. Movement resets only at this unit's next turn start."
 	round_label.tooltip_text="Living units act by descending initiative, regardless of faction. Stable unit IDs break ties. One round ends after every scheduled living unit has acted."
-	objective_label.tooltip_text=FieldGuide.objective(controller.objectives.definition)
+	objective_label.tooltip_text=FieldGuide.objective(controller.objectives.definition) + ("\n\n" + SURVIVAL_HELP if controller.survival_enabled else "")
 	var tooltips := ReadableTooltips.new()
 	tooltips.name="ReadableTooltips"
 	root.add_child(tooltips)

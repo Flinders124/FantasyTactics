@@ -31,3 +31,7 @@ Desktop.ini
 *.bak
 *.blend1
 *.blend2
+
+# Python authoring-tool bytecode.
+__pycache__/
+*.pyc

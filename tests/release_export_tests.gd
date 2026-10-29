@@ -12,7 +12,7 @@ func _initialize() -> void:
 	check(config.load("res://export_presets.cfg") == OK, "Windows export preset exists")
 	check(config.get_value("preset.0", "export_filter") == "all_resources", "String-loaded resources are retained")
 	var exclusions: String = config.get_value("preset.0", "exclude_filter")
-	for required in ["tests/*", "docs/*", "assets/*/source/*", "scenes/*showcase*", "scripts/*showcase*"]:
+	for required in ["tests/*", "docs/*", "verification/*", "build/*", "assets/*/source/*", "scenes/*showcase*", "scripts/*showcase*"]:
 		check(required in exclusions, "Authoring exclusion: " + required)
 	for directory in ["res://definitions", "res://assets/characters/models", "res://assets/audio/clips", "res://assets/courtyard/meshes", "res://assets/courtyard/collision", "res://assets/courtyard/materials"]:
 		check(DirAccess.dir_exists_absolute(directory), "Runtime resource directory: " + directory)

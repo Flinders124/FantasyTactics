@@ -44,6 +44,10 @@ func _on_event(kind: String, data: Dictionary) -> void:
 			message = "%s: %d area damage (%d HP lost)%s." % [data.target, data.damage, data.health_lost, " · FRIENDLY FIRE" if data.friendly else ""]
 		"death":
 			message = "%s was defeated." % data.actor
+		"rescue", "displace":
+			message = str(data.get("message",""))
+		"downed":
+			message = "%s is downed. Rescue before bleed-out." % data.actor
 		"objective":
 			message = data.message
 		"result":

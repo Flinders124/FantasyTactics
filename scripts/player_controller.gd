@@ -17,6 +17,8 @@ var marker_material: StandardMaterial3D
 var marker_ring: TorusMesh
 var invalid_marker: ImmediateMesh
 var selected_ability_id: String = ""
+var selected_rescue: int = -1
+const RESCUE_NAMES: PackedStringArray = ["Stabilise", "Carry", "Drop", "Extract"]
 var mode: Mode = Mode.NONE
 var attack_mode: bool:
 	get:
@@ -90,6 +92,7 @@ func set_mode(next: Mode) -> void:
 		return
 	_clear_area_preview(true)
 	selected_ability_id = ""
+	selected_rescue = -1
 	mode = next
 	_clear()
 	preview_changed.emit(0.0, false, "")
@@ -99,7 +102,7 @@ func set_mode(next: Mode) -> void:
 	mode_changed.emit(mode)
 
 func toggle_attack_targeting() -> void:
-	if attack_mode and selected_ability_id.is_empty():
+	if attack_mode and selected_ability_id.is_empty() and selected_rescue < 0:
 		cancel_targeting()
 		return
 	if not _can_command():
@@ -117,6 +120,39 @@ func select_ability(id: String) -> void:
 	set_mode(Mode.ATTACK)
 	selected_ability_id = id
 	mode_changed.emit(mode)
+
+func target_rescue(kind: int) -> void:
+	if not _can_command() or not controller.survival_enabled or kind < 0 or kind > 3:
+		return
+	var active := controller.scheduler.active_unit()
+	if kind >= 2:
+		cancel_targeting()
+		controller.submit_player_command(RescueCommand.new(active.stable_id, active.stable_id, kind))
+		return
+	set_mode(Mode.ATTACK)
+	selected_rescue = kind
+	mode_changed.emit(mode)
+	attack_preview_changed.emit("", 0.0, false, RESCUE_NAMES[kind] + " selected. Hover a downed ally; click to confirm. Esc cancels.")
+
+func ability_preview_text(ability: AbilityDefinition, target: CombatUnit) -> String:
+	var effect := ""
+	match ability.effect:
+		AbilityDefinition.Effect.HEAL:
+			var amount := mini(ability.magnitude, target.definition.maximum_health - target.health) if target != null else ability.magnitude
+			effect = "%d healing" % amount
+		AbilityDefinition.Effect.WARD:
+			effect = "%d damage absorption · two future target turns" % ability.magnitude
+		AbilityDefinition.Effect.PULL:
+			effect = "%d damage · pull up to %.1f m" % [ability.magnitude, ability.displacement_distance]
+		AbilityDefinition.Effect.TOW:
+			effect = "Tow ally up to %.1f m · no damage" % ability.displacement_distance
+		_:
+			effect = "%d damage" % ability.magnitude
+	if target!=null and ability.effect in [AbilityDefinition.Effect.DAMAGE,AbilityDefinition.Effect.PULL] and target.ward_remaining>0:
+		effect += " · ward absorbs %d, expected HP loss %d" % [mini(target.ward_remaining,ability.magnitude),mini(target.health,maxi(0,ability.magnitude-target.ward_remaining))]
+	if ability.applied_status != null and ability.effect!=AbilityDefinition.Effect.WARD:
+		effect += " + %s (%d future turns)" % [ability.applied_status.display_name, ability.applied_status.affected_turns]
+	return "%s · %s · %s" % [ability.display_name, ability.range_label(), effect]
 
 func cancel_targeting() -> void:
 	set_mode(Mode.NONE)
@@ -136,18 +172,22 @@ func _highlight(target: CombatUnit, valid: bool) -> void:
 		target.set_target_highlight(true, valid)
 
 func _check_lost_target() -> void:
-	if hovered_target != null and not hovered_target.is_alive():
+	if hovered_target != null and not _target_pickable(hovered_target):
 		_highlight(null, false)
 		attack_preview_changed.emit("", 0.0, false, "Target no longer alive. Choose another target.")
-	if hovered_unit != null and not hovered_unit.is_alive():
+	if hovered_unit != null and not _target_pickable(hovered_unit):
 		_set_hover(null)
+
+func _target_pickable(target: CombatUnit) -> bool:
+	# Downed bodies are valid rescue/heal/tow candidates. Rules validate the action.
+	return target.is_alive() or (controller.survival_enabled and target.is_surviving())
 
 func _unit_under_pointer(screen_position: Vector2 = Vector2.INF) -> CombatUnit:
 	var mouse := screen_position if screen_position.is_finite() else get_viewport().get_mouse_position()
 	var origin := camera.project_ray_origin(mouse)
-	var ray := PhysicsRayQueryParameters3D.create(origin, origin + camera.project_ray_normal(mouse) * 300.0, 5)
+	var ray := PhysicsRayQueryParameters3D.create(origin, origin + camera.project_ray_normal(mouse) * 300.0, 4)
 	var hit := get_world_3d().direct_space_state.intersect_ray(ray)
-	if not hit.is_empty() and hit.collider is CombatUnit and hit.collider.is_alive():
+	if not hit.is_empty() and hit.collider is CombatUnit and _target_pickable(hit.collider):
 		return hit.collider as CombatUnit
 	return null
 
@@ -173,6 +213,12 @@ func _process(_delta: float) -> void:
 		if _ground_ability() != null:
 			_process_ground_preview()
 			return
+		if selected_rescue >= 0:
+			var rescue_preview: Variant = controller.evaluate_rescue(active, hovered_unit, selected_rescue)
+			_highlight(hovered_unit, rescue_preview.valid())
+			var rescue_message: String = RESCUE_NAMES[selected_rescue] + " · 1 shared action\n" + ("Click ally to confirm. Esc cancels." if rescue_preview.valid() else rescue_preview.error)
+			attack_preview_changed.emit(hovered_unit.definition.display_name if hovered_unit != null else "", rescue_preview.distance, rescue_preview.valid(), rescue_message)
+			return
 		var preview := controller.evaluate_attack(active, hovered_unit) if selected_ability_id.is_empty() else controller.evaluate_ability(active, hovered_unit, selected_ability_id)
 		_highlight(hovered_unit, preview.valid())
 		var attack := active.definition.basic_attack
@@ -180,8 +226,9 @@ func _process(_delta: float) -> void:
 		if not selected_ability_id.is_empty():
 			var ability := active.ability_by_id(selected_ability_id)
 			if ability != null:
-				var amount := mini(ability.magnitude, hovered_unit.definition.maximum_health - hovered_unit.health) if ability.effect == AbilityDefinition.Effect.HEAL and hovered_unit != null else ability.magnitude
-				description = "%s · %s · %d %s%s" % [ability.display_name, ability.range_label(), amount, "healing" if ability.effect == AbilityDefinition.Effect.HEAL else "damage", " + %s (%d future turns)" % [ability.applied_status.display_name, ability.applied_status.affected_turns] if ability.applied_status != null else ""]
+				description = ability_preview_text(ability, hovered_unit)
+		if selected_ability_id.is_empty() and hovered_unit!=null and attack!=null and hovered_unit.ward_remaining>0:
+			description+=" · ward absorbs %d, expected HP loss %d" % [mini(hovered_unit.ward_remaining,attack.damage),mini(hovered_unit.health,maxi(0,attack.damage-hovered_unit.ward_remaining))]
 		var message := "%s\n%s" % [description, preview.error if not preview.valid() else ("Click target to use ability." if not selected_ability_id.is_empty() else "Clear attack. Click target to strike.")]
 		attack_preview_changed.emit(hovered_unit.definition.display_name if hovered_unit != null else "", preview.distance, preview.valid(), message)
 		return
@@ -228,12 +275,14 @@ func _unhandled_input(event: InputEvent) -> void:
 				return
 			var target := _unit_under_pointer(screen_point)
 			if target != null:
-				if selected_ability_id.is_empty():
+				if selected_rescue >= 0:
+					controller.submit_player_command(RescueCommand.new(active.stable_id, target.stable_id, selected_rescue))
+				elif selected_ability_id.is_empty():
 					controller.submit_player_command(AttackCommand.new(active.stable_id, target.stable_id))
 				else:
 					controller.submit_player_command(UseAbilityCommand.new(active.stable_id, target.stable_id, selected_ability_id))
 			else:
-				controller.feedback_changed.emit("Choose a living hostile target")
+				controller.feedback_changed.emit("Choose a downed ally" if selected_rescue >= 0 else "Choose a valid unit target")
 		elif mode == Mode.MOVE:
 			var hit := _ground_hit(screen_point)
 			if not hit.is_empty():
@@ -344,7 +393,7 @@ func show_ground_preview(point: Vector3) -> void:
 			var friendly := hit.unit.faction == actor.faction
 			hit.unit.set_area_highlight(true, friendly, ability.magnitude)
 			area_highlighted.append(hit.unit)
-			names.append("%s −%d%s" % [hit.unit.definition.display_name, hit.health_lost(), " (ALLY)" if friendly else ""])
+			names.append(("%s · bleed −1 round" % hit.unit.definition.display_name if hit.unit.life_state==CombatUnit.LifeState.DOWNED else "%s −%d" % [hit.unit.definition.display_name,hit.health_lost()])+ (" (ALLY)" if friendly else ""))
 	var message := "%s · %.2f/%.2f m cast · %.2f m radius · %d damage\n%s\n! FRIENDLY FIRE ON: includes allies and caster." % [ability.display_name, preview.distance, ability.maximum_range, ability.area_radius, ability.magnitude, "Hits: " + (", ".join(names) if not names.is_empty() else "none") if preview.valid() else preview.error]
 	message += "\n" + ("POINT LOCKED: click ground again to CONFIRM. Esc cancels." if ground_selected else "Click ground to SELECT a point. Esc cancels.")
 	area_preview_changed.emit(message, preview.valid())

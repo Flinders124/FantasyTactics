@@ -60,7 +60,7 @@ func query(actor: CombatUnit, ability: AbilityDefinition, point: Vector3, roster
 	var candidates: Array[CombatUnit] = []
 	var seen: Dictionary = {}
 	for unit in roster:
-		if not unit.is_alive() or seen.has(unit.stable_id):
+		if (not unit.is_alive() and not unit.is_downed()) or seen.has(unit.stable_id):
 			continue
 		seen[unit.stable_id] = true
 		candidates.append(unit)
@@ -77,7 +77,7 @@ func query(actor: CombatUnit, ability: AbilityDefinition, point: Vector3, roster
 		var hit := Hit.new()
 		hit.unit = unit
 		hit.health_before = unit.health
-		hit.health_after = maxi(0, unit.health - ability.magnitude)
+		hit.health_after = maxi(0, unit.health - maxi(0,ability.magnitude-unit.ward_remaining))
 		result.hits.append(hit)
 	return result
 

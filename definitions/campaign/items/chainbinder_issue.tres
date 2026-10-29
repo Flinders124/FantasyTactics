@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="CampaignItemDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/campaign_item_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+stable_id = "chainbinder_issue"
+display_name = "Watch Hook and Chain"
+slot = "weapon"
+compatible_heroes = PackedStringArray("chainbinder")
+cost = 0
+description = "Standard hooked polearm and chain."
+modifiers = {}

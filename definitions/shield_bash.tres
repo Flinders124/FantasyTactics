@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+[ext_resource type="Script" path="res://scripts/ability_definition.gd" id="1"]
+[ext_resource type="Resource" path="res://definitions/slowed.tres" id="2"]
+[resource]
+script = ExtResource("1")
+stable_id = "shield_bash"
+display_name = "Shield Bash"
+description = "Deal 2 melee damage and apply Slowed."
+attack_type = 0
+maximum_range = 1.5
+magnitude = 2
+damage = 2
+cooldown_turns = 2
+effect = 0
+targeting = 0
+displacement_distance = 0
+obstruction_mask = 9
+applied_status = ExtResource("2")

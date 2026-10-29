@@ -2,7 +2,7 @@ Original Fantasy Tactics character assets and procedural modelling source.
 Created specifically for this project, 2026.
 
 The meshes, materials, rigs, animation curves, generated GLB files and source
-build_roster.py in this directory are dedicated to the public domain under
+build_roster.py, build_characters.py and build_roster_v4.py in this directory are dedicated to the public domain under
 CC0 1.0 Universal. You may use, modify and redistribute them, including in
 commercial projects, without attribution. No third-party assets were included.
 

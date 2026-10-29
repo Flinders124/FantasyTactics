@@ -35,7 +35,7 @@ func run() -> void:
 	var knight := HeroCatalog.find("knight")
 	var cleric := HeroCatalog.find("cleric")
 	check(cleric.maximum_health>knight.maximum_health and cleric.initiative<knight.initiative,"Cleric durability trades against Knight initiative")
-	var healing := CampaignState.new(17,"standard")
+	var healing: CampaignState = LegacyCampaignFixture.new(17,"standard")
 	healing.supplies=100
 	healing.heroes.cleric.level=4
 	for option in ["cleric_2_0","cleric_3_0","cleric_4_0"]: check(healing.learn("cleric",option),"Heal build learns one legal choice per level")
@@ -44,7 +44,7 @@ func run() -> void:
 	healing.heroes.cleric.upgrades=["cleric_2_0","cleric_3_0","cleric_4_1"]
 	check(healing.preview_definition("cleric").abilities[0].magnitude==11 and healing.preview_definition("cleric").abilities[0].cooldown_turns==1,"Quickened healing trades magnitude for timing")
 	for sample in report: check(sample.bounded,"Every diagnostic battle reaches a terminal result")
-	var state := CampaignState.new(17,"standard")
+	var state: CampaignState = LegacyCampaignFixture.new(17,"standard")
 	var strategic: Array[Dictionary]=[]
 	for mission in range(5):
 		var chosen: Dictionary=state.offers[0]

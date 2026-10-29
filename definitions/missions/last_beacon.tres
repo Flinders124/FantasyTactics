@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="MissionTemplate" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/mission_template.gd" id="1"]
+[resource]
+script = ExtResource("1")
+stable_id = "last_beacon"
+display_name = "The Last Beacon"
+description = "The final faction leader stands between the Watch and its beacon. Defeat the entire opposing party."
+objective_id = "elimination"
+style = "elite"
+layout_ids = PackedStringArray("central_plaza", "narrow_approach", "split_courtyard")
+role_pattern = PackedStringArray("front", "ranged")
+minimum_stage = 4
+recovery = false
+elite = true
+finale = true

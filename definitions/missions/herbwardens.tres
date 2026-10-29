@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="MissionTemplate" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/mission_template.gd" id="1"]
+[resource]
+script = ExtResource("1")
+stable_id = "herbwardens"
+display_name = "Gather the Herbwardens"
+description = "Clear the supply route for the herbwardens. Success grants the existing supply reward and an extra recovery step."
+objective_id = "elimination"
+style = "balanced"
+layout_ids = PackedStringArray("open_courtyard", "split_courtyard")
+role_pattern = PackedStringArray("mobile", "ranged", "front", "support")
+minimum_stage = 0
+recovery = true
+elite = false
+finale = false

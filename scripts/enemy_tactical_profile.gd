@@ -2,6 +2,12 @@ class_name EnemyTacticalProfile
 extends Resource
 ## Read-only reusable policy. One utility point is roughly a tenth of one HP.
 enum Role { MELEE, RANGED, SUPPORT, SPELLCASTER }
+# Default-only additions are omitted by v1 content fingerprints, just like unit metadata.
+const COMPATIBILITY_DEFAULTS: Dictionary = {
+	"warning_damage_weight":12.0,"protection_weight":3.0,"focus_fire_weight":1.0,
+	"target_threat_weight":.5,"support_access_weight":3.0,
+	"objective_commitment_weight":12.0,"oscillation_penalty":3.0
+}
 @export var role: Role = Role.MELEE
 @export var damage_weight: float = 10.0
 @export var defeat_bonus: float = 45.0
@@ -20,6 +26,14 @@ enum Role { MELEE, RANGED, SUPPORT, SPELLCASTER }
 @export var adjacency_penalty: float = 6.0
 @export var preferred_distance: float = .8
 @export var minimum_reposition_gain: float = .75
+# Utility-only preferences; these never alter unit stats or command allowances.
+@export var warning_damage_weight: float = 12.0
+@export var protection_weight: float = 3.0
+@export var focus_fire_weight: float = 1.0
+@export var target_threat_weight: float = .5
+@export var support_access_weight: float = 3.0
+@export var objective_commitment_weight: float = 12.0
+@export var oscillation_penalty: float = 3.0
 @export_range(8,40) var max_candidates: int = 24
 @export_range(12,80) var max_raw_candidates: int = 48
 @export_range(16,96) var max_path_queries: int = 48

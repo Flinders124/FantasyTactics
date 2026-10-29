@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="UnitDefinition" load_steps=5 format=3]
+[ext_resource type="Script" path="res://scripts/unit_definition.gd" id="1"]
+[ext_resource type="Resource" path="res://definitions/chainbinder_attack.tres" id="2"]
+[ext_resource type="Resource" path="res://definitions/reel_in.tres" id="3"]
+[ext_resource type="Resource" path="res://definitions/towline.tres" id="4"]
+[resource]
+script = ExtResource("1")
+visual_id = "chainbinder"
+selection_id = "chainbinder"
+role = "Chainbinder"
+display_name = "Chainbinder"
+maximum_health = 18
+initiative = 13
+movement_allowance = 6
+basic_attack = ExtResource("2")
+abilities = [ExtResource("3"), ExtResource("4")]

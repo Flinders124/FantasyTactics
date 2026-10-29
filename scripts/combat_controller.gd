@@ -10,6 +10,10 @@ signal action_completed(actor_id: String, action: String, reason: String)
 signal combat_event(kind: String, data: Dictionary)
 signal encounter_reset
 enum State { SETUP, TURN_START, AWAITING_COMMAND, RESOLVING_ACTION, TURN_END, VICTORY, DEFEAT, DRAW }
+var _finalizing_outcome: bool = false
+var survival_enabled: bool = false
+var retreat_center: Vector3 = Vector3.ZERO
+var retreat_radius: float = 2.8
 var guidance_paused: bool = false
 var player_command_policy: Callable
 var objectives: ObjectiveController = ObjectiveController.new()
@@ -99,10 +103,10 @@ func evaluate_melee_position(actor: CombatUnit, target: CombatUnit, origin: Vect
 	# Compatibility wrapper: all attacks now use the same geometry helper.
 	return evaluate_attack_position(actor, target, origin)
 
-func evaluate_attack_position(actor: CombatUnit, target: CombatUnit, origin: Vector3, override: AttackDefinition = null, friendly: bool = false, target_position: Vector3 = Vector3.INF) -> AttackPreview:
+func evaluate_attack_position(actor: CombatUnit, target: CombatUnit, origin: Vector3, override: AttackDefinition = null, friendly: bool = false, target_position: Vector3 = Vector3.INF, allow_downed: bool = false) -> AttackPreview:
 	# Identical calculations for previews, hypothetical AI positions and execution.
 	var result := AttackPreview.new()
-	if actor == null or not actor.is_alive() or target == null or not units.has(target) or not target.is_alive():
+	if actor == null or not actor.is_alive() or target == null or not units.has(target) or (not target.is_alive() and not (allow_downed and target.is_downed() and target.carried_by == null)):
 		result.error = "Choose living units"
 	elif (actor.faction == target.faction) != friendly:
 		result.error = "Target must be friendly" if friendly else "Target must be hostile"
@@ -160,7 +164,7 @@ func _resolve_attack(actor: CombatUnit, target: CombatUnit) -> bool:
 	# Rules execute once here. Presentation has no damage or completion callbacks.
 	var health_before := target.health
 	_damage_in_progress = true
-	target.set_health(target.health - attack.damage)
+	_deal_damage(target, attack.damage)
 	_damage_in_progress = false
 	_publish_event("attack", {"actor_id": actor.stable_id, "actor": actor.definition.display_name, "target_id": target.stable_id, "target": target.definition.display_name, "attack_type": attack.type_label(), "attack_name": attack.display_name, "origin": from, "target_point": to, "damage": attack.damage, "health_lost": health_before - target.health})
 	for dead in _pending_deaths:
@@ -287,11 +291,13 @@ func setup(roster: Array[CombatUnit], manager: TurnManager, reset_presentation: 
 	_set_state(State.SETUP)
 	if reset_presentation:
 		_reset_presentation()
+	_finalizing_outcome=false
 	units.assign(roster)
 	scheduler = manager
 	var ids: Dictionary = {}
 	for unit in units:
 		unit.set_active(false)
+		unit.survival_enabled = survival_enabled and unit.faction==CombatUnit.Faction.HERO
 		assert(not unit.stable_id.is_empty() and not ids.has(unit.stable_id), "Unit IDs must be unique and nonempty")
 		ids[unit.stable_id] = true
 		if not _spawn_transforms.has(unit.stable_id):
@@ -304,6 +310,7 @@ func setup(roster: Array[CombatUnit], manager: TurnManager, reset_presentation: 
 			unit.resources_changed.connect(_on_resources_changed)
 		if not unit.died.is_connected(_on_unit_died):
 			unit.died.connect(_on_unit_died)
+	objectives.survival_enabled=survival_enabled
 	objectives.reset(units)
 	outcome_reason=""
 	completed_rounds=0
@@ -327,6 +334,11 @@ func _round_completed(round_number: int) -> void:
 	completed_rounds=maxi(completed_rounds,round_number)
 	if objectives.definition.kind==ObjectiveDefinition.Kind.HOLD_GROUND and round_number<=objectives.last_checked_round: return
 	var ticket := _lifecycle_epoch
+	_damage_in_progress=true
+	for unit in units: unit.on_round_end(round_number)
+	_damage_in_progress=false
+	for dead in _pending_deaths: _record_death(dead)
+	_pending_deaths.clear()
 	objectives.round_end(round_number,units)
 	if ticket!=_lifecycle_epoch: return
 	if objectives.definition.kind==ObjectiveDefinition.Kind.HOLD_GROUND:
@@ -334,11 +346,28 @@ func _round_completed(round_number: int) -> void:
 	_check_outcome()
 
 func _check_outcome(completed_action: bool = false) -> bool:
-	if state in [State.VICTORY, State.DEFEAT, State.DRAW]: return true
+	if _finalizing_outcome or state in [State.VICTORY, State.DEFEAT, State.DRAW]: return true
 	var ticket := _lifecycle_epoch
 	var proposal := objectives.proposed_outcome(units,completed_action)
 	if ticket!=_lifecycle_epoch: return true
 	if proposal.is_empty(): return false
+	_finalizing_outcome=true
+	_damage_in_progress=true
+	if survival_enabled:
+		if proposal.result=="victory" and objectives.definition.kind==ObjectiveDefinition.Kind.EXTRACTION:
+			# Reaching the exit is itself the objective's atomic success boundary.
+			# Mark carriers and companions safe before ordinary recovery settlement.
+			for unit in units:
+				if unit.faction==CombatUnit.Faction.HERO and unit.is_alive(): unit.set_extracted()
+		for unit in units:
+			if unit.faction==CombatUnit.Faction.HERO:
+				unit.finalize_survival(proposal.result=="victory" or proposal.result=="draw")
+	_damage_in_progress=false
+	for dead in _pending_deaths: _record_death(dead)
+	_pending_deaths.clear()
+	if ticket!=_lifecycle_epoch:
+		_finalizing_outcome=false
+		return true
 	pending_telegraphs.clear()
 	outcome_reason=proposal.reason
 	if scheduler!=null: scheduler.halted=true
@@ -346,7 +375,7 @@ func _check_outcome(completed_action: bool = false) -> bool:
 	var defeated_heroes: PackedStringArray=[]
 	var defeated_enemies: PackedStringArray=[]
 	for unit in units:
-		if unit.is_alive(): continue
+		if unit.is_alive() or unit.life_state==CombatUnit.LifeState.EXTRACTED: continue
 		if unit.faction==CombatUnit.Faction.HERO: defeated_heroes.append(unit.definition.display_name)
 		else: defeated_enemies.append(unit.definition.display_name)
 	result_summary={"completed_rounds":completed_rounds,"ended_round":scheduler.round_number,"defeated_heroes":defeated_heroes,"defeated_enemies":defeated_enemies,"reason":outcome_reason}
@@ -356,6 +385,7 @@ func _check_outcome(completed_action: bool = false) -> bool:
 	if motor!=null: motor.stop("Encounter ended")
 	selection_changed.emit(null)
 	encounter_updated.emit()
+	_finalizing_outcome=false
 	return true
 
 func _start_next_turn() -> void:
@@ -430,6 +460,8 @@ func _submit_command(command: CombatCommand) -> bool:
 	if active == null or not active.is_alive() or command.actor_id != active.stable_id:
 		feedback_changed.emit("Only the active living unit can act")
 		return false
+	if command is RescueCommand:
+		return _resolve_rescue(active, find_unit(command.target_id), command.kind)
 	if command is UseAbilityCommand:
 		var ability := active.ability_by_id(command.ability_id)
 		if ability == null:
@@ -530,7 +562,7 @@ func _ability_error(actor: CombatUnit, id: String, expected_state: State) -> Str
 		return "Cooldown: %d owner turn start(s) until ready" % actor.cooldown_remaining(id)
 	if ability.magnitude <= 0 or ability.cooldown_turns < 0:
 		return "Invalid ability configuration"
-	if ability.targeting != AbilityDefinition.Target.GROUND and (ability.effect == AbilityDefinition.Effect.HEAL) != (ability.targeting == AbilityDefinition.Target.FRIENDLY):
+	if ability.targeting != AbilityDefinition.Target.GROUND and (ability.effect in [AbilityDefinition.Effect.HEAL, AbilityDefinition.Effect.WARD, AbilityDefinition.Effect.TOW]) != (ability.targeting == AbilityDefinition.Target.FRIENDLY):
 		return "Invalid ability configuration"
 	return ""
 
@@ -545,12 +577,20 @@ func evaluate_ability_position(actor: CombatUnit, target: CombatUnit, origin: Ve
 	var ability := actor.ability_by_id(id)
 	if ability.targeting == AbilityDefinition.Target.GROUND:
 		result.error = "Select a ground point for this ability"
-	elif target == null or not target.is_alive():
-		result.error = "Choose a living target"
+	elif target == null or (not target.is_alive() and not (target.is_downed() and target.carried_by==null and ability.effect in [AbilityDefinition.Effect.HEAL, AbilityDefinition.Effect.TOW])):
+		result.error = "Choose a living or recoverable friendly target"
+	elif ability.effect == AbilityDefinition.Effect.HEAL and target.is_downed() and _destination_occupied(target,target.global_position):
+		result.error = "Make room around the companion before reviving"
 	elif ability.effect == AbilityDefinition.Effect.HEAL and target.health >= target.definition.maximum_health:
 		result.error = "Target already at full health"
 	else:
-		return evaluate_attack_position(actor,target,origin,ability,ability.targeting==AbilityDefinition.Target.FRIENDLY,origin if actor==target else Vector3.INF)
+		result = evaluate_attack_position(actor,target,origin,ability,ability.targeting==AbilityDefinition.Target.FRIENDLY,origin if actor==target else Vector3.INF,ability.effect in [AbilityDefinition.Effect.HEAL, AbilityDefinition.Effect.TOW])
+		if result.valid() and ability.effect in [AbilityDefinition.Effect.PULL, AbilityDefinition.Effect.TOW]:
+			var destination := displacement_endpoint(actor,target,origin,ability.displacement_distance)
+			if not destination.is_finite(): result.error = "No clear space to pull target"
+		if result.valid() and ability.effect==AbilityDefinition.Effect.WARD and target.ward_remaining>=ability.magnitude and target.ward_future_turns>=2:
+			result.error = "Target already has an equally strong ward"
+		return result
 	return result
 
 func evaluate_ground_ability(actor: CombatUnit, point: Vector3, id: String, expected_state: State = State.AWAITING_COMMAND) -> AreaTargetingService.Result:
@@ -582,17 +622,30 @@ func _resolve_ability(actor: CombatUnit, target: CombatUnit, id: String) -> bool
 	_presentation_action_serial+=1
 	actor.spend_action()
 	actor.start_cooldown(ability)
-	actor.play_attack_effect(ability.effect == AbilityDefinition.Effect.HEAL, target.global_position)
+	actor.play_attack_effect(ability.effect in [AbilityDefinition.Effect.HEAL,AbilityDefinition.Effect.WARD,AbilityDefinition.Effect.PULL,AbilityDefinition.Effect.TOW], target.global_position)
 	var before := target.health
 	_damage_in_progress = true
-	target.set_health(target.health + ability.magnitude if ability.effect == AbilityDefinition.Effect.HEAL else target.health - ability.magnitude)
+	if ability.effect == AbilityDefinition.Effect.HEAL:
+		target.heal(ability.magnitude)
+	elif ability.effect == AbilityDefinition.Effect.WARD:
+		target.apply_ward(ability.magnitude)
+	elif ability.effect in [AbilityDefinition.Effect.DAMAGE, AbilityDefinition.Effect.PULL]:
+		_deal_damage(target, ability.magnitude)
+	if ability.effect in [AbilityDefinition.Effect.PULL, AbilityDefinition.Effect.TOW] and target.is_surviving():
+		var destination := displacement_endpoint(actor,target,actor.global_position,ability.displacement_distance)
+		if destination.is_finite():
+			# A swept capsule validates the entire short forced motion. Rules commit
+			# synchronously; presentation never owns completion or damage.
+			if target.is_alive(): target.move_and_collide(destination-target.global_position, false, 0.0001)
+			else: target.global_position=destination
+			_publish_event("displace", {"actor_id":actor.stable_id,"target_id":target.stable_id,"message":"%s pulls %s" % [actor.definition.display_name,target.definition.display_name]})
 	_damage_in_progress = false
 	_publish_event("ability", {"actor_id": actor.stable_id, "actor": actor.definition.display_name, "target_id": target.stable_id, "target": target.definition.display_name, "ability": ability.display_name,"ability_id":id})
 	if ability.effect == AbilityDefinition.Effect.HEAL:
 		_publish_event("heal", {"actor_id": actor.stable_id, "actor": actor.definition.display_name, "target_id": target.stable_id, "target": target.definition.display_name, "healing": target.health - before,"ability_id":id})
-	else:
+	elif ability.effect in [AbilityDefinition.Effect.DAMAGE, AbilityDefinition.Effect.PULL]:
 		_publish_event("attack", {"actor_id": actor.stable_id, "actor": actor.definition.display_name, "target_id": target.stable_id, "target": target.definition.display_name, "attack_type": ability.type_label(), "attack_name": ability.display_name, "origin": actor.attack_origin_at(actor.global_position), "target_point": target.target_point(), "damage": ability.magnitude, "health_lost": before - target.health,"ability_id":id})
-	if target.is_alive() and ability.applied_status != null:
+	if target.is_alive() and ability.applied_status != null and ability.effect!=AbilityDefinition.Effect.WARD:
 		target.apply_status(ability.applied_status)
 	for dead in _pending_deaths:
 		_record_death(dead)
@@ -635,7 +688,7 @@ func _resolve_area(actor: CombatUnit, point: Vector3, id: String, require_safe: 
 	actor.play_attack_effect(true, point)
 	_damage_in_progress = true
 	for hit in preview.hits:
-		hit.unit.set_health(hit.health_after)
+		_deal_damage(hit.unit, ability.magnitude)
 	_damage_in_progress = false
 	_publish_event("area", {"actor_id": actor.stable_id, "actor": actor.definition.display_name, "ability": ability.display_name, "point": point, "radius": ability.area_radius, "damage": ability.magnitude, "count": preview.hits.size()})
 	for hit in preview.hits:
@@ -682,7 +735,7 @@ func _resolve_telegraph(actor: CombatUnit) -> void:
 	_publish_event("telegraph_resolve", {"actor_id":actor.stable_id,"actor":actor.definition.display_name,"ability":ability.display_name,"point":warning.point,"radius":ability.area_radius})
 	if blast.valid():
 		_damage_in_progress=true
-		for hit in blast.hits: hit.unit.set_health(hit.health_after)
+		for hit in blast.hits: _deal_damage(hit.unit, ability.magnitude)
 		_damage_in_progress=false
 		_publish_event("area", {"actor_id":actor.stable_id,"actor":actor.definition.display_name,"ability":ability.display_name,"point":warning.point,"radius":ability.area_radius,"damage":ability.magnitude,"count":blast.hits.size()})
 		for hit in blast.hits:
@@ -693,10 +746,10 @@ func _resolve_telegraph(actor: CombatUnit) -> void:
 	_check_outcome(true)
 	encounter_updated.emit()
 
-func warned_position(actor: CombatUnit, point: Vector3) -> bool:
+func warned_position(actor: CombatUnit, point: Vector3, all_factions: bool = false) -> bool:
 	for id: String in pending_telegraphs:
 		var caster:=find_unit(id)
-		if caster==null or not caster.is_alive() or caster.faction!=actor.faction: continue
+		if caster==null or not caster.is_alive() or (not all_factions and caster.faction!=actor.faction): continue
 		var ability:=caster.ability_by_id(pending_telegraphs[id].ability_id)
 		if ability!=null and point.distance_to(pending_telegraphs[id].point)<=ability.area_radius+actor.collision_radius(): return true
 	return false
@@ -713,3 +766,117 @@ func diagnostic_snapshot() -> Dictionary:
 		if is_instance_valid(unit) and unit.is_alive(): eligible.append(unit.stable_id)
 	var pending: String="move" if motor!=null and motor.running else ("attack" if _attack_remaining>=0 else "")
 	return {"pending_action":pending,"awaited_completion":"MovementMotor.completed" if pending=="move" else ("action resolution timer" if pending=="attack" else "command or turn event"),"eligible_units":eligible,"round":scheduler.round_number if scheduler!=null else 0,"state": State.keys()[state], "actor": active.stable_id if active != null else "", "turn": turn_serial, "epoch": _lifecycle_epoch, "attack_remaining": _attack_remaining, "moving_actor": _moving_actor_id, "submitting": _submitting_command, "pending_telegraphs": pending_telegraphs.keys(), "recent_transitions": _recent_transitions.duplicate(true)}
+# All damage funnels through unit runtime shields/life state, including area hits.
+func _deal_damage(target: CombatUnit, amount: int) -> int:
+	if target.is_alive(): target.downed_round=scheduler.round_number if scheduler!=null else 0
+	return target.damage(amount)
+
+func displacement_endpoint(actor: CombatUnit, target: CombatUnit, origin: Vector3, distance: float) -> Vector3:
+	if navigation==null or not navigation.ready_for_queries or target==actor or not is_finite(distance) or distance<=0 or distance>6: return Vector3.INF
+	var direction := NavigationService.planar(origin-target.global_position)
+	var length := minf(distance,maxf(0,direction.length()-actor.collision_radius()-target.collision_radius()-.12))
+	if length<.1: return Vector3.INF
+	var motion := direction.normalized()*length
+	var shape := CapsuleShape3D.new()
+	shape.radius=target.collision_radius()+.02
+	shape.height=1.58
+	var query := PhysicsShapeQueryParameters3D.new()
+	query.shape=shape
+	query.transform=Transform3D(Basis.IDENTITY,target.global_position+Vector3.UP*.81)
+	query.motion=motion
+	query.collision_mask=9
+	query.exclude=[target.get_rid()]
+	var fractions := target.get_world_3d().direct_space_state.cast_motion(query)
+	var safe := maxf(0,fractions[0]-.02)
+	if safe*length<.1: return Vector3.INF
+	var endpoint := target.global_position+motion*safe
+	var nearest := NavigationServer3D.map_get_closest_point(navigation.map,endpoint)
+	if NavigationService.planar(nearest-endpoint).length()>.08: return Vector3.INF
+	return endpoint
+
+func evaluate_rescue(actor: CombatUnit, target: CombatUnit, kind: int, expected_state: State = State.AWAITING_COMMAND) -> AttackPreview:
+	var preview := AttackPreview.new()
+	if actor!=null and target!=null: preview.distance=maxf(0,actor.global_position.distance_to(target.global_position)-actor.collision_radius()-target.collision_radius())
+	preview.error=_action_error(actor,expected_state)
+	if not preview.valid(): return preview
+	if not survival_enabled or actor.faction!=CombatUnit.Faction.HERO:
+		preview.error="Rescue is available to campaign heroes"
+	elif kind==RescueCommand.Kind.EXTRACT:
+		var center := objectives.center if objectives.definition.kind==ObjectiveDefinition.Kind.EXTRACTION else retreat_center
+		var radius := objectives.radius if objectives.definition.kind==ObjectiveDefinition.Kind.EXTRACTION else retreat_radius
+		if actor.ground_anchor().distance_to(center)>radius+.000001: preview.error="Reach the marked extraction area first"
+	elif kind==RescueCommand.Kind.DROP:
+		if actor.carried_unit==null: preview.error="No companion is being carried"
+		elif not rescue_drop_endpoint(actor).is_finite(): preview.error="No clear ground to set the companion down"
+	elif kind not in [RescueCommand.Kind.STABILISE,RescueCommand.Kind.PICKUP]:
+		preview.error="Unknown rescue command"
+	elif target==null or not units.has(target) or target==actor or target.faction!=actor.faction or not target.is_downed() or target.carried_by!=null:
+		preview.error="Choose a downed friendly companion on the ground"
+	elif kind==RescueCommand.Kind.STABILISE and target.life_state==CombatUnit.LifeState.STABILISED:
+		preview.error="Companion is already stabilised"
+	elif kind==RescueCommand.Kind.PICKUP and actor.carried_unit!=null:
+		preview.error="Already carrying a companion"
+	elif preview.distance>1.5+.000001:
+		preview.error="Move adjacent to the companion"
+	else:
+		var ray := PhysicsRayQueryParameters3D.create(actor.attack_origin_at(actor.global_position),target.target_point(),8,[actor.get_rid(),target.get_rid()])
+		if not actor.get_world_3d().direct_space_state.intersect_ray(ray).is_empty(): preview.error="Rescue is obstructed"
+	return preview
+
+func _resolve_rescue(actor: CombatUnit,target: CombatUnit,kind: int) -> bool:
+	var preview := evaluate_rescue(actor,target,kind)
+	if not preview.valid():
+		feedback_changed.emit(preview.error)
+		return false
+	var serial := turn_serial
+	_set_state(State.RESOLVING_ACTION)
+	preview=evaluate_rescue(actor,target,kind,State.RESOLVING_ACTION)
+	if not preview.valid() or serial!=turn_serial:
+		if state==State.RESOLVING_ACTION: _set_state(State.AWAITING_COMMAND)
+		return false
+	actor.spend_action()
+	match kind:
+		RescueCommand.Kind.STABILISE: target.stabilise()
+		RescueCommand.Kind.PICKUP: actor.pickup(target)
+		RescueCommand.Kind.DROP:
+			var endpoint := rescue_drop_endpoint(actor)
+			var companion := actor.drop_carried()
+			if companion!=null: companion.global_position=endpoint
+		RescueCommand.Kind.EXTRACT: actor.set_extracted()
+	_publish_event("rescue",{"actor_id":actor.stable_id,"target_id":target.stable_id if target!=null else actor.stable_id,"message":"%s: %s" % [actor.definition.display_name,RescueCommand.Kind.keys()[kind].capitalize()]})
+	if not _check_outcome(true):
+		if not actor.is_alive():
+			_set_state(State.TURN_END)
+			_start_next_turn()
+		else: _set_state(State.AWAITING_COMMAND)
+	encounter_updated.emit()
+	action_completed.emit(actor.stable_id,"rescue","Rescue completed")
+	return true
+
+func abandon_encounter() -> void:
+	if encounter_has_ended(): return
+	_lifecycle_epoch+=1
+	_damage_in_progress=true
+	if survival_enabled:
+		for unit in units:
+			if unit.faction==CombatUnit.Faction.HERO: unit.finalize_survival(false)
+	_damage_in_progress=false
+	for dead in _pending_deaths: _record_death(dead)
+	_pending_deaths.clear()
+	pending_telegraphs.clear()
+	if scheduler!=null: scheduler.halted=true
+	_set_state(State.DEFEAT)
+	outcome_reason="Mission abandoned. Only extracted companions survived."
+	result_summary={"completed_rounds":completed_rounds,"reason":outcome_reason}
+	if motor!=null: motor.stop("Mission abandoned")
+	selection_changed.emit(null)
+	encounter_updated.emit()
+
+func rescue_drop_endpoint(actor: CombatUnit) -> Vector3:
+	if navigation==null: return Vector3.INF
+	for index in range(8):
+		var angle := TAU*float(index)/8
+		var point := actor.global_position+Vector3(cos(angle),0,sin(angle))*1.05
+		var route := navigation.query_path(actor.global_position,point)
+		if route.valid() and route.distance<1.5 and not _destination_occupied(actor,point): return point
+	return Vector3.INF

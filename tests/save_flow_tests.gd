@@ -8,6 +8,10 @@ func run() -> void:
 	flow.campaign.store.path="user://save-flow/%d/active.json"%OS.get_process_id()
 	flow.campaign.seed_text="17"; flow.campaign.begin(); await settle()
 	check(flow.screen=="headquarters" and flow.campaign.store.read_file(flow.campaign.store.path).state!=null,"Creation autosaves a valid campaign")
+	# Subsequent checks exercise the preserved v1 specialist equipment fixture.
+	flow.campaign.state=LegacyCampaignFixture.new(17)
+	flow.campaign.selected=PackedStringArray(["knight","ranger"])
+	check(flow.campaign.persist("headquarters"),"Historical equipment fixture persists")
 	var state: CampaignState=flow.campaign.state
 	flow.request_transition("campaign_buy:broadwatch"); await settle()
 	var item_id: String=""
@@ -66,7 +70,7 @@ func run() -> void:
 		flow.request_transition("campaign_continue"); await settle()
 		check(flow.screen=="headquarters" and get_nodes_in_group("headquarters_camps").size()==1,"Repeated load/menu transitions retain one camp")
 	check(flow.campaign.store.discard(),"Test directory cleanup succeeds")
-	var finale := CampaignState.new(39,"easy")
+	var finale: CampaignState = LegacyCampaignFixture.new(39,"easy")
 	for mission in range(4):
 		finale.commit(finale.offers[0].id,["knight","ranger"]); finale.resolve(completed_result(finale))
 	flow.campaign.state=finale; flow.campaign.store.path="user://save-flow/%d/finale.json"%OS.get_process_id()

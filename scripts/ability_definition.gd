@@ -2,7 +2,7 @@ class_name AbilityDefinition
 extends AttackDefinition
 
 # Inherit the exact range convention and obstruction configuration of attacks.
-enum Effect { DAMAGE, HEAL }
+enum Effect { DAMAGE, HEAL, WARD, PULL, TOW }
 enum Target { HOSTILE, FRIENDLY, GROUND }
 @export var stable_id: String = ""
 @export_multiline var description: String = ""
@@ -19,3 +19,5 @@ enum Target { HOSTILE, FRIENDLY, GROUND }
 @export_range(0.01, 1.0) var blast_origin_offset: float = 0.15
 
 @export var telegraphed: bool = false
+
+@export_range(0.0, 6.0) var displacement_distance: float = 0.0

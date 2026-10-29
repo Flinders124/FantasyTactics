@@ -25,10 +25,15 @@ static func content(resource: Resource) -> Dictionary:
 	for property in resource.get_property_list():
 		if (int(property.usage)&PROPERTY_USAGE_SCRIPT_VARIABLE)==0 or (int(property.usage)&PROPERTY_USAGE_STORAGE)==0: continue
 		var value: Variant=resource.get(property.name)
+		if resource is EnemyTacticalProfile:
+			var defaults := EnemyTacticalProfile.COMPATIBILITY_DEFAULTS
+			var key := str(property.name)
+			if defaults.has(key) and value==defaults[key]: continue
 		# New default metadata must not change fingerprints of shipped v1 units.
 		if property.name in ["enemy_id","faction_id","role_icon","strengths","weaknesses"] and value=="": continue
 		if property.name in ["is_elite","telegraphed"] and value==false: continue
 		if property.name=="encounter_cost" and value==1: continue
+		if property.name in ["displacement_distance","damage_absorption"] and value==0: continue
 		if property.name=="introduction_stage" and value==0: continue
 		if value is Resource: value=content(value)
 		elif value is Array:
@@ -49,6 +54,9 @@ static func encode(config: EncounterConfiguration) -> String:
 	for id in config.hero_ids: hero_hash.append(fingerprint(HeroCatalog.find(id)))
 	var data := {"v":1 if config.faction_id=="legacy" else 2,"engine":Engine.get_version_info().hex,"heroes":Array(config.hero_ids),"hero_hash":hero_hash,"seed":config.battlefield_seed,"attempt":config.layout.attempt if config.layout!=null else config.requested_attempt,"roster_version":config.roster_version,"roster":Array(config.resolved_enemy_ids),"roster_hash":roster_hash,"generator":properties(config.generator_settings,SETTINGS),"objective":properties(config.objective,OBJECTIVE),"difficulty":properties(config.difficulty,DIFFICULTY)}
 	if config.faction_id!="legacy": data["faction"]={"id":config.faction_id,"stage":config.campaign_stage,"elite":config.elite_encounter}
+	if config.hero_ids[0]==config.hero_ids[1]:
+		data.v=3
+		data["paired_classes"]=true
 	var bytes := JSON.stringify(data).to_utf8_buffer().compress(FileAccess.COMPRESSION_DEFLATE)
 	var payload := Marshalls.raw_to_base64(bytes).replace("+","-").replace("/","_").replace("=","")
 	return PREFIX+"."+payload+"."+payload.sha256_text().substr(0,8)
@@ -113,11 +121,11 @@ static func decode(code: String) -> Decoded:
 	var parser := JSON.new()
 	if parser.parse(json_bytes.get_string_from_utf8())!=OK: return result
 	var data: Variant=parser.data
-	if not data is Dictionary or data.size() not in [12,13]: return result
+	if not data is Dictionary or data.size() not in [12,13,14]: return result
 	for key in ["v","engine","heroes","hero_hash","seed","attempt","roster_version","roster","roster_hash","generator","objective","difficulty"]:
 		if not data.has(key): return result
 	# Exact schema and engine/content versions prevent silently different battles.
-	if (data.v!=1 and data.v!=2) or data.engine!=Engine.get_version_info().hex or data.roster_version!=EnemyCatalog.VERSION:
+	if (data.v!=1 and data.v!=2 and data.v!=3) or data.engine!=Engine.get_version_info().hex or data.roster_version!=EnemyCatalog.VERSION:
 		result.error="Unsupported engine or encounter-definition version."
 		return result
 	if not _whole(data.seed,0,4294967295) or not _whole(data.attempt,0,9): return result
@@ -137,11 +145,14 @@ static func decode(code: String) -> Decoded:
 			result.error="Unit definitions differ from this code. Use the matching game version."
 			return result
 	var config := EncounterConfiguration.new()
-	if data.v==2:
-		if data.size()!=13 or not data.get("faction") is Dictionary or data.faction.size()!=3: return result
+	if data.v==3:
+		if data.get("paired_classes")!=true or data.heroes[0]!=data.heroes[1]: return result
+		config.allow_duplicate_classes=true
+	if data.v==2 or (data.v==3 and data.has("faction")):
+		if data.size()!=(14 if data.v==3 else 13) or not data.get("faction") is Dictionary or data.faction.size()!=3: return result
 		if not data.faction.get("id") is String or FactionCatalog.find(data.faction.id)==null or not _whole(data.faction.get("stage"),0,4) or not data.faction.get("elite") is bool: return result
 		config.faction_id=data.faction.id; config.campaign_stage=int(data.faction.stage); config.elite_encounter=data.faction.elite
-	elif data.size()!=12: return result
+	elif data.size()!=(13 if data.v==3 else 12): return result
 	config.generator_settings=BattlefieldSettings.new()
 	config.objective=ObjectiveDefinition.new()
 	config.difficulty=DifficultyDefinition.new()
@@ -156,7 +167,7 @@ static func decode(code: String) -> Decoded:
 	config.battlefield_seed=int(data.seed)
 	config.requested_attempt=int(data.attempt)
 	if not config.difficulty.valid(): return result
-	if data.v==2:
+	if data.v>=2 and data.has("faction"):
 		config.resolved_enemy_ids=PackedStringArray(data.roster)
 		config.enemies.clear()
 		for id in config.resolved_enemy_ids: config.enemies.append(EnemyCatalog.find(id).duplicate(true) as UnitDefinition)

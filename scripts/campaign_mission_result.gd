@@ -16,8 +16,13 @@ func snapshot() -> Dictionary:
 	return _record.duplicate(true)
 static func capture(mission_id: String,hero_ids: PackedStringArray,combat: Node,abandoned: bool=false) -> RefCounted:
 	var heroes: Dictionary={}
+	var modern: bool=false
 	for index in range(hero_ids.size()):
 		var unit: CombatUnit=combat.find_unit("hero-%02d"%(index+1))
 		heroes[hero_ids[index]]={"health":unit.health,"maximum_health":unit.definition.maximum_health}
+		if unit.survival_enabled:
+			modern=true
+			heroes[hero_ids[index]].survival=unit.survival_outcome
+			heroes[hero_ids[index]].death_cause=unit.death_cause
 	var outcome := "failure" if abandoned else ("victory" if combat.state==CombatController.State.VICTORY else "failure")
-	return load("res://scripts/campaign_mission_result.gd").new({"version":1,"mission_id":mission_id,"outcome":outcome,"abandoned":abandoned,"reason":"Mission abandoned" if abandoned else combat.outcome_reason,"heroes":heroes,"rounds":combat.completed_rounds,"tactical_result":"abandoned" if abandoned else CombatController.State.keys()[combat.state]})
+	return load("res://scripts/campaign_mission_result.gd").new({"version":2 if modern else 1,"mission_id":mission_id,"outcome":outcome,"abandoned":abandoned,"reason":"Mission abandoned" if abandoned else combat.outcome_reason,"heroes":heroes,"rounds":combat.completed_rounds,"tactical_result":"abandoned" if abandoned else CombatController.State.keys()[combat.state]})

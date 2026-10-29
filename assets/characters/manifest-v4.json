@@ -1,0 +1,50 @@
+[
+  {
+    "id": "recruit",
+    "triangles": 3185,
+    "surfaces": 7,
+    "bones": 18,
+    "bytes": 186724,
+    "clips": [
+      "Idle",
+      "Walk",
+      "Run",
+      "Attack",
+      "Cast",
+      "Hit",
+      "Death"
+    ]
+  },
+  {
+    "id": "aegisbearer",
+    "triangles": 3763,
+    "surfaces": 7,
+    "bones": 18,
+    "bytes": 262656,
+    "clips": [
+      "Idle",
+      "Walk",
+      "Run",
+      "Attack",
+      "Cast",
+      "Hit",
+      "Death"
+    ]
+  },
+  {
+    "id": "chainbinder",
+    "triangles": 4943,
+    "surfaces": 7,
+    "bones": 18,
+    "bytes": 425928,
+    "clips": [
+      "Idle",
+      "Walk",
+      "Run",
+      "Attack",
+      "Cast",
+      "Hit",
+      "Death"
+    ]
+  }
+]

@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="UnitDefinition" load_steps=5 format=3]
+[ext_resource type="Script" path="res://scripts/unit_definition.gd" id="1"]
+[ext_resource type="Resource" path="res://definitions/aegisbearer_attack.tres" id="2"]
+[ext_resource type="Resource" path="res://definitions/aegis.tres" id="3"]
+[ext_resource type="Resource" path="res://definitions/shield_bash.tres" id="4"]
+[resource]
+script = ExtResource("1")
+visual_id = "aegisbearer"
+selection_id = "aegisbearer"
+role = "Aegisbearer"
+display_name = "Aegisbearer"
+maximum_health = 22
+initiative = 10
+movement_allowance = 5.5
+basic_attack = ExtResource("2")
+abilities = [ExtResource("3"), ExtResource("4")]

@@ -47,13 +47,13 @@ func clear() -> void:
 
 func validation_error() -> String:
 	if not party_ready(): return "Choose exactly two distinct companions."
-	if preset_index<0 or preset_index>2 or objective_index<0 or objective_index>2 or difficulty_index<0 or difficulty_index>2: return "Choose a supported battlefield, objective and difficulty."
+	if preset_index<0 or preset_index>=EncounterOptions.presets().size() or objective_index<0 or objective_index>2 or difficulty_index<0 or difficulty_index>2: return "Choose a supported battlefield, objective and difficulty."
 	var difficulty := EncounterOptions.difficulties()[difficulty_index]
 	if imported_configuration!=null and imported_configuration.difficulty.stable_id==difficulty.stable_id: difficulty=imported_configuration.difficulty
 	if not difficulty.valid(): return "Selected difficulty has invalid tuning or an unsupported enemy roster."
 	var settings := EncounterOptions.presets()[preset_index]
 	if imported_configuration!=null and imported_configuration.generator_settings.preset_id==settings.preset_id: settings=imported_configuration.generator_settings
-	if settings.generator_version!=2 or settings.preset_id not in ["open_courtyard","ruined_lanes","central_plaza"]: return "Selected battlefield version is unsupported."
+	if settings.generator_version!=2 or settings.preset_id not in ["open_courtyard","ruined_lanes","central_plaza","narrow_approach","split_courtyard"]: return "Selected battlefield version is unsupported."
 	var value := seed_text.strip_edges()
 	if not value.is_empty() and (not value.is_valid_int() or value.to_int()<0 or value.to_int()>4294967295 or value.length()>10): return "Seed: enter a whole number from 0 to 4294967295, or leave blank for random."
 	return ""
@@ -71,6 +71,9 @@ func edited() -> void:
 	_invalidate()
 	changed.emit()
 
+func uses_frozen_roster(seed_value: int) -> bool:
+	return imported_configuration!=null and seed_value==imported_configuration.battlefield_seed and EncounterOptions.difficulties()[difficulty_index].stable_id==imported_configuration.difficulty.stable_id and EncounterOptions.objectives()[objective_index].stable_id==imported_configuration.objective.stable_id
+
 func configuration(seed_value: int, open_settings: BattlefieldSettings = null) -> EncounterConfiguration:
 	if not ready(): return null
 	var config := imported_configuration.snapshot() as EncounterConfiguration if imported_configuration!=null else EncounterConfiguration.new()
@@ -86,7 +89,7 @@ func configuration(seed_value: int, open_settings: BattlefieldSettings = null) -
 		config.faction_id=faction_choice
 		config.campaign_stage=3
 		config.elite_encounter=elite_choice
-	config.resolve_roster()
+	if not uses_frozen_roster(config.battlefield_seed): config.resolve_roster()
 	return config
 
 func populate(config: EncounterConfiguration) -> void:
@@ -94,8 +97,9 @@ func populate(config: EncounterConfiguration) -> void:
 	elite_choice=config.elite_encounter
 	selected=config.hero_ids.duplicate()
 	seed_text=str(config.battlefield_seed)
-	for index in range(3):
+	for index in range(EncounterOptions.presets().size()):
 		if EncounterOptions.presets()[index].preset_id==config.generator_settings.preset_id: preset_index=index
+	for index in range(3):
 		if EncounterOptions.objectives()[index].stable_id==config.objective.stable_id: objective_index=index
 		if EncounterOptions.difficulties()[index].stable_id==config.difficulty.stable_id: difficulty_index=index
 	imported_configuration=config.snapshot() as EncounterConfiguration

@@ -90,8 +90,11 @@ func run() -> void:
 	check(controller.evaluate_attack(enemy, hero).error == "Too close", "Minimum range applies to AI too")
 	await wait_for_turn()
 	check(count("move") == 1 and count("attack") == 1 and count("end") == 1, "Too-close enemy finds legal shot within one move")
-	# Symmetric unreachable-this-instant ranges tie by target ID, not faction/spawn iteration.
+	# Equal geometry AND equal threat profiles tie by ID; different roles now have tactical value.
 	await fresh()
+	var original_scout_definition := scout.definition
+	scout.definition=hero.definition.duplicate(true) as UnitDefinition
+	scout.set_health(scout.definition.maximum_health)
 	enemy.global_position = Vector3(0, 0, 8)
 	hero.global_position = Vector3(-10, 0, 8)
 	scout.global_position = Vector3(10, 0, 8)
@@ -101,6 +104,7 @@ func run() -> void:
 	check(plan != null and plan.target_id == hero.stable_id, "Equal firing-path costs use stable target ID")
 	await wait_for_turn()
 	check(hero.health == hero.definition.maximum_health - 4 and scout.health == scout.definition.maximum_health, "Stable selected shot executed consistently")
+	scout.definition=original_scout_definition
 	await fresh()
 	enemy.global_position = Vector3(-9, 0, 9)
 	hero.global_position = Vector3(9, 0, -9)
