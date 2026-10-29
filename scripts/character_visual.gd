@@ -1,7 +1,7 @@
 class_name CharacterVisual
 extends Node3D
 ## Presentation only. Animation completion never spends resources or unlocks combat.
-const ROLES: PackedStringArray = ["knight", "ranger", "mage", "cleric", "raider", "sentinel"]
+const ROLES: PackedStringArray = ["knight", "ranger", "mage", "cleric", "raider", "sentinel", "recruit", "aegisbearer", "chainbinder"]
 const ART = preload("res://scripts/lantern_art.gd")
 const FACTION_KIT = preload("res://scripts/faction_visual_kit.gd")
 var model: Node3D
@@ -12,6 +12,8 @@ var unit: Node3D
 var _previous_position: Vector3
 var _oneshot_remaining: float = 0.0
 var _dead: bool = false
+var _survival_state: String = "ACTIVE"
+var _carrying: bool = false
 var current_clip: String = ""
 var _clips: Dictionary = {}
 var authored: bool = false
@@ -105,6 +107,8 @@ func _find_skeleton(node: Node) -> Skeleton3D:
 func reset_pose() -> void:
 	restore_flash()
 	_dead = false
+	_survival_state = "ACTIVE"
+	_carrying = false
 	_oneshot_remaining = 0.0
 	rotation = Vector3.ZERO
 	if unit != null:
@@ -156,6 +160,28 @@ func hit() -> void:
 func die() -> void:
 	play_clip("Death", true)
 
+# Presentation accepts state names only; it never changes combat life state.
+func set_survival_pose(state: String, carrying: bool = false) -> void:
+	var next_state := state.to_upper()
+	if _survival_state == next_state and _carrying == carrying:
+		return
+	_survival_state = next_state
+	_carrying = carrying
+	if player == null:
+		return
+	if next_state in ["DOWNED", "STABILISED"]:
+		_dead = false
+		play_clip("Death", true)
+		player.advance(0)
+		player.seek(player.get_animation(_clips["Death"]).length, true)
+		player.pause()
+		_dead = true
+	elif next_state == "ACTIVE":
+		_dead = false
+		_oneshot_remaining = 0.0
+		current_clip = ""
+		play_clip("Idle")
+
 func _physics_process(delta: float) -> void:
 	if _flash_remaining>0:
 		_flash_remaining-=delta
@@ -181,6 +207,11 @@ func _physics_process(delta: float) -> void:
 		player.speed_scale = 1.0
 		play_clip("Idle")
 
+	if _carrying and skeleton != null:
+		var forearm := skeleton.find_bone("L_forearm")
+		if forearm >= 0:
+			skeleton.set_bone_pose_rotation(forearm, Quaternion(Vector3.RIGHT, -0.85))
+
 func apply_preferences(owner: GameAudio) -> void:
 	for entry in _flash_meshes:
 		if is_instance_valid(entry.mesh): entry.mesh.material_overlay=entry.original if owner.preferences.Accessibility.reduced_effects else entry.flash
@@ -198,7 +229,7 @@ func weapon_landmark(rest_point: Vector3, hand: String="R_hand") -> Vector3:
 
 func weapon_edge() -> PackedVector3Array:
 	var blunt := role in ["cleric","hollow_warden"]
-	var tip := Vector3(.46,1.57 if blunt else 1.83,-.065)
+	var tip := Vector3(.46,1.58 if role=="recruit" else 2.06 if role=="chainbinder" else 1.57 if blunt else 1.83,-.065)
 	if role.begins_with("ashfang_"): tip=Vector3(.70,1.76,-.065)
 	return PackedVector3Array([weapon_landmark(Vector3(.46,1.08,-.065)),weapon_landmark(tip)])
 

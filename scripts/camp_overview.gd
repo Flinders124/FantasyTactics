@@ -128,9 +128,16 @@ func build_camp() -> void:
 	for at: Vector3 in [Vector3(5,0,-5),Vector3(7.2,0,-5.5),Vector3(9,0,-4.2)]: kit.dummy(stage,at)
 	flame=kit.fire(stage,Vector3(0,0,1))
 	var firelight := OmniLight3D.new(); firelight.position=Vector3(0,1.5,1); firelight.light_color=Color("ffc27c"); firelight.light_energy=.9; firelight.omni_range=5; stage.add_child(firelight)
-	for data: Array in [["knight",Vector3(4.8,0,-2.8),.5],["ranger",Vector3(-5,0,4.8),-1.1],["mage",Vector3(-1.9,0,-5.8),-1.8],["cleric",Vector3(-5.3,0,-2.8),2.2]]:
-		var character := CharacterVisual.new(); character.name="Camp_"+str(data[0]); stage.add_child(character)
-		character.load_role(data[0]); character.position=data[1]; character.rotation.y=data[2]
+	var people: PackedStringArray=host.coordinator.state.living_ids()
+	var positions: Array[Vector3]=[Vector3(4.8,0,-2.8),Vector3(-5,0,4.8),Vector3(-1.9,0,-5.8),Vector3(-5.3,0,-2.8)]
+	for index in range(mini(4,people.size())):
+		var person: String=people[index]
+		var character := CharacterVisual.new()
+		character.name="Camp_"+person
+		stage.add_child(character)
+		character.load_role(host.coordinator.state.blueprint_id(person))
+		character.position=positions[index]
+		character.rotation.y=[.5,-1.1,-1.8,2.2][index]
 	for data: Array in [["crate",Vector3(9,0,6.2)],["barrel",Vector3(9.6,0,5.5)],["bench",Vector3(-2.4,0,2.5)],["bench",Vector3(2.6,0,2.5)],["cart",Vector3(-10,0,7.5)]]:
 		kit.piece(stage,CourtyardKit.mesh(data[0]),data[1],null)
 	for i in range(5):

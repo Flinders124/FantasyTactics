@@ -17,8 +17,16 @@ static func derive(base: UnitDefinition,modifiers: Dictionary) -> UnitDefinition
 	for index in range(result.abilities.size()):
 		var ability := result.abilities[index]
 		var original := base.abilities[index]
-		ability.magnitude=clampi(roundi(original.magnitude+float(modifiers.get("healing",0) if ability.effect==AbilityDefinition.Effect.HEAL else offense)),1,20)
-		if ability.effect==AbilityDefinition.Effect.DAMAGE: ability.damage=ability.magnitude
-		ability.cooldown_turns=clampi(original.cooldown_turns+roundi(float(modifiers.get("cooldown:"+ability.stable_id,0))),0,5)
-		ability.description="%s: %d fixed %s. Cooldown blocks the next %d owner turns.%s%s"%[ability.display_name,ability.magnitude,"healing" if ability.effect==AbilityDefinition.Effect.HEAL else "damage",ability.cooldown_turns," Applies "+ability.applied_status.display_name if ability.applied_status!=null else ""," Area affects allies and caster." if ability.targeting==AbilityDefinition.Target.GROUND else ""]
+		var bonus: float = float(modifiers.get("healing",0)) if ability.effect == AbilityDefinition.Effect.HEAL else (offense if ability.effect in [AbilityDefinition.Effect.DAMAGE, AbilityDefinition.Effect.PULL] else 0.0)
+		ability.magnitude=clampi(roundi(original.magnitude+bonus+float(modifiers.get("ability_magnitude:"+ability.stable_id,0))),1,20)
+		ability.maximum_range=clampf(original.maximum_range+float(modifiers.get("ability_range:"+ability.stable_id,0)),original.minimum_range+.1,12.0)
+		if ability.effect in [AbilityDefinition.Effect.DAMAGE, AbilityDefinition.Effect.PULL]: ability.damage=ability.magnitude
+		ability.cooldown_turns=clampi(original.cooldown_turns+roundi(float(modifiers.get("cooldown:"+ability.stable_id,0))),1 if ability.stable_id in ["aegis","shield_bash","reel_in","towline"] else 0,5)
+		ability.description="%s: %d fixed %s. Cooldown blocks the next %d owner turns.%s%s"%[ability.display_name,ability.magnitude,"healing" if ability.effect==AbilityDefinition.Effect.HEAL else ("ward" if ability.effect==AbilityDefinition.Effect.WARD else ("tow strength" if ability.effect==AbilityDefinition.Effect.TOW else "damage")),ability.cooldown_turns," Applies "+ability.applied_status.display_name if ability.applied_status!=null else ""," Area affects allies and caster." if ability.targeting==AbilityDefinition.Target.GROUND else ""]
+		if ability.effect == AbilityDefinition.Effect.WARD:
+			ability.description = "Grant a %d-point ward within %.1f m for two future target turns. Cooldown %d." % [ability.magnitude, ability.maximum_range, ability.cooldown_turns]
+		elif ability.effect == AbilityDefinition.Effect.PULL:
+			ability.description = "Deal %d damage within %.1f m and pull up to %.1f m toward the caster. Cooldown %d." % [ability.magnitude, ability.maximum_range, ability.displacement_distance, ability.cooldown_turns]
+		elif ability.effect == AbilityDefinition.Effect.TOW:
+			ability.description = "Draw a friendly unit within %.1f m up to %.1f m toward the caster. Does not heal or stabilise. Cooldown %d." % [ability.maximum_range, ability.displacement_distance, ability.cooldown_turns]
 	return result

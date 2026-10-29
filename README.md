@@ -1,5 +1,9 @@
+> **29 October 2026 — campaign balance:** modern campaign opposition is capped at2/2/3/3/3 by prior victories; failed missions return12 Supplies and ignored-offer threat is capped at1 per board. Existing frozen missions are preserved and known older saves migrate transactionally. See [rules, actual campaign results and remaining limits](docs/CAMPAIGN_BALANCE_MILESTONE_1.md). This is provisional tuning, not release signoff.
 > **Permanent visual direction: Option C / The Lantern Oath.** Normal gameplay now uses graphic blue-stone materials, copper vegetation, the selected character treatment and shared lighting across battles, portraits and headquarters. The former A/B/C scene remains a development comparison. See [production art sources and rules](assets/art/README.md). Gameplay rules, collision, seeded layouts and save formats are unchanged.
 # Fantasy Tactics — Windows release candidate
+
+Current development phase: tactical AI. Role-aware decisions, meaningful support, public elite-warning avoidance and bounded movement memory are implemented in the existing command pipeline. See [Milestone2 behavior, tests, measurements and limitations](docs/TACTICAL_AI_MILESTONE_2.md). Historical milestone notes below retain their original verification counts.
+
 
 Version **0.12.0-rc1** adds validated campaign autosaves, explicit backup recovery, Continue Campaign, frozen interrupted-mission restart, guarded headquarters transactions and final-result saving. **47 regression suites pass**; see [save policy](SAVES.md), [Windows build instructions](RELEASE.md), [release verification](../verification/RELEASE.md), [balance changes](docs/release_balance.md) and [measured performance](../verification/release/performance/README.md). Earlier milestone notes below are historical.
 
@@ -222,3 +226,8 @@ Recommended next milestone: editable encounter/scenario resources and balance pl
 
 
 
+
+Mission variety development: [Milestone 3 report](docs/MISSION_VARIETY_REPORT.md), including templates, layouts, compatibility, real captures and measured verification limits.
+
+
+Milestone4 roster/rescue and the approved Aegisbearer + Chainbinder classes: see [roster report](docs/ROSTER_SPECIALISATION_REPORT.md). New campaigns start with four individual sword recruits; use Camp → Training to specialise at Level2. Campaign HUD adds Stabilise, Carry, Drop and Extract. Unextracted companions are permanently lost on retreat.

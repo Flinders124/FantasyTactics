@@ -1,7 +1,7 @@
 extends "res://tests/campaign_flow_tests.gd"
 func run() -> void:
 	flow=(load("res://scenes/main.tscn") as PackedScene).instantiate() as SceneFlow; root.add_child(flow)
-	var state := CampaignState.new(17,"easy"); flow.campaign.state=state
+	var state: CampaignState = LegacyCampaignFixture.new(17,"easy"); flow.campaign.state=state
 	var report: Array[Dictionary]=[]
 	for attempt in range(8):
 		if not state.ending.is_empty(): break

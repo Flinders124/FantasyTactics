@@ -112,12 +112,15 @@ func _spawn_and_bind() -> void:
 		var unit := UNIT_SCENE.instantiate() as CombatUnit
 		unit.stable_id = ("hero-%02d" % (index + 1)) if index < 2 else ("enemy-%02d" % (index - 1))
 		if index<2 and configuration!=null and not configuration.campaign_hero_ids.is_empty(): unit.campaign_id=configuration.campaign_hero_ids[index]
+		unit.survival_enabled = configuration!=null and configuration.survival_enabled and index<2
 		unit.definition = definitions[index]
 		unit.faction = CombatUnit.Faction.HERO if index < 2 else CombatUnit.Faction.ENEMY
 		unit.position = positions[index]
 		$Units.add_child(unit)
 		roster.append(unit)
 	$CombatController.selection_changed.connect($TacticalCamera.select_unit)
+	$CombatController.survival_enabled=configuration!=null and configuration.survival_enabled
+	$CombatController.retreat_center=(positions[0]+positions[1])*.5
 	$CombatController.configure_movement($NavigationService, $MovementMotor)
 	if configuration!=null:
 		$CombatController.objectives.configure(configuration.objective,configuration.layout)
@@ -125,6 +128,28 @@ func _spawn_and_bind() -> void:
 		marker.name="ObjectiveMarker"
 		add_child(marker)
 		marker.bind($CombatController.objectives)
+	if $CombatController.survival_enabled and configuration.objective.kind!=ObjectiveDefinition.Kind.EXTRACTION:
+		var retreat := Node3D.new()
+		retreat.name="RetreatMarker"
+		add_child(retreat)
+		retreat.position=$CombatController.retreat_center
+		var ring := MeshInstance3D.new()
+		var mesh := TorusMesh.new()
+		mesh.inner_radius=2.74
+		mesh.outer_radius=2.8
+		ring.mesh=mesh
+		ring.position.y=.06
+		var material := StandardMaterial3D.new()
+		material.albedo_color=Color(.65,.8,.95)
+		material.shading_mode=BaseMaterial3D.SHADING_MODE_UNSHADED
+		ring.material_override=material
+		retreat.add_child(ring)
+		var label := Label3D.new()
+		label.text="RETREAT · Extract here"
+		label.font_size=34
+		label.position=Vector3(0,.35,0)
+		label.billboard=BaseMaterial3D.BILLBOARD_ENABLED
+		retreat.add_child(label)
 	$HUD.bind($CombatController)
 	if configuration != null:
 		$HUD.bind_flow(configuration.battlefield_seed,configuration)
@@ -244,7 +269,7 @@ func show_briefing() -> void:
 	if guide==null: return
 	var definition := configuration.objective if configuration!=null else ObjectiveDefinition.new()
 	var intro := "TRAINING: Warden and Scout. Training opponents have 10 / 8 health and hold their positions and end turns; normal skirmish enemies use tactical AI. Blue rings mark required movement. Only the requested commands are enabled until the final free-play step.\n\n" if tutorial_mode else ""
-	guide.open("OBJECTIVE · "+definition.display_name,intro+FieldGuide.objective(definition))
+	guide.open("OBJECTIVE · "+definition.display_name,intro+FieldGuide.objective(definition)+("\n\n"+$HUD.SURVIVAL_HELP if $CombatController.survival_enabled else ""))
 func show_help() -> void:
 	if guide!=null: guide.open("CONTROLS & FIELD GUIDE",ControlBindings.describe()+FieldGuide.tips())
 

@@ -109,9 +109,10 @@ func _update_bar(unit: CombatUnit) -> void:
 	data.label.text = "%s [%s] %d/%d" % [unit.definition.display_name, unit.definition.role_icon if not unit.definition.role_icon.is_empty() else ("R" if unit.role_label() == "Ranged" else "M"), unit.health, unit.definition.maximum_health]
 	if not unit.status_text().is_empty():
 		data.label.text += "\n" + unit.status_text()
+	if unit.is_downed(): data.label.text += "\nSTABILISED" if unit.life_state==CombatUnit.LifeState.STABILISED else "\nBLEED: %d future rounds" % unit.bleed_remaining
 	data.bar.max_value = unit.definition.maximum_health
 	data.bar.value = unit.health
-	data.panel.visible = unit.is_alive()
+	data.panel.visible = (unit.is_alive() or (unit.is_downed() and unit.carried_by==null))
 	if not unit.is_alive():
 		data.leader.visible = false
 
@@ -160,6 +161,19 @@ func _on_event(kind: String, data: Dictionary) -> void:
 			_queue_sound(_variant("swing"),data.origin,-14)
 			var impact_id := "mace" if FactionVisualKit.base_role(data.get("actor_role",""))=="cleric" else "impact"
 			_queue_sound("power" if power else _variant(impact_id),data.target_point,-12)
+	elif kind == "downed":
+		_spawn_effect(data.actor_id,"DOWNED · RESCUE",Color(1,.7,.3))
+	elif kind == "displace":
+		var actor := controller.find_unit(str(data.get("actor_id","")))
+		var target := controller.find_unit(str(data.get("target_id","")))
+		if actor!=null and target!=null:
+			var resolved := data.duplicate()
+			resolved["origin"]=actor.attack_origin_at(actor.global_position)
+			resolved["target_point"]=target.target_point()
+			_spawn_tracer(resolved)
+			_spawn_effect(target.stable_id,"PULLED",Color(.75,.85,1))
+	elif kind == "rescue":
+		_spawn_effect(data.actor_id,str(data.get("message","RESCUE")),Color(.75,1,.8))
 	elif kind == "death":
 		_spawn_effect(data.actor_id, "DEFEATED", Color(1, 0.5, 0.4))
 		clear_tracers(data.actor_id)
@@ -169,9 +183,10 @@ func _on_event(kind: String, data: Dictionary) -> void:
 			_area_death_cues+=1
 	elif kind in ["status_apply","status_refresh","status_expire"]:
 		var expired := kind=="status_expire"
+		var ward: bool=str(data.status)=="Aegis Ward"
 		_spawn_effect(data.actor_id,data.status+(" ENDED" if expired else " · %d turns"%data.turns),Color(.75,.7,1))
-		_spawn_glyph(data.actor_position+Vector3.UP*.8,"slow",Color(.7,.55,1))
-		_queue_sound("expire" if expired else "slow",data.actor_position,-17)
+		_spawn_glyph(data.actor_position+Vector3.UP*.8,"ward" if ward else "slow",Color(.45,.85,1) if ward else Color(.7,.55,1))
+		_queue_sound("expire" if expired else ("mend" if ward else "slow"),data.actor_position,-17)
 	elif kind=="result" and audio!=null:
 		audio.set_context("draw" if data.get("draw",false) else ("victory" if data.victory else "defeat"))
 		_stop_footsteps()
@@ -309,7 +324,7 @@ func _process(delta: float) -> void:
 			bars.erase(data.id)
 			continue
 		var point := unit.global_position + Vector3.UP * 2.4
-		var visible := unit.is_alive() and not camera.is_position_behind(point)
+		var visible := (unit.is_alive() or (unit.is_downed() and unit.carried_by==null)) and not camera.is_position_behind(point)
 		data.panel.visible = visible
 		data.leader.visible = false
 		if visible:

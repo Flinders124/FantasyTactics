@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="MissionTemplate" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/mission_template.gd" id="1"]
+[resource]
+script = ExtResource("1")
+stable_id = "lantern_defence"
+display_name = "Break the Wardens"
+description = "Durable defenders contest the marked ground. Empty or contested round-end checks reset your progress."
+objective_id = "hold_ground"
+style = "defensive"
+layout_ids = PackedStringArray("narrow_approach", "central_plaza", "ruined_lanes")
+role_pattern = PackedStringArray("front", "support", "ranged", "front")
+minimum_stage = 0
+recovery = false
+elite = false
+finale = false

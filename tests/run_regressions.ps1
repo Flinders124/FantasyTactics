@@ -2,14 +2,15 @@ param(
     [Parameter(Mandatory = $true)][string]$Godot,
     [int]$TimeoutSeconds = 60,
     [string]$ReportDirectory = '',
-    [ValidateSet('all','fast','integration','simulation','stress')][string]$Category = 'all',
-    [int]$StressEncounters = 60
+    [ValidateSet('all','fast','integration','simulation','stress','mission','roster')][string]$Category = 'all',
+    [int]$StressEncounters = 60,
+    [string[]]$TestNames = @()
 )
 $ErrorActionPreference = 'Stop'
 $projectRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 $enginePath = (Resolve-Path -LiteralPath $Godot).Path
 if (-not $ReportDirectory) {
-    $ReportDirectory = Join-Path $projectRoot '..\verification\stability'
+    $ReportDirectory = Join-Path $projectRoot 'verification\stability'
 }
 New-Item -ItemType Directory -Force -Path $ReportDirectory | Out-Null
 $ReportDirectory = (Resolve-Path -LiteralPath $ReportDirectory).Path
@@ -21,16 +22,30 @@ $suites = @(
     'generation_tests', 'generated_encounter_tests', 'character_tests',
     'stability_tests', 'party_encounter_tests', 'transition_stability_tests', 'navigation_lifecycle_tests', 'courtyard_tests', 'sound_tests', 'tactics_tests', 'tactics_encounter_tests', 'objective_tests', 'objective_generation_tests', 'objective_encounter_tests', 'objective_flow_tests', 'objective_tactics_tests', 'difficulty_tests', 'difficulty_generation_tests', 'difficulty_flow_tests', 'difficulty_encounter_tests', 'tutorial_tests', 'usability_tests', 'settings_tests', 'settings_lifecycle_tests', 'campaign_tests', 'campaign_flow_tests', 'campaign_play_tests', 'camp_tests', 'persistence_tests', 'save_flow_tests', 'release_export_tests'
 )
+$suites += @('mission_template_tests','mission_layout_tests','mission_variety_tests','mission_simulation_tests','mission_replay_tests')
+$roster = @('campaign_recovery_tests','recruit_opening_tests','specialisation_tests','unit_survival_tests','roster_character_tests','rescue_ui_tests','roster_combat_tests','roster_contract_tests','roster_campaign_tests','roster_save_tests','roster_flow_tests','roster_simulation_tests','rescue_validation_tests','roster_campaign_play_tests','survival_pose_tests','roster_ai_tests')
+$suites += $roster
 $suites += 'environment_tests'
 $suites += 'authored_character_tests'
 $suites += 'combat_fx_tests'
+$suites += @('ai_positioning_tests','ai_awareness_tests','ai_execution_tests','ai_compatibility_tests','ai_lifecycle_tests','ai_simulation_tests')
 $suites += @('oath_ui_tests', 'resource_lifecycle_tests', 'visual_lifecycle_tests', 'save_integrity_tests', 'turn_lifecycle_tests', 'faction_tests', 'faction_compatibility_tests', 'telegraph_tests', 'faction_spawn_tests', 'faction_encounter_tests', 'combat_stress_tests', 'session_lifecycle_tests')
-$fast = @('run_tests','tactics_tests','objective_tests','difficulty_tests','campaign_tests','persistence_tests','save_integrity_tests','turn_lifecycle_tests','resource_lifecycle_tests','visual_lifecycle_tests','faction_tests')
-$simulation = @('playable_encounter_tests','objective_encounter_tests','difficulty_encounter_tests','campaign_play_tests','faction_encounter_tests','combat_stress_tests')
+$fast = @('run_tests','tactics_tests','objective_tests','difficulty_tests','campaign_tests','persistence_tests','save_integrity_tests','turn_lifecycle_tests','resource_lifecycle_tests','visual_lifecycle_tests','faction_tests','ai_positioning_tests','ai_awareness_tests','ai_execution_tests','ai_compatibility_tests','ai_lifecycle_tests','mission_template_tests')
+$fast += @('specialisation_tests','unit_survival_tests','roster_campaign_tests','roster_save_tests')
+$simulation = @('playable_encounter_tests','objective_encounter_tests','difficulty_encounter_tests','campaign_play_tests','faction_encounter_tests','combat_stress_tests','ai_simulation_tests','mission_simulation_tests')
+$mission = @('mission_template_tests','mission_layout_tests','mission_variety_tests','mission_simulation_tests','mission_replay_tests','objective_tests','campaign_tests','persistence_tests','faction_compatibility_tests','ai_awareness_tests')
+if ($Category -eq 'roster') { $suites = $roster }
+if ($Category -eq 'mission') { $suites = $mission }
 if ($Category -eq 'fast') { $suites = $fast }
 if ($Category -eq 'simulation') { $suites = $simulation }
 if ($Category -eq 'integration') { $suites = @($suites | Where-Object { $_ -notin $fast -and $_ -notin $simulation }) }
-if ($Category -eq 'stress') { $suites = @('combat_stress_tests', 'session_lifecycle_tests') }
+if ($Category -eq 'stress') { $suites = @('combat_stress_tests') }
+if ($TestNames.Count -gt 0) {
+    foreach ($requested in $TestNames) {
+        if ($requested -notin $suites) { throw "Unknown test suite: $requested" }
+    }
+    $suites = @($suites | Where-Object { $_ -in $TestNames })
+}
 # Refresh import/class metadata so a fresh checkout can run newly added tests.
 $importLog = Join-Path $ReportDirectory 'import.log'
 & $enginePath --headless --editor --import --path $projectRoot *> $importLog
@@ -48,7 +63,9 @@ foreach ($suite in $suites) {
     # two minutes for this batch, with short waits so cancellation stays usable.
     $limit = [Math]::Max(1, $TimeoutSeconds)
     if ($suite -in @('objective_generation_tests', 'difficulty_generation_tests')) { $limit = [Math]::Max(120, $limit) }
-    if ($suite -in @('campaign_play_tests', 'save_flow_tests', 'session_lifecycle_tests')) { $limit = [Math]::Max(180, $limit) }
+    if ($suite -in @('campaign_play_tests', 'campaign_flow_tests', 'combat_fx_tests', 'save_flow_tests', 'session_lifecycle_tests','mission_variety_tests','mission_layout_tests','mission_template_tests','mission_simulation_tests')) { $limit = [Math]::Max(180, $limit) }
+    # Twelve complete campaign/menu cycles measured203.5s; combat watchdogs are unchanged.
+    if ($suite -eq 'session_lifecycle_tests') { $limit = [Math]::Max(300,$limit) }
     if ($suite -in @('difficulty_generation_tests','faction_encounter_tests')) { $limit = [Math]::Max(180, $limit) }
     if ($Category -eq 'stress') { $limit = [Math]::Max(900,$limit) }
     $finished = $false

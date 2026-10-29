@@ -81,25 +81,29 @@ func run() -> void:
 		check(flow.screen=="headquarters","New campaign HQ: "+coordinator.store.last_message+" phase="+flow.screen)
 		if coordinator.state==null:
 			print(coordinator.store.last_message); quit(1); return
+		var ids := coordinator.state.living_ids()
+		check(coordinator.mutate("train_recruit",[ids[0]])==true,"Modern recruit training persists")
+		check(coordinator.mutate("specialise",[ids[0],"knight"])==true,"Modern specialisation persists")
+		coordinator.armoury_hero=ids[0]
 		flow.request_transition("campaign_buy:reachguard")
 		var instance: String=""
 		for id: String in coordinator.state.inventory:
 			if coordinator.state.inventory[id].definition_id=="reachguard": instance=id
 		check(not instance.is_empty(),"Real HQ purchase succeeds")
 		flow.request_transition("campaign_equip:"+instance)
-		check(coordinator.state.owner_of(instance)=="knight","Purchased item equipped")
+		check(coordinator.state.owner_of(instance)==ids[0],"Purchased item equipped")
 		flow.audio.set_preference("Music",0.23,false)
 		check(flow.audio.save_preferences(),"Settings persist")
-		report={"supplies":coordinator.state.supplies,"heroes":coordinator.state.heroes,"inventory":coordinator.state.inventory,"equipment":instance,"movement":coordinator.state.preview_definition("knight").movement_allowance,"health":coordinator.state.preview_definition("knight").maximum_health}
+		report={"supplies":coordinator.state.supplies,"heroes":coordinator.state.heroes,"inventory":coordinator.state.inventory,"equipment":instance,"party_ids":Array(ids.slice(0,2)),"movement":coordinator.state.preview_definition(ids[0]).movement_allowance,"health":coordinator.state.preview_definition(ids[0]).maximum_health}
 	elif phase==2:
 		flow.request_transition("campaign_continue")
 		check(flow.screen=="headquarters","Continue opens HQ")
 		var expected := read_report(1)
 		check(coordinator.state.supplies==expected.supplies,"Supplies persisted")
-		check(coordinator.state.owner_of(expected.equipment)=="knight","Equipment persisted")
-		check(coordinator.state.preview_definition("knight").maximum_health==expected.health,"Derived health persisted")
+		check(coordinator.state.owner_of(expected.equipment)==expected.party_ids[0],"Equipment persisted")
+		check(coordinator.state.preview_definition(expected.party_ids[0]).maximum_health==expected.health,"Derived health persisted")
 		check(is_equal_approx(flow.audio.volumes.Music,0.23),"Settings reload")
-		coordinator.selected=["knight","ranger"]
+		coordinator.selected=PackedStringArray(expected.party_ids)
 		coordinator.prepare(coordinator.state.offers[0].id)
 		flow.request_transition("campaign_deploy")
 		var scene := await ready_encounter()

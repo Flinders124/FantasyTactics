@@ -37,7 +37,7 @@ func run() -> void:
 	viewport=SubViewport.new(); viewport.size=review_size; viewport.own_world_3d=true; viewport.gui_embed_subwindows=true; viewport.render_target_update_mode=SubViewport.UPDATE_ALWAYS; root.add_child(viewport)
 	flow=(load("res://scenes/main.tscn") as PackedScene).instantiate(); viewport.add_child(flow)
 	flow.audio.settings_path="user://camp-review.cfg"; flow.audio.preferences=SettingsSchema.defaults(); flow.audio.apply_preferences(false)
-	flow.campaign.state=CampaignState.new(17,"standard"); flow.campaign.hq_open=false; flow.campaign.headquarters(); await frames(15)
+	flow.campaign.state=LegacyCampaignFixture.new(17,"standard"); flow.campaign.hq_open=false; flow.campaign.headquarters(); await frames(15)
 	for large in [false,true]:
 		flow.audio.preferences.Accessibility.ui_scale=1.15 if large else 1.0; flow.audio.preferences.Accessibility.large_text=large; flow.audio.apply_preferences(false); await frames(8)
 		var label := "large" if large else "default"

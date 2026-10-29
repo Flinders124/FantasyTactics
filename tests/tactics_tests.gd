@@ -95,6 +95,8 @@ func run() -> void:
 	limits()
 	sentinel.definition.tactical_profile=load("res://definitions/tactics_support.tres") as EnemyTacticalProfile
 	await prepare_range()
+	# Isolate the action-first tie: Slowed can now legitimately gain value after retreat.
+	sentinel.cooldown_ready_turn["crippling_shot"] = sentinel.owner_turn+2
 	decision=solve(sentinel,"act then reposition")
 	check(decision.best.action!=null and decision.best.moving and decision.best.action_first,"Already legal shot can precede a useful retreat")
 	begin()

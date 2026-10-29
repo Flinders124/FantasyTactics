@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="MissionTemplate" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/mission_template.gd" id="1"]
+[resource]
+script = ExtResource("1")
+stable_id = "homeward_passage"
+display_name = "The Homeward Passage"
+description = "Bring both companions to the exit alive. Defeating the interceptors alone will not complete the mission."
+objective_id = "extraction"
+style = "aggressive"
+layout_ids = PackedStringArray("narrow_approach", "ruined_lanes", "open_courtyard")
+role_pattern = PackedStringArray("mobile", "ranged", "mobile", "support")
+minimum_stage = 0
+recovery = false
+elite = false
+finale = false

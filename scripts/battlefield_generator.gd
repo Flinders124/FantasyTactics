@@ -48,6 +48,17 @@ func make_layout(seed_value: int, settings: BattlefieldSettings, attempt: int, f
 		for other in range(index):
 			var separation := settings.opposing_separation if (index < 2) != (other < 2) else settings.spawn_spacing
 			if layout.spawns[index].distance_to(layout.spawns[other]) < separation: return null
+	if settings.preset_id in ["narrow_approach", "split_courtyard"]:
+		# Reserve a broad central objective corridor and two perimeter bypasses.
+		var narrow := settings.preset_id == "narrow_approach"
+		for x in [-1.0, 1.0]:
+			for z in [-1.0, 1.0]:
+				var jitter := 0.0 if fallback else rng.randf_range(-.15, .15)
+				var size := Vector3(5.2, 2.2, 1.4) if narrow else Vector3(1.4, 2.2, 4.2)
+				var center := Vector3(x * settings.arena_size.x * (.12 if narrow else .16), size.y * .5, z * (settings.arena_size.y * (.22 if narrow else .28) + jitter))
+				layout.obstacle_centers.append(center)
+				layout.obstacle_sizes.append(size)
+		return layout if _structural_clearance(layout, settings) else null
 	if settings.preset_id!="open_courtyard":
 		# Authored route topology with seeded, bounded perturbations. Horizontal
 		# centre and both perimeter routes interconnect; central approaches stay open.

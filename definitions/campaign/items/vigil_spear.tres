@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="CampaignItemDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/campaign_item_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+stable_id = "vigil_spear"
+display_name = "Vigil Spear"
+slot = "weapon"
+compatible_heroes = PackedStringArray("aegisbearer")
+cost = 16
+description = "+0.5 m basic reach; -2 HP."
+modifiers = {"basic_range": 0.5, "health": -2}

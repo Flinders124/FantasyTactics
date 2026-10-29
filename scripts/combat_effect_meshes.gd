@@ -37,6 +37,10 @@ static func glyph(kind: String) -> ImmediateMesh:
 			var p := Vector3(sin(a),.08,cos(a))*.9
 			var q := Vector3(sin(b),.08,cos(b))*.9
 			for v in [p*(1-width),p,q,q,q*(1-width),p*(1-width)]: mesh.surface_add_vertex(v)
+	elif kind=="ward":
+		var corners: Array[Vector3]=[Vector3(-.28,.34,0),Vector3(.28,.34,0),Vector3(.25,-.10,0),Vector3(0,-.38,0),Vector3(-.25,-.10,0)]
+		for index in range(corners.size()):
+			for point in [Vector3.ZERO,corners[index],corners[(index+1)%corners.size()]]: mesh.surface_add_vertex(point)
 	elif kind=="heal":
 		for rect in [Rect2(-.085,-.34,.17,.68),Rect2(-.30,-.08,.60,.16)]:
 			for p in [rect.position,Vector2(rect.end.x,rect.position.y),rect.end,rect.position,rect.end,Vector2(rect.position.x,rect.end.y)]:

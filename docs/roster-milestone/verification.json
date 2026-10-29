@@ -1,0 +1,13 @@
+{
+  "engine": "Godot 4.7.2.stable.official.ed1daf0bf",
+  "suites": 87,
+  "clean_passes": 87,
+  "summed_suite_seconds": 1824.5499999999993,
+  "pack_smoke_phases": 4,
+  "pack_smoke_passes": 4,
+  "faction_encounters": 93,
+  "session_cycles": 12,
+  "session_nodes_each": 242,
+  "standalone_windows_export": "Blocked: missing matching release template",
+  "unresolved": "Intermittent native shutdown access violation 0xC0000005; captured in native-debug.log and native-save-av.dmp. Final clean run does not establish resolution."
+}
