@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/ability_definition.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+stable_id = "towline"
+display_name = "Towline"
+description = "Draw a friendly unit up to 2 m toward you. Does not heal or stabilise."
+attack_type = 1
+maximum_range = 4
+magnitude = 1
+damage = 1
+cooldown_turns = 3
+effect = 4
+targeting = 1
+displacement_distance = 2
+obstruction_mask = 9
+

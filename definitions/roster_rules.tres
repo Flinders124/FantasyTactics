@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="RosterRules" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/roster_rules.gd" id="1"]
+[resource]
+script = ExtResource("1")
+recruit_cost = 12
+training_cost = 8
+training_xp = 20
+starter_count = 4
+bleed_rounds = 3

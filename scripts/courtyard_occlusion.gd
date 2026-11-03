@@ -81,7 +81,8 @@ func update_visibility() -> void:
 		var bounds: AABB = root.global_transform*local_bounds
 		var obscures := false
 		for point in points:
-			if not bounds.has_point(point) and bounds.grow(.06).intersects_segment(camera.global_position,point)!=null:
+			# Traversable arches and rooms may contain the protected point.
+			if bounds.grow(.06).intersects_segment(camera.global_position,point)!=null:
 				obscures=true
 				break
 		_fade(root,obscures)

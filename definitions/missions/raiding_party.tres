@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="MissionTemplate" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/mission_template.gd" id="1"]
+[resource]
+script = ExtResource("1")
+stable_id = "raiding_party"
+display_name = "Raiders at the Gate"
+description = "Fast raiders press forward. Use the broken approaches to control who can reach your heroes."
+objective_id = "elimination"
+style = "aggressive"
+layout_ids = PackedStringArray("open_courtyard", "narrow_approach", "split_courtyard")
+role_pattern = PackedStringArray("mobile", "mobile", "ranged", "front")
+minimum_stage = 0
+recovery = false
+elite = false
+finale = false

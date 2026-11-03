@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="CampaignEventDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/campaign_event_definition.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+stable_id = "watchfire"
+revision = 1
+display_name = "The Quiet Watchfire"
+description = "The evening watch shares a warm meal and speaks of home. A companion offers to mend spare kit for the stores."
+eligibility = "any"
+choices = Array[Dictionary]([{ "id": "mend", "label": "Accept the mended kit", "supplies": 2, "recovery": 0 },
+{ "id": "listen", "label": "Spend the evening listening", "supplies": 0, "recovery": 0 }])

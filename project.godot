@@ -12,9 +12,9 @@ config_version=5
 
 config/name="Fantasy Tactics"
 config/version="0.12.0-rc1"
-config/icon="res://assets/branding/icon.svg"
 run/main_scene="res://scenes/main.tscn"
 config/features=PackedStringArray("4.7")
+config/icon="res://assets/branding/icon.svg"
 
 [display]
 
@@ -29,14 +29,14 @@ project/assembly_name="Fantasy Tactics — Milestone 1"
 
 export/convert_text_resources_to_binary=false
 
-[rendering]
-
-renderer/rendering_method="gl_compatibility"
-environment/defaults/default_clear_color=Color(0.12, 0.14, 0.18, 1)
-
 [layer_names]
+
 3d_physics/layer_1="World and units"
 3d_physics/layer_2="Ground picking"
 3d_physics/layer_3="Unit picking"
 3d_physics/layer_4="Static arena visibility"
 
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+environment/defaults/default_clear_color=Color(0.12, 0.14, 0.18, 1)

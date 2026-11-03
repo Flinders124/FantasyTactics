@@ -1,30 +1,26 @@
 # Fantasy Tactics 0.12.0-rc1 — Windows release candidate
 
-Run FantasyTactics.exe with FantasyTactics.pck beside it. Windows x86_64,
-Compatibility renderer; no Godot editor, SDK, .NET runtime or internet is needed.
-This release uses a standard native Godot template because all game scripts are
-GDScript. The development editor happens to be the .NET edition.
+Double-click FantasyTactics.exe. Game resources are embedded: no separate PCK,
+Godot editor, SDK, .NET installation or internet connection is required.
+Windows x86_64 with a compatible graphics driver is required. The executable is
+unsigned. Include the accompanying licence notices when redistributing.
 
 ## Building
 
-From the workspace root:
+From C:\Temp\FantasyTactics:
 
-    powershell -ExecutionPolicy Bypass -File outputs/FantasyTactics/tools/build_windows.ps1
+    powershell -ExecutionPolicy Bypass -File tools/build_windows.ps1
 
-Requires Godot 4.7.2 and its matching standard Windows x86_64 release template at
-work/export-templates/windows_release_x86_64.exe. The script uses workspace-local editor data and temporary files, imports, checks the
-export scope, exports a release build and writes SHA256SUMS.txt. Logs are under
-outputs/verification/release. Build only after source tests pass.
-
-Official archive (1.19 GB):
+Requires the standard Godot4.7.2 editor under verification/toolchain/standard
+and templates/windows_release_x86_64.exe under verification/toolchain.
+Download the official matching archive and extract only that file:
 https://github.com/godotengine/godot-builds/releases/download/4.7.2-stable/Godot_v4.7.2-stable_export_templates.tpz
+Archive SHA256: f298490b8d44d934be425a5a65a51bf15f422428b229a06a6e11d9ffea248011
 
-Archive SHA256:
-f298490b8d44d934be425a5a65a51bf15f422428b229a06a6e11d9ffea248011
-
-Extract templates/windows_release_x86_64.exe only. No system installation is
-necessary. A standard editor can be supplied using the script's -Godot parameter
-if the .NET editor requires additional templates.
+The portable build script imports, checks export scope, exports the embedded
+release and copies notices/checksums. Output: releases/FantasyTactics-0.12.0-rc1.
+Logs and private editor data: verification/windows-standalone.
+Build only after source tests pass. Player saves are never part of the build.
 
 ## Packaging scope
 

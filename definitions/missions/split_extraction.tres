@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="MissionTemplate" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/mission_template.gd" id="1"]
+[resource]
+script = ExtResource("1")
+stable_id = "split_extraction"
+display_name = "Across the Broken Court"
+description = "Choose a crossing while ranged defenders guard the exit. Both selected companions must survive and enter it."
+objective_id = "extraction"
+style = "defensive"
+layout_ids = PackedStringArray("split_courtyard", "central_plaza", "ruined_lanes")
+role_pattern = PackedStringArray("front", "ranged", "support", "ranged")
+minimum_stage = 0
+recovery = false
+elite = false
+finale = false

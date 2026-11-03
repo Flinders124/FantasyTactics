@@ -50,7 +50,7 @@ func adjusted(base: UnitDefinition) -> UnitDefinition:
 	result.abilities=[]
 	for original in base.abilities:
 		var ability := original.duplicate(true) as AbilityDefinition
-		if ability.effect==AbilityDefinition.Effect.DAMAGE:
+		if ability.effect in [AbilityDefinition.Effect.DAMAGE,AbilityDefinition.Effect.PULL]:
 			ability.magnitude=scaled_damage(original.magnitude)
 			ability.damage=scaled_damage(original.damage)
 			if ability.magnitude!=original.magnitude: ability.description="%s: %d fixed damage. %sCooldown blocks the next %d owner turns."%[ability.display_name,ability.magnitude,("Applies %s for %d turns. "%[ability.applied_status.display_name,ability.applied_status.affected_turns]) if ability.applied_status!=null else ("Area affects allies and caster. " if ability.targeting==AbilityDefinition.Target.GROUND else ""),ability.cooldown_turns]

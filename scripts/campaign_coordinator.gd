@@ -1,6 +1,8 @@
 class_name CampaignCoordinator
 extends Node
 ## Strategy/lifecycle bridge; CombatController continues to own tactical rules.
+signal change_committed(method: String)
+var onboarding: CampaignOnboarding=CampaignOnboarding.new()
 var flow: Node
 var state: CampaignState
 var difficulty_index: int=1
@@ -11,6 +13,8 @@ var hq_tab: int=0
 var hq_open: bool=false
 var camp_yaw: float=0
 var camp_zoom: float=1
+var shop_filter: String="all"
+var equipment_slot: String="weapon"
 var armoury_hero: String="knight"
 var notice: String=""
 var store: CampaignSaveStore=CampaignSaveStore.new()
@@ -20,6 +24,7 @@ var dirty: bool=false
 var replace_allowed: bool=false
 func _ready() -> void:
 	store.path=CampaignSaveStore.default_path()
+	change_committed.connect(onboarding.observe)
 func feedback(message: String) -> void:
 	save_status=message
 	if flow.menu is CampaignScreen and is_instance_valid(flow.menu.save_feedback): flow.menu.save_feedback.text=message
@@ -39,6 +44,7 @@ func mutate(method: String,args: Array) -> Variant:
 	if not persist("headquarters"):
 		CampaignSaveCodec.apply_snapshot(state,before); dirty=false
 		return false
+	change_committed.emit(method)
 	return result
 func save_summary() -> Dictionary:
 	var info := store.inspect()
@@ -64,8 +70,10 @@ func load_campaign(decoded: CampaignSaveCodec.Decoded) -> bool:
 	var config := CampaignSaveCodec.resume(decoded.state) if decoded.phase=="in_progress" else null
 	if decoded.phase=="in_progress" and config==null: feedback("The committed mission could not be restored. No progress was changed."); return false
 	# Parsing, content checks and encounter reconstruction all finish before this commit.
+	onboarding.reset(decoded.state.resolutions==0)
 	state=decoded.state; save_phase=decoded.phase; dirty=false; replace_allowed=false
-	selected=PackedStringArray(state.active.party) if not state.active.is_empty() else ["knight","ranger"]
+	armoury_hero=state.living_ids()[0] if not state.living_ids().is_empty() else str(state.heroes.keys()[0])
+	selected=PackedStringArray(state.active.party) if not state.active.is_empty() else PackedStringArray(state.living_ids().slice(0,2))
 	hq_open=false; hq_tab=0; camp_yaw=0; camp_zoom=1
 	save_status="Campaign loaded. Interrupted missions restart from original deployment."
 	if config!=null: flow.start_configuration(config)
@@ -94,24 +102,37 @@ func begin() -> void:
 		return
 	var candidate := CampaignState.new(seed_text.to_int(),EncounterOptions.difficulties()[difficulty_index].stable_id)
 	if not store.write(candidate,"headquarters",replace_allowed): feedback(store.last_message); return
+	onboarding.reset()
 	state=candidate; save_phase="headquarters"; dirty=false; replace_allowed=false; save_status=store.last_message
-	selected=["knight","ranger"]; selected_mission=""; hq_tab=0; hq_open=false
+	selected=PackedStringArray(state.living_ids().slice(0,2)); armoury_hero=selected[0]; selected_mission=""; hq_tab=0; hq_open=false
 	camp_yaw=0; camp_zoom=1
 	headquarters()
 func headquarters() -> void:
 	if state==null: flow.show_title(); return
 	if not state.active.is_empty(): abandon_mission(); return
+	hq_tab=clampi(hq_tab,0,4 if state.trader.is_empty() else 5)
+	selected=PackedStringArray(Array(selected).filter(func(id: String) -> bool: return state.living_ids().has(id)))
+	if not state.living_ids().has(armoury_hero) and not state.living_ids().is_empty(): armoury_hero=state.living_ids()[0]
 	var view := mount(); flow.screen="headquarters"; view.headquarters(state)
 	if not notice.is_empty(): view.text(view.body,notice,15); notice=""
+func rules_text() -> String:
+	return FieldGuide.campaign(state) if state!=null else ""
+func show_rules() -> void:
+	if state==null or flow.menu==null: return
+	if not is_instance_valid(flow.menu_guide):
+		flow.menu_guide=GuideOverlay.new()
+		flow.menu.add_child(flow.menu_guide)
+	flow.menu_guide.open_dynamic("Camp Rules",rules_text)
 func prepare(id: String) -> void:
 	if state==null or state.offer(id).is_empty() or not state.active.is_empty(): return
 	selected_mission=id
 	var view := mount(); flow.screen="campaign_preparation"; view.preparation(state,id,selected)
 	if not notice.is_empty(): view.text(view.body,notice,15); notice=""
 func choose(id: String) -> void:
+	if state==null or not state.living_ids().has(id): return
 	if selected.has(id): selected.remove_at(selected.find(id))
-	elif selected.size()<2: selected.append(id)
-	else: notice="Two companions are selected. Deselect one before choosing another."
+	elif selected.size()<state.deployment_capacity(): selected.append(id)
+	else: notice="Capacity is %d companions. Deselect someone or upgrade the Commander’s Tent."%state.deployment_capacity()
 	prepare(selected_mission)
 func deploy() -> void:
 	if state==null: return
@@ -176,9 +197,10 @@ func confirm(title: String,message: String,callback: Callable) -> void:
 func abandon_mission() -> void:
 	if state==null or not active_mission(): return
 	if state.active.is_empty(): show_debrief(); return
-	confirm("Abandon this mission?","This counts as a failed mission. Supplies, experience, injuries, ignored offers and threat resolve once; no free retry.",func() -> void:
+	confirm("Abandon this mission?","All companions not explicitly extracted will be permanently lost, including conscious or stabilised heroes. Only extracted companions survive a retreat. This also counts as a failed mission; consequences resolve once.",func() -> void:
 		var config: EncounterConfiguration=flow.combat.configuration
 		if flow.combat.navigation_ready:
+			flow.combat.get_node("CombatController").abandon_encounter()
 			state.resolve(CampaignMissionResult.capture(config.deployment_id,config.campaign_hero_ids,flow.combat.get_node("CombatController"),true) as CampaignMissionResult)
 		else:
 			var people: Dictionary={}
@@ -202,6 +224,76 @@ func handle(action: String) -> void:
 		if store.inspect().exists or state!=null:
 			confirm("Replace saved campaign?","There is one campaign slot. Establishing a new Watch replaces the saved campaign; Cancel keeps it. Damaged files will not be silently overwritten.",func() -> void: replace_allowed=true; creation())
 		else: replace_allowed=false; creation()
+	elif action=="campaign_event": show_event()
+	elif action.begins_with("campaign_event_choose:"):
+		if state==null or state.pending_event.is_empty(): return
+		var bits := action.split(":")
+		if bits.size()!=3: return
+		var error := CampaignEvents.choice_error(state,bits[1],bits[2])
+		if not error.is_empty(): notice=error; show_event(); return
+		var event: Dictionary=state.pending_event.duplicate(true)
+		var choice := CampaignEvents.find_choice(event,bits[2])
+		var confirmation_epoch: int=flow.epoch
+		var confirmation_campaign: String=state.campaign_id
+		confirm("Confirm camp decision",choice.label+"\n"+CampaignEvents.effects(event,choice),func() -> void:
+			if state==null or flow.epoch!=confirmation_epoch or state.campaign_id!=confirmation_campaign: return
+			var success: Variant=mutate("choose_event",[bits[1],bits[2]])
+			if success: notice="Camp decision recorded."; headquarters()
+			else: notice="Decision unavailable or save failed. Nothing was spent; review the current choices."; show_event())
+	elif action.begins_with("campaign_dossier:"): show_dossier(action.trim_prefix("campaign_dossier:"))
+	elif action.begins_with("campaign_command:"):
+		if state==null: return
+		var tier := action.trim_prefix("campaign_command:").to_int()
+		var error := state.command_upgrade_error(tier)
+		if not error.is_empty(): notice=error; headquarters(); return
+		confirm_change("Upgrade Commander’s Tent?","Spend %d Supplies to deploy up to %d companions. The camp grows permanently for this run."%[state.headquarters_rules.command_costs[tier-1],tier+2],func() -> void:
+			notice="Headquarters upgraded." if mutate("buy_command_upgrade",[tier]) else "Upgrade unavailable or save failed; no Supplies spent."
+			hq_tab=4;hq_open=true;headquarters())
+	elif action.begins_with("campaign_trader_buy:"):
+		if state==null: return
+		var offer_id := action.trim_prefix("campaign_trader_buy:")
+		var error := CampaignTrader.purchase_error(state,offer_id)
+		if not error.is_empty(): notice=error;hq_tab=5;hq_open=true;headquarters();return
+		var entry := CampaignTrader.offer(state,offer_id).duplicate(true)
+		confirm_change("Buy premium equipment?","%s · %d Supplies. One stock instance. Purchase goes to inventory; equip from a character slot."%[state.item(entry.item_id).display_name,entry.price],func() -> void:
+			var bought: Variant=mutate("purchase_trader",[offer_id])
+			notice="Trader purchase saved in shared inventory." if bought is String and not bought.is_empty() else "Offer unavailable or save failed; nothing spent."
+			hq_tab=5;hq_open=true;headquarters())
+	elif action.begins_with("campaign_shop_filter:"):
+		shop_filter=action.trim_prefix("campaign_shop_filter:");hq_tab=3;hq_open=true;headquarters()
+	elif action=="campaign_shop": hq_tab=3;hq_open=true;headquarters()
+	elif action=="campaign_roster": hq_tab=1;hq_open=true;headquarters()
+	elif action.begins_with("campaign_slot:"):
+		var bits := action.split(":")
+		if bits.size()==3: show_equipment_slot(bits[1],bits[2])
+	elif action.begins_with("campaign_shop_buy:"):
+		var bits := action.split(":")
+		if bits.size()!=3 or state==null or not bits[2].is_valid_int() or bits[2].to_int()!=state.next_item: return
+		var bought: Variant=mutate("purchase",[bits[1],state.campaign_id+":purchase:"+bits[2]])
+		notice="Purchased equipment is in shared inventory. Open a character and select its slot to equip." if bought is String and not bought.is_empty() else "Purchase unavailable or save failed; no Supplies spent."
+		hq_tab=3;hq_open=true;headquarters()
+	elif action.begins_with("campaign_equip_for:"):
+		var bits := action.split(":")
+		if bits.size()!=3 or state==null: return
+		var error := state.equipment_error(bits[1],bits[2])
+		if not error.is_empty(): notice=error;show_equipment_slot(bits[1],equipment_slot);return
+		var owner: String=state.owner_of(bits[2])
+		var apply := func() -> void:
+			var accepted: Variant=mutate("equip",[bits[1],bits[2]])
+			notice="Equipment changed." if accepted else "Equipment unavailable or save failed; nothing changed."
+			show_equipment_slot(bits[1],equipment_slot)
+		if not owner.is_empty(): confirm_change("Transfer owned equipment?","Move this item from %s to %s? Only one companion can equip this instance."%[state.hero_name(owner),state.hero_name(bits[1])],apply)
+		else: apply.call()
+	elif action.begins_with("campaign_unequip_for:"):
+		var bits := action.split(":")
+		if bits.size()==3:
+			mutate("unequip",[bits[1],bits[2]]);show_equipment_slot(bits[1],bits[2])
+	elif action=="campaign_rules": show_rules()
+	elif action=="campaign_guide":
+		if state==null or not state.active.is_empty(): return
+		onboarding.visible=not onboarding.visible
+		if flow.screen=="campaign_preparation": prepare(selected_mission)
+		else: headquarters()
 	elif action=="campaign_continue": continue_campaign()
 	elif action=="campaign_retry_save": persist(stable_phase())
 	elif action=="campaign_main_menu":
@@ -213,6 +305,13 @@ func handle(action: String) -> void:
 		hq_open=false; headquarters()
 	elif action.begins_with("campaign_prepare:"): prepare(action.trim_prefix("campaign_prepare:"))
 	elif action.begins_with("campaign_select:"): choose(action.trim_prefix("campaign_select:"))
+	elif action=="campaign_recruit":
+		mutate("recruit",[state.campaign_id+":recruit:"+str(state.next_hero)]); headquarters()
+	elif action.begins_with("campaign_train:"):
+		mutate("train_recruit",[action.trim_prefix("campaign_train:")]); headquarters()
+	elif action.begins_with("campaign_specialise:"):
+		var bits := action.split(":")
+		mutate("specialise",[bits[1],bits[2]]); headquarters()
 	elif action.begins_with("campaign_learn:"):
 		var bits := action.split(":")
 		var option: CampaignUpgradeDefinition=state.upgrade(bits[2])
@@ -223,22 +322,43 @@ func handle(action: String) -> void:
 	elif action.begins_with("campaign_buy:"):
 		var id := action.trim_prefix("campaign_buy:")
 		var purchased: Variant=mutate("purchase",[id,state.campaign_id+":purchase:"+str(state.next_item)])
-		notice="Bought "+state.item(id).display_name+". Equip it from owned inventory below." if purchased is String and not purchased.is_empty() else "Purchase unavailable or save failed; no Supplies spent."
+		notice="Bought "+state.item(id).display_name+". Open a character and select an equipment slot to equip it." if purchased is String and not purchased.is_empty() else "Purchase unavailable or save failed; no Supplies spent."
 		headquarters()
 	elif action.begins_with("campaign_equip:"):
 		var instance := action.trim_prefix("campaign_equip:")
 		var owner: String=state.owner_of(instance)
 		if not owner.is_empty() and owner!=armoury_hero:
-			confirm("Transfer owned equipment?","Move this instance from %s to %s? Replaced equipment stays in inventory; familiar fallback stays usable."%[HeroCatalog.find(owner).display_name,HeroCatalog.find(armoury_hero).display_name],func() -> void:
+			confirm("Transfer owned equipment?","Move this instance from %s to %s? Replaced equipment stays in inventory; familiar fallback stays usable."%[state.hero_name(owner),state.hero_name(armoury_hero)],func() -> void:
 				mutate("equip",[armoury_hero,instance]); headquarters())
 		else: mutate("equip",[armoury_hero,instance]); headquarters()
 	elif action.begins_with("campaign_unequip:"):
 		mutate("unequip",[armoury_hero,action.trim_prefix("campaign_unequip:")]); headquarters()
 	elif action.begins_with("campaign_medical:"):
 		var id := action.trim_prefix("campaign_medical:")
-		confirm("Request recovery treatment?","Spend %d Supplies to remove one existing injury step from %s? Limited to once per hero between missions."%[state.rules.medical_cost,HeroCatalog.find(id).display_name],func() -> void:
+		confirm("Request recovery treatment?","Spend %d Supplies to remove one existing injury step from %s? Limited to once per hero between missions."%[state.rules.medical_cost,state.hero_name(id)],func() -> void:
 			mutate("medical",[id]); headquarters())
 	elif action=="campaign_deploy": deploy()
 	elif action=="campaign_abandon": abandon_run()
 	elif action=="campaign_finish":
 		if not dirty or persist(stable_phase()): state=null; flow.show_title()
+
+func show_event() -> void:
+	if state==null or not state.active.is_empty() or not state.ending.is_empty(): return
+	if state.pending_event.is_empty(): headquarters(); return
+	var view := mount(); flow.screen="campaign_event"; view.event_decision(state)
+	if not notice.is_empty(): view.text(view.body,notice,15); notice=""
+func show_dossier(id: String) -> void:
+	if state==null or not state.active.is_empty() or not state.heroes.has(id): return
+	var view := mount(); flow.screen="campaign_dossier"; view.dossier(state,id)
+
+func show_equipment_slot(hero_id: String,slot: String) -> void:
+	if state==null or not state.active.is_empty() or not state.living_ids().has(hero_id) or not CampaignEquipment.SLOTS.has(slot): return
+	armoury_hero=hero_id;equipment_slot=slot
+	var view := mount();flow.screen="campaign_equipment";view.equipment_choices(state,hero_id,slot)
+	if not notice.is_empty(): view.text(view.body,notice,15);notice=""
+func confirm_change(title: String,message: String,operation: Callable) -> void:
+	if state==null: return
+	var identity: String=state.campaign_id
+	var ticket: int=flow.epoch
+	confirm(title,message,func() -> void:
+		if state!=null and state.campaign_id==identity and flow.epoch==ticket and state.active.is_empty() and state.ending.is_empty(): operation.call())

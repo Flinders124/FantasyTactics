@@ -70,7 +70,7 @@ func exercise(config: EncounterConfiguration, rounds: int = 1) -> void:
 
 func run() -> void:
 	if "--campaign-check" in OS.get_cmdline_user_args():
-		var campaign := CampaignState.new(17, "easy")
+		var campaign: CampaignState = LegacyCampaignFixture.new(17, "easy")
 		for stage in range(5):
 			campaign.victories = stage
 			campaign.resolutions = stage

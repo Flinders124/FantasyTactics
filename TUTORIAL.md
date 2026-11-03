@@ -62,3 +62,11 @@ $env:APPDATA = Join-Path (Get-Location) 'work/godot-appdata'
 - Inspect the optional Fireburst preview and cancel without friendly damage. Check audio access, camera comfort and pause/resume around help.
 
 Automated success does not establish new-player usability, readability for every user, or accessibility. Screen-reader narration, text scaling, colour-vision presets and a full settings/accessibility pass remain milestone 8 work.
+
+## Updated onboarding and rescue practice — 29 October2026
+
+The current title and camp offer **Rescue Practice** alongside Basic Tutorial. It teaches downing, stabilisation, action spending across turns, carrying with reduced movement and safe extraction in an isolated authored encounter. Safe withdrawal completes practice but does not become a tactical victory or change campaign progress. Restart/Skip/Exit remain available; there is no unsafe partial-state rewind.
+
+Camp Guide/Camp Rules explain current recruit XP, training, permanent specialisation, injuries/rest and threat. Deployment shows a compact commitment summary with full readiness details in the scroll area. Help documents Mend revival, carried companions and automatic Extraction-objective completion. Existing Settings→Controls supports rebinding; open help and lesson hints follow accepted changes. Page Up/Page Down scroll long guides.
+
+See [the current milestone report, real screenshots and verification limits](docs/ONBOARDING_MILESTONE_3.md). The old walkthrough above documents the retained basic lesson; settings/rebinding are now implemented, and the historical wording describing them as future work is superseded.

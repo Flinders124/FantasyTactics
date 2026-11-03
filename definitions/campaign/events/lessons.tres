@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="CampaignEventDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/campaign_event_definition.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+stable_id = "lessons"
+revision = 1
+display_name = "Lessons by Lamplight"
+description = "A specialist offers to share a story of the trade. The evening can be spent recording that lesson or repairing the camp stores."
+eligibility = "specialist"
+choices = Array[Dictionary]([{ "id": "repair", "label": "Repair spare camp gear", "supplies": 3, "recovery": 0 },
+{ "id": "story", "label": "Record the lesson in the camp journal", "supplies": 0, "recovery": 0 }])

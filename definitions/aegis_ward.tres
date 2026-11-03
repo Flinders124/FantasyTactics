@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="StatusEffectDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/status_effect_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+stable_id = "aegis_ward"
+display_name = "Aegis Ward"
+description = "Absorbs 3 damage; expires after two future target turns. Reapplication replaces the pool."
+affected_turns = 2
+movement_multiplier = 1.0
+damage_absorption = 3

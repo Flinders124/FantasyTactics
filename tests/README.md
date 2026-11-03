@@ -8,7 +8,7 @@ Godot 4.7.2 standard; no additional dependencies. From the project directory:
 ./tests/run_regressions.ps1 -Godot C:/Tools/Godot_console.exe -Category stress -StressEncounters 60
 ```
 
-The runner imports/type-checks first, requires exit zero, an explicit zero-failure result and empty stderr, and records logs/durations in ../verification/stability (override -ReportDirectory). Categories integration and simulation are available. The all category includes six quick stress scenarios; expensive stress is separate.
+The runner imports/type-checks first, requires exit zero, an explicit zero-failure result and empty stderr, and records logs/durations in verification/stability (override -ReportDirectory). Categories integration and simulation are available. The all category includes six quick stress scenarios; expensive stress is separate.
 
 Tests use private save paths, never the active campaign slot. For completely isolated settings/caches, set APPDATA and LOCALAPPDATA to a disposable absolute directory. Never use player save directories. Report writers create directories and explicitly fail on write errors.
 
@@ -21,7 +21,7 @@ Tests use private save paths, never the active campaign slot. For completely iso
 
 Simulation uses real commands, navigation, AI and outcomes. Test movement speed/presentation are accelerated; production balance is unchanged. Reports include seed, party, roster, turns and command counts. Development-only CombatController.diagnostic_snapshot() includes pending completion, eligible actors and a bounded 24-transition history.
 
-Known failing long scenario: case39, seed1740, Ranger/Mage versus Ashfang, Easy/Open Courtyard. Ranger and healer continue legal turns without a terminal result within240turns. The harness fails instead of skipping/resetting it. This is a tactical bot stalemate, not an observed stuck action; changing tactics/balance is outside this milestone.
+Historical Milestone1 failure: case39/seed1740 (Ranger/Mage versus Ashfang) was a legal-turn healing equilibrium. Milestone2 now reproduces and resolves it through relevant-status scoring, without changing stats or the watchdog. The dedicated -Repro1740 harness and original combat_stress_tests scenario both verify the correction. Keep the original failure evidence; do not weaken completion assertions.
 
 session_lifecycle_tests exercises real navigation, results, debrief, private saves and cleanup twelve times. Deaths are explicit outcome fixtures, not naturally played battles. combat_stress_tests provides naturally resolved battle coverage separately.
 
@@ -45,3 +45,67 @@ Build command (create the output directory first, install the matching Windows t
 ```
 
 Check export logs as well as its exit code: an engine/platform file error can occur even when export returns zero. Configure a writable TEMP/TMP location in restricted environments. Do not accept a resource pack produced alongside export errors.
+## Milestone2 tactical checks
+
+The all category includes positioning, awareness, execution, compatibility, lifetime and AI simulation suites. Use the standard Godot4.7.2 runtime for GDScript-only regression testing. Source stats/definitions are unchanged. Legacy saves/codes and nondefault profile fingerprint detection are covered.
+
+```powershell
+./tests/run_ai_simulations.ps1 -Godot $Godot -Encounters 60 -ReportDirectory ./verification/ai-long
+./tests/run_ai_simulations.ps1 -Godot $Godot -Repro1740 -Encounters 1 -ReportDirectory ./verification/ai-1740
+& $Godot --headless --fixed-fps 60 --path . --script res://tests/ai_simulation_tests.gd -- --metric-self-test
+& $Godot --headless --fixed-fps 60 --path . --script res://tests/ai_benchmark.gd -- --report-root=C:/Temp/FantasyTactics/verification/ai-benchmark
+```
+
+The simulation runner isolates settings/saves, retains native exit codes, requires empty stderr and restores caller environment variables on success/failure. Metric fixtures cover automatic elite resolution before turn_started and End Turn synchronously advancing a single surviving hero. Completion failures are never skipped. Diagnostics and actual measured trade-offs: docs/TACTICAL_AI_MILESTONE_2.md.
+## Milestone 3 mission variety
+
+Use `-Category mission` for template/composition, real navigation, structural offer inspection, campaign mission simulations, imported-code replay, objective/campaign/persistence and compatibility checks. The ordinary inspector suite samples five complete campaign paths; `dev/mission_inspector.gd -- --campaigns=20 --seed=17 --report-root=...` produces an extended 260-offer report. This longer workload is separate from fast checks. `tests/mission_simulation_tests.gd -- --encounters=45 --report-root=...` runs real generated campaign encounters across parties/stages/difficulties. Watchdogs and command assertions are unchanged; failures are never skipped. See [the mission-variety report](../docs/MISSION_VARIETY_REPORT.md) for actual results, source authoring and renderer captures.
+
+The twelve-cycle session lifecycle workload has a 300-second process budget after a measured 203.5-second complete run. This does not extend combat frame/turn/action watchdogs. Per-cycle diagnostics include full cycle time, creation/checkpoint cost, navigation, node/object/resource counts and static memory.
+
+## Milestone4 roster, specialisation and rescue
+
+`-Category roster` runs the new definition, runtime, art, UI, rescue validation, campaign, migration, full-flow and six-encounter simulation tests. `-Category fast` also includes the four fast roster rule/save suites. `-TestNames` selects named suites without silently accepting misspellings. Use isolated APPDATA/LOCALAPPDATA and a private report directory, as the existing runner instructions describe.
+
+```powershell
+./tests/run_regressions.ps1 -Godot $Godot -Category roster -TimeoutSeconds 180 -ReportDirectory ./verification/roster
+./tests/run_regressions.ps1 -Godot $Godot -Category all -TimeoutSeconds 600 -ReportDirectory ./verification/all
+```
+
+The generous full-suite process budget accommodates complete map matrices; internal action, turn, generation and simulation watchdogs remain unchanged. Historical fixed-four scenarios explicitly use `LegacyCampaignFixture`. New roster tests use actual recruits and schema2 campaigns. Capture actual UI/models with `dev/roster_showcase.gd` under a renderer; it uses a private campaign slot. See `docs/ROSTER_SPECIALISATION_REPORT.md` for rules, compatibility and verified results.
+
+## Campaign balance and recovery
+
+`campaign_recovery_tests` is included in `-Category roster` and `all`. It checks the editable rules-v2 cap/reward policy, permanent-loss/XP semantics, reserve readiness, rest recovery, duplicate-result rejection and a captured pre-balance v2 save. Historical v1 migration stays covered by roster-save tests. New tuning does not overwrite frozen offers.
+
+Run six deterministic campaign scenarios (3 Standard seeds, an early-loss development fixture, Easy and Hard) with isolated user folders:
+
+```powershell
+./tests/run_campaign_balance.ps1 -Godot $Godot -ReportDirectory ./verification/campaign-review
+```
+
+The harness uses real commands and legal training/rest/specialisation decisions. It records campaign victories AND defeats; `passed` means the scenario completed cleanly with zero assertions, not that the player won. A nonzero native exit remains failed even after a printed success record. Use a fresh report directory. See docs/CAMPAIGN_BALANCE_MILESTONE_1.md for results, strategy differences and manual-playtesting limits.
+
+## Onboarding and tactical clarity
+
+Run `./tests/run_regressions.ps1 -Godot C:/Tools/Godot_console.exe -Category onboarding -TimeoutSeconds 240 -ReportDirectory verification/onboarding/local`. This imports first and runs 18 focused source suites, including real rescue commands, live help rebinding, campaign save isolation and lifecycle recovery. Use private APPDATA and LOCALAPPDATA directories.
+
+The external `tests/onboarding_pack_smoke.gd` is self-contained: run Godot with `--headless --path . --main-pack <exported.pck> --script <absolute-path-to-onboarding_pack_smoke.gd>` against isolated user data. It exercises rescue practice and camp return using packaged production resources. See `docs/ONBOARDING_MILESTONE_3.md` for native review results and manual playtest steps.
+
+## Campaign events and character identity
+
+Run `./tests/run_regressions.ps1 -Godot C:/Tools/Godot_console.exe -Category events -TimeoutSeconds 240 -ReportDirectory verification/campaign-events/local` with isolated APPDATA/LOCALAPPDATA. Four suites cover deterministic identities and legacy migrations, complete campaign event timing, all 24 authored branches/ten seeds, and transactional UI/save failure recovery. Actual pre-change v2 fixtures are retained under tests/fixtures.
+
+`dev/campaign_events_showcase.gd` captures actual renderer views at both resolutions/default and enlarged UI; run with a native display and private user data. `tests/campaign_events_pack_smoke.gd` is an external standalone SceneTree harness for production PCK verification; set OATH_TEST_ISOLATED=1 and isolated APPDATA, then run `Godot --headless --main-pack <absolute.pck> --script <absolute-script-path>`. It must never point at player user data. See docs/CAMPAIGN_EVENTS_MILESTONE_4.md for scope and observed results.
+
+
+## Opening campaign, shop and headquarters progression
+
+Use `-Category headquarters -TimeoutSeconds 300` with the existing regression runner and isolated APPDATA/LOCALAPPDATA. Nine suites cover capacity purchases, 2/3/4-hero navigation and Extraction, schema-3 migration and interrupted deployment, all six classes’ equipment eligibility, ownership and variants, transactional write rollback, frozen trader stock, camp destinations/layout, authored opening missions, 90 generated maps and six complete automated encounters. Source comparisons are documented in `docs/HEADQUARTERS_MILESTONE_1.md`.
+
+`tests/headquarters_pack_smoke.gd` runs externally against a production PCK with OATH_TEST_ISOLATED=1. `dev/headquarters_showcase.gd` captures real rendered interfaces, actual mouse/button purchases and equipment, and larger-party deployments at 720p/1080p plus larger text. It uses staged authoritative mission results for checkpoints; this is not a complete human campaign playthrough.
+
+
+## Tactical situations and courtyard architecture
+
+Use the regression runner with `-TestNames tactical_movement_tests,architecture_tests,tactical_optional_tests,tactical_generation_tests,tactical_encounter_tests -TimeoutSeconds 300` (separate the parameter/value with a space). These cover budget-limited real moves and split previews; arch/house collision and interior camera fading; optional-goal timing/reward guards and real v4-save migration;90 new-layout map combinations plus bounded fallbacks; and complete real-command encounters/restart. Always use isolated APPDATA/LOCALAPPDATA. The external `tests/tactical_pack_smoke.gd` exercises production PCK resources, actual partial movement, cache collection, v5 checkpoints and reward-once processing. See `docs/TACTICAL_SITUATIONS_MILESTONE_2.md` for measured results and honest verification limits.

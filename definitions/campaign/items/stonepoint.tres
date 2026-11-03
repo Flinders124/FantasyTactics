@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="CampaignItemDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/campaign_item_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+stable_id = "stonepoint"
+display_name = "Stonepoint Spear"
+slot = "weapon"
+compatible_heroes = PackedStringArray("aegisbearer")
+cost = 18
+description = "+1 basic damage; -0.5 m movement."
+modifiers = {"basic_damage": 1, "movement": -0.5}

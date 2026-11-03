@@ -46,4 +46,7 @@ static func compact() -> String:
 	return "%s Move · %s Attack · %s/%s/%s Abilities\n%s End · %s Cancel · %s Focus\n%s Orbit · %s Pan\n%s Pan · %s / %s Zoom\n%s Help · %s Settings" % [label("move"),label("attack"),label("ability_1"),label("ability_2"),label("ability_3"),label("end_turn"),label("cancel"),label("focus"),label("orbit"),label("pan_drag"),"/".join(pan),label("zoom_in"),label("zoom_out"),label("help"),label("audio")]
 
 static func instructions(text: String) -> String:
-	return text.replace("Left-click","Press "+label("world")).replace("left-click","press "+label("world")).replace("Click","Press "+label("world")).replace("click","press "+label("world"))
+	var cancel := label("cancel")
+	# Protect already-expanded alternate labels when presentation formats twice.
+	var result := text.replace(cancel,"__CANCEL_BINDING__").replace("Escape","__CANCEL_BINDING__").replace("Esc ","__CANCEL_BINDING__ ")
+	return result.replace("__CANCEL_BINDING__",cancel).replace("Left-click","Press "+label("world")).replace("left-click","press "+label("world")).replace("Click","Press "+label("world")).replace("click","press "+label("world"))

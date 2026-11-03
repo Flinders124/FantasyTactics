@@ -9,7 +9,7 @@ func run() -> void:
 	var flow := (load("res://scenes/main.tscn") as PackedScene).instantiate()
 	root.add_child(flow)
 	flow.audio.preferences=SettingsSchema.defaults(); flow.audio.apply_preferences(false)
-	flow.campaign.state=CampaignState.new(17,"standard")
+	flow.campaign.state=LegacyCampaignFixture.new(17,"standard")
 	flow.campaign.headquarters()
 	await process_frame
 	var view: Node=flow.menu

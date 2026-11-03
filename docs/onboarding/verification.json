@@ -1,0 +1,179 @@
+{
+  "source": [
+    {
+      "suite": "onboarding_bindings_tests",
+      "category": "onboarding",
+      "exit_code": 0,
+      "passed": true,
+      "timed_out": false,
+      "seconds": 8.82
+    },
+    {
+      "suite": "onboarding_help_tests",
+      "category": "onboarding",
+      "exit_code": 0,
+      "passed": true,
+      "timed_out": false,
+      "seconds": 2.72
+    },
+    {
+      "suite": "rescue_tutorial_tests",
+      "category": "onboarding",
+      "exit_code": 0,
+      "passed": true,
+      "timed_out": false,
+      "seconds": 17.36
+    },
+    {
+      "suite": "onboarding_campaign_tests",
+      "category": "onboarding",
+      "exit_code": 0,
+      "passed": true,
+      "timed_out": false,
+      "seconds": 15.89
+    },
+    {
+      "suite": "tutorial_tests",
+      "category": "onboarding",
+      "exit_code": 0,
+      "passed": true,
+      "timed_out": false,
+      "seconds": 15.25
+    },
+    {
+      "suite": "usability_tests",
+      "category": "onboarding",
+      "exit_code": 0,
+      "passed": true,
+      "timed_out": false,
+      "seconds": 7.42
+    },
+    {
+      "suite": "rescue_validation_tests",
+      "category": "onboarding",
+      "exit_code": 0,
+      "passed": true,
+      "timed_out": false,
+      "seconds": 3.96
+    },
+    {
+      "suite": "roster_flow_tests",
+      "category": "onboarding",
+      "exit_code": 0,
+      "passed": true,
+      "timed_out": false,
+      "seconds": 30.9
+    },
+    {
+      "suite": "settings_lifecycle_tests",
+      "category": "onboarding",
+      "exit_code": 0,
+      "passed": true,
+      "timed_out": false,
+      "seconds": 11.82
+    },
+    {
+      "suite": "campaign_flow_tests",
+      "category": "onboarding",
+      "exit_code": 0,
+      "passed": true,
+      "timed_out": false,
+      "seconds": 63.28
+    },
+    {
+      "suite": "player_input_tests",
+      "category": "onboarding",
+      "exit_code": 0,
+      "passed": true,
+      "timed_out": false,
+      "seconds": 4.5
+    },
+    {
+      "suite": "interface_tests",
+      "category": "onboarding",
+      "exit_code": 0,
+      "passed": true,
+      "timed_out": false,
+      "seconds": 4.59
+    },
+    {
+      "suite": "campaign_recovery_tests",
+      "category": "onboarding",
+      "exit_code": 0,
+      "passed": true,
+      "timed_out": false,
+      "seconds": 31.85
+    },
+    {
+      "suite": "roster_save_tests",
+      "category": "onboarding",
+      "exit_code": 0,
+      "passed": true,
+      "timed_out": false,
+      "seconds": 4.71
+    },
+    {
+      "suite": "save_flow_tests",
+      "category": "onboarding",
+      "exit_code": 0,
+      "passed": true,
+      "timed_out": false,
+      "seconds": 64.47
+    },
+    {
+      "suite": "transition_stability_tests",
+      "category": "onboarding",
+      "exit_code": 0,
+      "passed": true,
+      "timed_out": false,
+      "seconds": 37.94
+    },
+    {
+      "suite": "unit_survival_tests",
+      "category": "onboarding",
+      "exit_code": 0,
+      "passed": true,
+      "timed_out": false,
+      "seconds": 2.05
+    },
+    {
+      "suite": "objective_tests",
+      "category": "onboarding",
+      "exit_code": 0,
+      "passed": true,
+      "timed_out": false,
+      "seconds": 9.34
+    }
+  ],
+  "native": [
+    {
+      "name": "verified-basic-720",
+      "exit_code": 0,
+      "passed": true,
+      "timed_out": false
+    },
+    {
+      "name": "verified-basic-1080",
+      "exit_code": 0,
+      "passed": true,
+      "timed_out": false
+    },
+    {
+      "name": "verified-basic-large",
+      "exit_code": -1073741819,
+      "passed": false,
+      "timed_out": false
+    },
+    {
+      "name": "verified-showcase",
+      "exit_code": 0,
+      "passed": true,
+      "timed_out": false
+    }
+  ],
+  "pack": {
+    "base_smoke_exit": 0,
+    "passed": true,
+    "exit_code": 0
+  }
+}

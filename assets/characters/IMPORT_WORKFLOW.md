@@ -28,3 +28,31 @@ Keep the Milestone 1/2 blue/teal/copper/cream palette and graphic lighting. Watc
 
 Current geometry is authored through code profiles and exported as skinned assets. It is not professionally sculpted production art. Dedicated artist work remains: truly unique facial sculpts and hair, more sophisticated joint topology, authored cloth folds/secondary motion, character-specific acting and weight transfer, bowstring draw/release deformation, release/hide logic for the held inspection arrow, directional hit reactions, and improved collapse choreography beyond the verified floor bounds. There is no facial rig, ragdoll, cloth simulation or automatic LOD. These omissions are intentional limits of this implementation, not features claimed as complete.
 
+
+## Approved Milestone 4 additions
+
+Run `python assets/characters/source/build_roster_v4.py` to build only Recruit,
+Aegisbearer and Chainbinder; `--roles recruit` can limit the additive build.
+This never rewrites the existing 21 characters or their v3 manifest. The editable
+profiles subclass the same anatomical shell/panel, skinning, 18-joint rig and
+seven-clip exporter. `manifest-v4.json` records the three added assets only.
+
+Recruit wears a plain teal cloth tunic, cream collar and leather boots/belt with
+a basic short sword and no shield. Aegisbearer has a broad rectangular tower
+shield with copper stone marks, short spear, low angular helmet and broad plate
+pauldrons. Chainbinder has asymmetric lean armour, a hooked polearm, individual
+open belt-chain links and chain gauntlet; Cast has a dedicated haul/recovery pose.
+No Hexweaver or Arbalist content is included.
+
+`scenes/character_showcase.tscn` shows the Recruit and all six approved advanced
+Watch classes together. Portraits use the same visual IDs and GLBs. UI SVGs use
+the existing cream outline style. `tests/roster_character_tests.gd` checks import,
+rig/clips and survival presentation; offline source checks are in
+`assets/characters/source/verify_roster_v4.py`.
+
+Survival presentation reuses the final shared collapse pose for DOWNED and
+STABILISED without rewriting existing class animations. `set_survival_pose`
+accepts named life states and a carrier boolean; a carrier uses a supporting
+forearm brace. Body attachment/position, tint/markers and authoritative rescue
+rules remain the caller's responsibility. There is no bespoke carried-body clip,
+physics chain, ragdoll or gameplay callback in an animation.

@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="CampaignUpgradeDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/campaign_upgrade_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+stable_id = "aegisbearer_4_0"
+hero_id = "aegisbearer"
+required_level = 4
+display_name = "Deep Aegis"
+description = "+1 Aegis absorption"
+modifiers = {"ability_magnitude:aegis": 1}

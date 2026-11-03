@@ -1,0 +1,343 @@
+{
+  "version": 1,
+  "generator": "Built-in image_gen",
+  "created": "2026-11-02",
+  "images": [
+    {
+      "id": "common_sword",
+      "source": "C:\\Users\\Daniel.Flinders\\.codex\\generated_images\\01a15922-af7b-73a3-95d4-f61d916a81ea\\exec-c8833f22-2a09-41ea-81f3-28204f357d82.png",
+      "prompt": "Use case: stylized-concept. Asset type: a single production inventory item illustration for the existing Lantern Oath stylized low-poly fantasy tactical game. Generate ONE COMMON sword, a practical short straight double-edged steel sword with a shaped simple crossguard, worn dark leather grip and modest copper pommel. Full object centered diagonally lower-left hilt to upper-right tip on a genuinely transparent background, square canvas, generous 12% padding, no text, no labels, no frame, no floor, no person or hands. Cohesive faceted low-poly 3D-render illustration, broad clean bevels and strong silhouette readable at 96 pixels; restrained smooth surfaces and subtle wear rather than photorealistic textures. Palette appropriate to existing art: blue-grey steel #85A5AB, deep slate #273B50, copper #BD815F, warm ivory highlights #EFE3B6. Copper-warm upper-left key and gentle cool fill. Common quality: functional, minimal ornament, no magic glow. Crisp clean silhouette and real alpha cutout. Original fantasy design, no franchise references. This is the first of a matched set of common/rare/legendary sword, helmet and torso armour inventory art.",
+      "file": "common_sword.png",
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "alpha_bounds": [
+        63,
+        59,
+        1206,
+        1194
+      ],
+      "silhouette_alpha_128_bounds": [
+        98,
+        62,
+        1201,
+        1191
+      ],
+      "low_alpha_pixels_1_to_7": 11342,
+      "rarity": "common",
+      "equipment_type": "sword",
+      "variant": "default",
+      "sha256": "1760b9e8eb17e367325586d9f9cc7b1649f8d3338843ba8c492ed38c565beecf"
+    },
+    {
+      "id": "common_helmet",
+      "source": "C:\\Users\\Daniel.Flinders\\.codex\\generated_images\\01a15922-af7b-73a3-95d4-f61d916a81ea\\exec-38e7aa4d-5856-4111-9b60-a8f90e1add93.png",
+      "prompt": "Use case: stylized-concept. Create ONE separate square inventory item image for Lantern Oath fantasy tactics. The attached sword is a STYLE REFERENCE ONLY: same clean faceted stylized low-poly 3D illustration, blue-grey steel #85A5AB, deep slate #273B50, copper #BD815F, muted teal #378B9B and warm ivory highlights. Broad shaped bevels, strong readable silhouette at 96px, restrained detail. Warm upper-left key and soft cool fill. Entire item centered with at least 10% empty padding; genuinely transparent background; no text, letters, numbers, frames, floor, hands or people. Avoid photorealism and noisy microtexture. Subject: COMMON open-faced practical steel infantry helmet, three-quarter front view, rounded faceted crown, modest brow band and shaped cheek guards, dark leather lining. Functional blue-grey iron with a few copper rivets; no crest, gems or magic. Helmet only, hollow opening, no head.",
+      "file": "common_helmet.png",
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "alpha_bounds": [
+        0,
+        39,
+        1244,
+        1254
+      ],
+      "silhouette_alpha_128_bounds": [
+        202,
+        73,
+        1076,
+        1176
+      ],
+      "low_alpha_pixels_1_to_7": 12192,
+      "rarity": "common",
+      "equipment_type": "helmet",
+      "variant": "default",
+      "sha256": "087225961255955324630929d8b97a1a7632f14453e31020daf9e57971b5cf5f"
+    },
+    {
+      "id": "common_armour",
+      "source": "C:\\Users\\Daniel.Flinders\\.codex\\generated_images\\01a15922-af7b-73a3-95d4-f61d916a81ea\\exec-fc9e771a-c3aa-44fe-9976-f14724b96893.png",
+      "prompt": "Use case: stylized-concept. Create ONE separate square inventory item image for Lantern Oath fantasy tactics. The attached sword is a STYLE REFERENCE ONLY: same clean faceted stylized low-poly 3D illustration, blue-grey steel #85A5AB, deep slate #273B50, copper #BD815F, muted teal #378B9B and warm ivory highlights. Broad shaped bevels, strong readable silhouette at 96px, restrained detail. Warm upper-left key and soft cool fill. Entire item centered with at least 10% empty padding; genuinely transparent background; no text, letters, numbers, frames, floor, hands or people. Avoid photorealism and noisy microtexture. Subject: COMMON wearable torso armour, three-quarter front view, shaped dark leather jerkin with a small blue-grey steel breastplate, simple shoulder caps, copper buckle and practical straps. Clearly a complete torso garment, coherent shoulders and waist. Torso armour only, hollow neck, no body, head, limbs, stand or mannequin. Functional modest workmanship, no gems or glow.",
+      "file": "common_armour.png",
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "alpha_bounds": [
+        0,
+        32,
+        1192,
+        1254
+      ],
+      "silhouette_alpha_128_bounds": [
+        75,
+        80,
+        1148,
+        1185
+      ],
+      "low_alpha_pixels_1_to_7": 11673,
+      "rarity": "common",
+      "equipment_type": "armour",
+      "variant": "default",
+      "sha256": "79510a900ba9647ed384e7b3ba5a341849b74b3ad238ac80b4bc040311d320aa"
+    },
+    {
+      "id": "rare_sword",
+      "source": "C:\\Users\\Daniel.Flinders\\.codex\\generated_images\\01a15922-af7b-73a3-95d4-f61d916a81ea\\exec-e63c91f0-a0db-4baa-ac2c-4844f1f19fdb.png",
+      "prompt": "Use case: stylized-concept. Create ONE separate square inventory item image for Lantern Oath fantasy tactics. The attached sword is a STYLE REFERENCE ONLY: same clean faceted stylized low-poly 3D illustration, blue-grey steel #85A5AB, deep slate #273B50, copper #BD815F, muted teal #378B9B and warm ivory highlights. Broad shaped bevels, strong readable silhouette at 96px, restrained detail. Warm upper-left key and soft cool fill. Entire item centered with at least 10% empty padding; genuinely transparent background; no text, letters, numbers, frames, floor, hands or people. Avoid photorealism and noisy microtexture. Subject: RARE refined straight double-edged sword, diagonal lower-left hilt to upper-right tip matching reference scale. Distinct elegant tapered blade, well-made curved copper crossguard, teal leather grip, modest teal-set pommel and a single tasteful geometric blade inlay. More refined than the reference common sword, still practical and restrained; no huge aura.",
+      "file": "rare_sword.png",
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "alpha_bounds": [
+        0,
+        0,
+        1212,
+        1206
+      ],
+      "silhouette_alpha_128_bounds": [
+        88,
+        60,
+        1208,
+        1200
+      ],
+      "low_alpha_pixels_1_to_7": 13105,
+      "rarity": "rare",
+      "equipment_type": "sword",
+      "variant": "default",
+      "sha256": "e259668a95370e9074510adbba41f858c433c790ea6106a7abb55256060810b4"
+    },
+    {
+      "id": "rare_helmet",
+      "source": "C:\\Users\\Daniel.Flinders\\.codex\\generated_images\\01a15922-af7b-73a3-95d4-f61d916a81ea\\exec-8df52981-692d-477e-b274-61e75401a5db.png",
+      "prompt": "Use case: stylized-concept. Create ONE separate square inventory item image for Lantern Oath fantasy tactics. The attached sword is a STYLE REFERENCE ONLY: same clean faceted stylized low-poly 3D illustration, blue-grey steel #85A5AB, deep slate #273B50, copper #BD815F, muted teal #378B9B and warm ivory highlights. Broad shaped bevels, strong readable silhouette at 96px, restrained detail. Warm upper-left key and soft cool fill. Entire item centered with at least 10% empty padding; genuinely transparent background; no text, letters, numbers, frames, floor, hands or people. Avoid photorealism and noisy microtexture. Subject: RARE well-crafted steel helmet, three-quarter front view with hollow opening and no head. Distinct pointed brow, refined cheek guards, layered copper edging and a short swept-back muted teal crest; a small geometric teal brow stone. Practical moderate ornament and broad surfaces, premium compared to a plain common infantry helmet; no huge glow.",
+      "file": "rare_helmet.png",
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "alpha_bounds": [
+        0,
+        21,
+        1238,
+        1254
+      ],
+      "silhouette_alpha_128_bounds": [
+        221,
+        83,
+        1108,
+        1157
+      ],
+      "low_alpha_pixels_1_to_7": 15707,
+      "rarity": "rare",
+      "equipment_type": "helmet",
+      "variant": "default",
+      "sha256": "d891de713bc1fbf0e3df9431257f5b04a0cc23b62069aae0528f29a7147205ce"
+    },
+    {
+      "id": "rare_armour",
+      "source": "C:\\Users\\Daniel.Flinders\\.codex\\generated_images\\01a15922-af7b-73a3-95d4-f61d916a81ea\\exec-e881d4a8-e8b2-4100-92ea-e39231331346.png",
+      "prompt": "Use case: stylized-concept. Create ONE separate square inventory item image for Lantern Oath fantasy tactics. The attached sword is a STYLE REFERENCE ONLY: same clean faceted stylized low-poly 3D illustration, blue-grey steel #85A5AB, deep slate #273B50, copper #BD815F, muted teal #378B9B and warm ivory highlights. Broad shaped bevels, strong readable silhouette at 96px, restrained detail. Warm upper-left key and soft cool fill. Entire item centered with at least 10% empty padding; genuinely transparent background; no text, letters, numbers, frames, floor, hands or people. Avoid photorealism and noisy microtexture. Subject: RARE articulated torso armour, three-quarter front view, fitted blue-grey steel breastplate and shaped layered pauldrons, copper edge bands, small teal cloth tabard and leather waist straps. More refined and protective than common armour, modest lantern-shaped embossed chest badge. Torso piece only with hollow neck, no limbs, person, head, stand or mannequin. No large magic effects.",
+      "file": "rare_armour.png",
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "alpha_bounds": [
+        0,
+        23,
+        1218,
+        1254
+      ],
+      "silhouette_alpha_128_bounds": [
+        97,
+        75,
+        1155,
+        1182
+      ],
+      "low_alpha_pixels_1_to_7": 13248,
+      "rarity": "rare",
+      "equipment_type": "armour",
+      "variant": "default",
+      "sha256": "26dc7b07fe8c5d391021579298a216bf7fd86912a660e02e9f55ebedaa6ba1a1"
+    },
+    {
+      "id": "legendary_sword_a",
+      "source": "C:\\Users\\Daniel.Flinders\\.codex\\generated_images\\01a15922-af7b-73a3-95d4-f61d916a81ea\\exec-fba8895f-fb3f-4d22-a93f-bab2c623d78b.png",
+      "prompt": "Use case: stylized-concept. Create ONE separate square inventory item image for Lantern Oath fantasy tactics. The attached sword is a STYLE REFERENCE ONLY: same clean faceted stylized low-poly 3D illustration, blue-grey steel #85A5AB, deep slate #273B50, copper #BD815F, muted teal #378B9B and warm ivory highlights. Broad shaped bevels, strong readable silhouette at 96px, restrained detail. Warm upper-left key and soft cool fill. Entire item centered with at least 10% empty padding; genuinely transparent background; no text, letters, numbers, frames, floor, hands or people. Avoid photorealism and noisy microtexture. Subject: LEGENDARY sword variation A, Lanternward. A distinctive straight tapered blue-grey blade with an elegant geometric channel holding a subtle amber light, sculpted upward-swept copper-gold guard shaped like two protective lantern brackets, muted teal wrapped grip and a faceted amber pommel. Strong angular heroic silhouette, premium shaped construction and restrained etched geometric panels. Diagonal lower-left hilt to upper-right tip. Gold accents and contained amber light, no overwhelming aura, no floating particles or background.",
+      "file": "legendary_sword_a.png",
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "alpha_bounds": [
+        31,
+        21,
+        1228,
+        1210
+      ],
+      "silhouette_alpha_128_bounds": [
+        75,
+        38,
+        1225,
+        1207
+      ],
+      "low_alpha_pixels_1_to_7": 12472,
+      "rarity": "legendary",
+      "equipment_type": "sword",
+      "variant": "a",
+      "sha256": "5a18510bef56a4d1784d99ac402fa17ac2b8a81884d1127ea2e6a2b91521e0e3"
+    },
+    {
+      "id": "legendary_helmet_a",
+      "source": "C:\\Users\\Daniel.Flinders\\.codex\\generated_images\\01a15922-af7b-73a3-95d4-f61d916a81ea\\exec-6b0ab13f-58f2-49c1-9a44-76e2a94c8746.png",
+      "prompt": "Use case: stylized-concept. Create ONE separate square inventory item image for Lantern Oath fantasy tactics. The attached sword is a STYLE REFERENCE ONLY: same clean faceted stylized low-poly 3D illustration, blue-grey steel #85A5AB, deep slate #273B50, copper #BD815F, muted teal #378B9B and warm ivory highlights. Broad shaped bevels, strong readable silhouette at 96px, restrained detail. Warm upper-left key and soft cool fill. Entire item centered with at least 10% empty padding; genuinely transparent background; no text, letters, numbers, frames, floor, hands or people. Avoid photorealism and noisy microtexture. Subject: LEGENDARY helmet variation A, Beacon Crown. Three-quarter front view, hollow with no head. Majestic but wearable steel-and-copper helm with distinctive two swept copper side fins, a single upright faceted amber lantern crest, shaped open visor and teal cloth lining. Sculpted geometric brow and modest ivory edge highlights. Recognizable silhouette rather than just a common helmet recolour. Contained faint amber light in the crest only, no particles or aura.",
+      "file": "legendary_helmet_a.png",
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "alpha_bounds": [
+        39,
+        19,
+        1248,
+        1254
+      ],
+      "silhouette_alpha_128_bounds": [
+        291,
+        59,
+        1089,
+        1138
+      ],
+      "low_alpha_pixels_1_to_7": 18715,
+      "rarity": "legendary",
+      "equipment_type": "helmet",
+      "variant": "a",
+      "sha256": "c0e19c17ab54e267e3b0e6db5537498488f9b8a2952d87cbd4afc4c6311288ce"
+    },
+    {
+      "id": "legendary_sword_b",
+      "source": "C:\\Users\\Daniel.Flinders\\.codex\\generated_images\\01a15922-af7b-73a3-95d4-f61d916a81ea\\exec-15847bc3-1e66-44e4-86ec-b7cc4267ae4c.png",
+      "prompt": "Use case: stylized-concept. Create ONE separate square inventory item image for Lantern Oath fantasy tactics. The attached sword is a STYLE REFERENCE ONLY: same clean faceted stylized low-poly 3D illustration, blue-grey steel #85A5AB, deep slate #273B50, copper #BD815F, muted teal #378B9B and warm ivory highlights. Broad shaped bevels, strong readable silhouette at 96px, restrained detail. Warm upper-left key and soft cool fill. Entire item centered with at least 10% empty padding; genuinely transparent background; no text, letters, numbers, frames, floor, hands or people. Avoid photorealism and noisy microtexture. Subject: LEGENDARY sword variation B, Thornbound Oath. A distinctly different design from the straight Lanternward sword: a slightly curved leaf-shaped blue-grey blade, a sharp asymmetrical branching copper guard, deep teal leather grip and a small faceted moss-teal pommel stone. Elegant restrained root/leaf-shaped copper inlays run near the blade spine; a contained pale teal light follows one channel. Diagonal lower-left hilt to upper-right tip, whole sword visible. Heroic crafted fantasy equipment with clear useful sword anatomy; no busy branches crossing the cutting edge, no background, no enormous aura.",
+      "file": "legendary_sword_b.png",
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "alpha_bounds": [
+        41,
+        33,
+        1210,
+        1198
+      ],
+      "silhouette_alpha_128_bounds": [
+        106,
+        37,
+        1206,
+        1194
+      ],
+      "low_alpha_pixels_1_to_7": 12297,
+      "rarity": "legendary",
+      "equipment_type": "sword",
+      "variant": "b",
+      "sha256": "9290c1572d1c312d6f0461a39f1aa108fbe3b99912da1a59ede4456ab349a967"
+    },
+    {
+      "id": "legendary_helmet_b",
+      "source": "C:\\Users\\Daniel.Flinders\\.codex\\generated_images\\01a15922-af7b-73a3-95d4-f61d916a81ea\\exec-9ae95d6d-167f-43f4-8d8b-2d8de0fb9725.png",
+      "prompt": "Use case: stylized-concept. Create ONE separate square inventory item image for Lantern Oath fantasy tactics. The attached sword is a STYLE REFERENCE ONLY: same clean faceted stylized low-poly 3D illustration, blue-grey steel #85A5AB, deep slate #273B50, copper #BD815F, muted teal #378B9B and warm ivory highlights. Broad shaped bevels, strong readable silhouette at 96px, restrained detail. Warm upper-left key and soft cool fill. Entire item centered with at least 10% empty padding; genuinely transparent background; no text, letters, numbers, frames, floor, hands or people. Avoid photorealism and noisy microtexture. Subject: LEGENDARY helmet variation B, Oathkeeper Visor. Distinct from the lantern-crested helm: an enclosed angular blue-grey steel faceplate with a single narrow dark eye slit, a low swept-back copper chevron crest, sculpted jaw plates and a dark teal cloth neck guard. A small faceted teal jewel at the brow, restrained copper inlay and muted ivory highlights. Three-quarter front view, entire helmet visible, no actual head or neck, no antlers, no lantern tower, no background aura. Strong premium silhouette.",
+      "file": "legendary_helmet_b.png",
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "alpha_bounds": [
+        89,
+        12,
+        1240,
+        1237
+      ],
+      "silhouette_alpha_128_bounds": [
+        305,
+        16,
+        1035,
+        1233
+      ],
+      "low_alpha_pixels_1_to_7": 9732,
+      "rarity": "legendary",
+      "equipment_type": "helmet",
+      "variant": "b",
+      "sha256": "e62bb82ca3447c6d7fa98711866f7f26f5d37d30f0ef6c28e1b9e276b48ffd01"
+    },
+    {
+      "id": "legendary_armour_a",
+      "source": "C:\\Users\\Daniel.Flinders\\.codex\\generated_images\\01a15922-af7b-73a3-95d4-f61d916a81ea\\exec-15208dab-282d-4840-9d0c-d756dde44abf.png",
+      "prompt": "Use case: stylized-concept. Create ONE separate square inventory item image for Lantern Oath fantasy tactics. The attached sword is a STYLE REFERENCE ONLY: same clean faceted stylized low-poly 3D illustration, blue-grey steel #85A5AB, deep slate #273B50, copper #BD815F, muted teal #378B9B and warm ivory highlights. Broad shaped bevels, strong readable silhouette at 96px, restrained detail. Warm upper-left key and soft cool fill. Entire item centered with at least 10% empty padding; genuinely transparent background; no text, letters, numbers, frames, floor, hands or people. Avoid photorealism and noisy microtexture. Subject: LEGENDARY torso armour variation A, Beacon Cuirass. Sculpted blue-grey steel breastplate, broad angular layered shoulder guards with rising copper-gold edge fins, geometric lantern-shaped central chest inset with contained warm amber light, teal fabric panels and a shaped armoured waist. Original heroic design, rich but restrained copper ornament and large clean readable facets. Three-quarter front view, torso item only with hollow neck opening and empty arm openings, no mannequin, limbs, body or head. No sparks or background.",
+      "file": "legendary_armour_a.png",
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "alpha_bounds": [
+        0,
+        36,
+        1214,
+        1254
+      ],
+      "silhouette_alpha_128_bounds": [
+        85,
+        60,
+        1164,
+        1191
+      ],
+      "low_alpha_pixels_1_to_7": 14915,
+      "rarity": "legendary",
+      "equipment_type": "armour",
+      "variant": "a",
+      "sha256": "59ae8f78a1de14fb04406e93a7cf21e49de1bbb5a4c155df1492d250ff3234d2"
+    },
+    {
+      "id": "legendary_armour_b",
+      "source": "C:\\Users\\Daniel.Flinders\\.codex\\generated_images\\01a15922-af7b-73a3-95d4-f61d916a81ea\\exec-d5c0a00c-d0f9-4fc6-849e-e1c37128a9db.png",
+      "prompt": "Use case: stylized-concept. Create ONE separate square inventory item image for Lantern Oath fantasy tactics. The attached sword is a STYLE REFERENCE ONLY: same clean faceted stylized low-poly 3D illustration, blue-grey steel #85A5AB, deep slate #273B50, copper #BD815F, muted teal #378B9B and warm ivory highlights. Broad shaped bevels, strong readable silhouette at 96px, restrained detail. Warm upper-left key and soft cool fill. Entire item centered with at least 10% empty padding; genuinely transparent background; no text, letters, numbers, frames, floor, hands or people. Avoid photorealism and noisy microtexture. Subject: LEGENDARY torso armour variation B, Duskward Mantle. A different premium silhouette: sleek dark blue-grey lamellar chest armour, high shaped collar, asymmetrical swept overlapping leaf-like pauldrons, muted teal short shoulder mantle, copper seam bands, faceted pale-teal chest jewel and an angular fitted waist. Broad stylized surfaces and restrained etched chevrons, no tangled ornament. Three-quarter front view, torso garment only with hollow neck, no head, limbs, person, stand or mannequin. Contained very subtle teal light in the jewel, no particles or background.",
+      "file": "legendary_armour_b.png",
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "alpha_bounds": [
+        0,
+        19,
+        1242,
+        1254
+      ],
+      "silhouette_alpha_128_bounds": [
+        116,
+        75,
+        1147,
+        1191
+      ],
+      "low_alpha_pixels_1_to_7": 14741,
+      "rarity": "legendary",
+      "equipment_type": "armour",
+      "variant": "b",
+      "sha256": "3d4d1ec766726939769abbbfe074cafafb1dcfec906eeeb9ccc44232e0638f0b"
+    }
+  ]
+}

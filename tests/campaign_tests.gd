@@ -17,8 +17,8 @@ func plain(value: Variant) -> bool:
 			if not plain(child): return false
 	return true
 func run() -> void:
-	var state := CampaignState.new(17,"standard")
-	var identical := CampaignState.new(17,"standard")
+	var state: CampaignState = LegacyCampaignFixture.new(17,"standard")
+	var identical: CampaignState = LegacyCampaignFixture.new(17,"standard")
 	check(state.offers==identical.offers,"Seed reproduces frozen offers")
 	var initial := state.snapshot()
 	state.generate_offers()
@@ -41,28 +41,28 @@ func run() -> void:
 		check(state.commit(state.offers[0].id,["knight","ranger"])!=null,"Next mission playable")
 		check(state.resolve(record(state)),"Next result accepted")
 	check(state.ending=="victory" and state.offers.is_empty(),"Fifth successful final mission gives one campaign victory")
-	var wounded := CampaignState.new(11,"standard")
+	var wounded: CampaignState = LegacyCampaignFixture.new(11,"standard")
 	wounded.commit(wounded.offers[0].id,["knight","ranger"])
 	wounded.resolve(record(wounded,"failure","knight"))
-	check(wounded.heroes.knight.injury.remaining==3 and wounded.threat==6,"New severe injury skips immediate recovery; failure and ignored threats resolve once")
+	check(wounded.heroes.knight.injury.remaining==3 and wounded.threat==5,"New severe injury skips immediate recovery; failure and ignored threats resolve once")
 	var adjusted := wounded.preview_definition("knight")
 	check(adjusted.maximum_health==base_health-3 and adjusted.movement_allowance==5.5,"Injury affects private allocation stats, not base definitions")
 	wounded.commit(wounded.offers[0].id,["mage","cleric"]); wounded.resolve(record(wounded))
 	check(wounded.heroes.knight.injury.remaining==1,"Resting hero recovers two steps")
 	wounded.commit(wounded.offers[0].id,["knight","ranger"]); wounded.resolve(record(wounded))
 	check(wounded.heroes.knight.injury.is_empty(),"Deploying injury recovers one step without a deadlock")
-	var losing := CampaignState.new(11,"standard")
+	var losing: CampaignState = LegacyCampaignFixture.new(11,"standard")
 	for attempt in range(3):
 		if not losing.ending.is_empty(): break
 		losing.commit(losing.offers[0].id,["knight","ranger"]); losing.resolve(record(losing,"failure","knight"))
 	check(losing.ending=="defeat" and losing.threat==10 and losing.offers.is_empty(),"Bounded threat produces one clean campaign defeat")
-	var learner := CampaignState.new(23,"standard")
+	var learner: CampaignState = LegacyCampaignFixture.new(23,"standard")
 	learner.commit(learner.offers[0].id,["knight","ranger"]); learner.resolve(record(learner,"victory","knight"))
 	check(learner.heroes.knight.experience==25 and learner.heroes.knight.level==2 and learner.pending_level("knight")==2,"Incapacitated participants retain success/participation XP")
 	check(learner.learn("knight","knight_2_0") and not learner.learn("knight","knight_2_1") and not learner.learn("ranger","knight_2_0"),"Training spends one permanent choice per level on its owner")
 	check(learner.preview_definition("knight").maximum_health==base_health and HeroCatalog.find("knight").maximum_health==base_health,"Flat injury and upgrade combine once without mutating base")
 	check(learner.preview_definition("ranger").maximum_health==HeroCatalog.find("ranger").maximum_health,"Shared hero state remains independent")
-	var outfitter := CampaignState.new(29,"standard")
+	var outfitter: CampaignState = LegacyCampaignFixture.new(29,"standard")
 	check(outfitter.inventory.size()==8,"Each hero owns two distinct starting items")
 	var funds := outfitter.supplies
 	var coat := outfitter.purchase("stoneweave","one")
@@ -84,27 +84,27 @@ func run() -> void:
 	check(healer.abilities[0].magnitude==healer_base.abilities[0].magnitude,"Offensive modifiers do not change healing")
 	var final_rules := load("res://definitions/campaign/lantern_watch.tres").duplicate(true) as CampaignDefinition
 	final_rules.victory_threat=20
-	var last := CampaignState.new(33,"hard",final_rules)
+	var last: CampaignState = LegacyCampaignFixture.new(33,"hard",final_rules)
 	last.victories=4; last.generate_offers()
 	var final_config := last.commit(last.offers[0].id,["knight","ranger"])
 	check(final_config.difficulty.enemy_health_multiplier>last.difficulty().enemy_health_multiplier and final_config.difficulty.stable_id=="hard","Final challenge derives stronger enemies without changing campaign difficulty")
 	last.resolve(record(last))
 	check(last.ending=="victory" and last.threat==10 and last.offers.is_empty(),"Final victory has unambiguous precedence over simultaneous threat cap")
-	var combined := CampaignState.new(4,"standard")
+	var combined: CampaignState = LegacyCampaignFixture.new(4,"standard")
 	combined.heroes.ranger.injury={"name":"Severe injury","remaining":3}
 	combined.heroes.knight.injury={"name":"Severe injury","remaining":3}
 	combined.resolutions=1; combined.generate_offers()
 	combined.commit(combined.offers[2].id,["knight","ranger"]); combined.resolve(record(combined))
 	check(combined.heroes.knight.injury.remaining==1,"Recovery mission adds one recovery step to deployed pre-existing injuries")
-	check(plain(combined.snapshot()) and JSON.parse_string(JSON.stringify(combined.snapshot())).version==1,"Run snapshot is Resource-free versioned data")
+	check(plain(combined.snapshot()) and JSON.parse_string(JSON.stringify(combined.snapshot())).version==CampaignState.VERSION,"Run snapshot is Resource-free versioned data")
 	var frozen := outfitter.commit(outfitter.offers[0].id,["knight","ranger"])
 	check(frozen!=null and not outfitter.equip("knight",coat) and outfitter.purchase("trail_mantle").is_empty() and not outfitter.medical("knight"),"Committed deployment blocks headquarters mutations")
 	for case: Array in [[19,1],[20,2],[49,2],[50,3],[89,3],[90,4]]:
-		var threshold := CampaignState.new(31,"standard")
+		var threshold: CampaignState = LegacyCampaignFixture.new(31,"standard")
 		threshold.heroes.knight.experience=int(case[0])-10
 		threshold.commit(threshold.offers[0].id,["knight","ranger"]); threshold.resolve(record(threshold,"failure"))
 		check(threshold.heroes.knight.experience==case[0] and threshold.heroes.knight.level==case[1],"XP threshold boundary derives exactly the expected level")
-	var strained := CampaignState.new(19,"standard")
+	var strained: CampaignState = LegacyCampaignFixture.new(19,"standard")
 	for repeat in range(2):
 		strained.commit(strained.offers[0].id,["knight","ranger"])
 		var half := record(strained).snapshot(); half.heroes.knight.health=5

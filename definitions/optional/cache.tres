@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="OptionalGoalDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/optional_goal_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+stable_id = "cache"
+display_name = "Recover the Cache"
+description = "Reach the blue cache circle with a living hero, then win the mission. Collection checks after completed actions. No extra action is required."
+rule = "cache"
+supplies = 8

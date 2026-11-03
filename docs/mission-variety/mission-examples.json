@@ -1,0 +1,192 @@
+{
+  "version": 1,
+  "engine": "4.7.2",
+  "examples": [
+    {
+      "campaign_seed": 17,
+      "code": "FT1.eJx9VF1vnEgQ_CsjnleITxvvPeYi3ePpnDcrQg00MAkMZGbY9SbKf081rL1Y8eVlP7qHnqrqKn4E5D2Psw-O0SFodNvqehn8JTj-CKj2ejLlt4XtpRz0qHEoj5NDQINna8hzaSeHn8Hx6fMhqMk0upHq9Wx8h-JkWt0tltZRJ7YO32jhLna11bNf_wefzpP6j3SDA6H6aHi8qJ5xT68wVU1ty8bpE6uGRupYPUdhkR-UnRbTcKP8pAyTZefVP_-G6nGkYWCrvDCoaVAOzbr_S6Gs6mmsyCu7DOzUYuqeTMdNGAh7Nw90KQ2NDEgfyV1QZWFjNvyvdAO7YkX7-gP8WVCXG8ByhIh6HrScXrFe2xup99rP3l4F_-Mt_TQ0fz4xEy54s7Q0kf65_G1Da0ObrnQ0ztAjOGJlzlM1cKkbaMCiwU8B32kDUZK79CEtDkG7QRWXQB-PTkuD40OwPkWub6FqsM7q0IwwooMAsMFkV2tZNlQ6_R3Np6QIo0OShBHAV7JRAvSRLK6EU8IE6tQDNkimZinkYh5PeigbcYWYNQ6j3_b3CH29-jAt1l_INrJgOMStdJmbEqZyvPn-ik3Ev8YBUqQ7zDfnQrGpAi0gKmuAxYBsV-pZdz1qTwIzCfPPu95Izy-UU-DNVsK3rjYv3ZWzfEh_nqcr5pk2jMFRBAvAteaRjd9hzqQOluy3_TnRQHC-amCXSrb7Vjk30xm3z1TjJnC81b5Phl9gAfChWEGfuMMCVr32g7Dlnu1U9jCAmJOqOK8qrtM6vc-yKJM0ZUVDD9VdUeVJnBbJamk8I957Cr6aVT1xK0K5unmqvjC8dmKxzdt3xt_cMpIsoZZwacar41FLtMjwtDi1i67STpFqkIL3kn47h-ZXbZrVFahh2ljyMzREOk88gOYqjuxEjstizteV59Kw1OjFiYRIieVvi7YseYWrN0u9SdfuXmh3S_U1QOVruv-3UE3nHibctNoGvMofP3DaxvF9FhfpfVUTHnundNdEEcdpFDNTRXGxG7R_XUtk4K8ki_I8eriHB0Dy5y9Sux98.e6bfb552",
+      "difficulty": "easy",
+      "faction": "ashfang",
+      "generator": 2,
+      "ignored_threat": 1,
+      "layout": "split_courtyard",
+      "mission_seed": 424055097,
+      "objective": "elimination",
+      "roster": [
+        "ashfang_raider",
+        "ashfang_raider",
+        "ashfang_bowhunter"
+      ],
+      "stage": 0,
+      "style": "aggressive",
+      "supplies": 22,
+      "template": "raiding_party",
+      "template_version": 1
+    },
+    {
+      "campaign_seed": 17,
+      "code": "FT1.eJx9VE2P2zgM_SuCz0Hg-CPNpKdiUWwPeyjavQ0Kg7YYWzu27EpyMmnR_76PsqfJoEUvEw-fJD4-PvJ7QiHwMIXkmG4SbU4n08x9uCbH7wk1wYy2-jqzu1a9GQwOlbtsk1Af2FkKXLnR4zM5Pn7ZJA1ZbbRE17O7PYKjPZl2dhSfOrPz-AWEXOwbZ6YQ_0_-vYzqExmNA1v13vJwVR0jT6fwqhpPJ7benFlpGqhl9ZxuD-VGuXG2mrUKo7JMjn1QHz5u1eeB-p6dClJBQ73yAJvurUJYNeNQU1Bu7tmr2TYd2Zb1NpHq_dTTtbI0MCi9J39FlKUau_D_WW7iIlfA6wfqZ2FdLQSrASKaqTdyOnJd4aWo38HPwa2C_zFLN_b6zycmQoJXTcszwS_VLx2KgLFt5WmYoEdyRMt8oLrnymhowKLBDyHfGgtRsn3-kB82yWmhKi6BPgHIiXrPmyTeIt-doGoS32oBpniihQCwweiitRxbqrz5BvAxO2zTTZZtU5CvpaME6gM5pIRTthnUaXp0kGzDEijFPIFMX2lxhZh1t01_6d-nGZS1-ocsCgMKe_hYK7Ou4CjPi-lXYqL8OgvQIb8jfLMt5Bpr1AQ6VQOmeKC4C3Vs2g6xR-GYbcsvd9hAzy_15iBbxGpvqLEvaCxY_gg-TePKeaKFY3IUtRIU2vDANtxxLiSOKjkszXNRgKpfBXBzLX19rZmf6ILUEzVIgwJvsW-j5RdOYLs5RMZnbiF9FOv-IfS3YzdWHVovtqR6V9Y1N3mTvymKtJA5Kg6aHur9oS6zXX7IoplxR1z3mDzZKJ34FOMYfTzW_zFcdmYxzOtt8ddogxt7FTpWMMoT2ix0FeY6dI4ZQ249N7PcXpaEYquxWd4FBSdhTchpyR7Xix2VTKfBQhhmgDUrg9o0_2YrfMD8qb_jmwCfDH5km6GBZpiHip9NqDDJZ-4Rj3JKC4W39PGyOqQUwJE2sxfRMVGOv87Gscw2nl4ceD-Jce7bJS_Uvm2Addgq3xnudTuTE2Iv0Xq8dPDpouhy6dYkrsviQdeUNlTXTY5re52mvMvTHTPVtDvc3brf3TJC-CjToijK_RvQP6OMH_8Dhpcmvg.0b7b2cdb",
+      "difficulty": "easy",
+      "faction": "ashfang",
+      "generator": 2,
+      "ignored_threat": 1,
+      "layout": "ruined_lanes",
+      "mission_seed": 1504445678,
+      "objective": "hold_ground",
+      "roster": [
+        "ashfang_shieldguard",
+        "ashfang_bowhunter"
+      ],
+      "stage": 0,
+      "style": "defensive",
+      "supplies": 22,
+      "template": "lantern_defence",
+      "template_version": 1
+    },
+    {
+      "campaign_seed": 17,
+      "code": "FT1.eJx9VE2v2zgM_CuCz4Hh2EnqpLcuCuxhD8Xu3h4Kg7YYW1tbdiU5eXlF__sOZb8mDy16yQdJSTPDIb8lFAIPU0hO2SbR5nw2zdyHW3L6llATzGirrzO7W9WbwaBov803CfWBnaXAlRs9fianp8-bpCGrjZboWrs9IDjas2lnR_GqCzuPb6TwFvvGmSnE_8m_11H9TUajIFUfLQ831THe6RRuVeP5zNabCytNA7WsnrO03G-UG2erWaswKsvk2Af156dU_TNQ37NTQRg01CuPZNO9VwirZhxqCsrNPXs126Yj27JOE2Hvp55ulaWBAekj-RuiLGzsgv8H3cRFrEivP8CfBXW1AKwGiGim3kh1xLqmF1K_Sj8Htwr-21e6sde_r5gID7xpWpFL_lr91KGYMLatPA0T9EhOaJkPVPdcGQ0NWDT4LuBbYyFKfiiORblJzgtUcQn0Ccicqfe8SeIp8t0ZqibxrhbJDFe0EAA2GF20lmNLlTcvSD7lZZpt8jzNAL6WjhKgD-TwJJyS5lCn6dFBsg1LYC_mCWT6SosrxKzbNPupf3-whaS9-tTTC0l74Q8fyTLrCpbyvLh-RSbSr8MAIYoHxHffQq-xBingqRpAxQW7h1DHpu0QexKQebr__JAb6PmVcAG0u0j3njX2NRsZy4fkp2lcMU-0YExOIlcCpg0PoPiAeSdxsOSwdK9ZFKimVQE319LZt6r5ia54e6IG74DhPfYyWn4FBbibMkK-cAvxo1qPF6HDHbux6tB8MSbV231dc1M0xbvdLtvJJO1KTcf6UNb7fFuUebQzzojvnpIvNmonTsVARieP9X8Mn11YLPN2X3wQ26p6xILAQE9kEfaYb9kRxmIfhI4VP5uQqr-igooNQu5erQYmHNF8Zgrv128plCUhw2qwH4xXdgzKz7IXDeT81Z74MbnIfTFWR5ugoWaYh0owVCi4cA-dorrSUimXvl5Xx-wl4Uib2UsPMGKOv87GsQw7RmJx5JvRvD8L7e8bYR2-yneGe93O5DRwvUbr8drBtou-y6F7y7je7466pqyhum4KHDvoLONtkW2ZqaZt-XDqcZfLRMk22R-P5bvd4QiXgMX3_wF7DC3l.be953cc3",
+      "difficulty": "easy",
+      "faction": "ashfang",
+      "generator": 2,
+      "ignored_threat": 1,
+      "layout": "central_plaza",
+      "mission_seed": 3259987469,
+      "objective": "extraction",
+      "roster": [
+        "ashfang_shieldguard",
+        "ashfang_bowhunter"
+      ],
+      "stage": 0,
+      "style": "defensive",
+      "supplies": 22,
+      "template": "split_extraction",
+      "template_version": 1
+    },
+    {
+      "campaign_seed": 17,
+      "code": "FT1.eJx9VE1v2zgQ_SuEzoagD8t2vKdFUWyPxe7egkCgpLHEDUWqJGXHKfrf9w2l1A5S9GLJHGrmvTdv5nsiQ6BxCskx2ySdOp1UO-twTY7fE9kGZU39bSZ3rbUaFS5VebFJpA7kjAxUO-vxmhwfnzZJK02nOj5d7-Y7HFpzUv3sZEx1JufxRAi1yLdOTSH-T_69WPG3VB0upOKzofEqBkKdQSCrsKcTGa_OJDo5yp7ES5Yeqo1wdjYddSJYYUg68kF8-ZqKf0apNTkRmEErtfAItsMfAseitWMjg3CzJi9m0w7S9NSlCbP3k5bX2siRAOmz9FecErMxC_6fdBMXsSK8voA_Mep6AViPEFFNWvHtiHUNL6R-FX4JbhX8t1UGq7vf35gkCrxrWllw_FJ_6FAMKNPXXo4T9EiOaJkPstFUqw4aEGvwg8H3ykCUYlc-lIdNclqgskugT0DkJLWnTRK_AkZtL0lM1SOWI0MP_nCBddFZjoysvXpF8LE4pNmmKNIM2BtuqATyUTpUxKdpAXFajQZK03KutGLvBKl03bEp2Kt5mn1o3ycyUFSLr1q-Su4u7OEjV6KuhqM8LaZfkbHy6yxAh_IO8c22kMs2IAU8dQuoSLC9OxpI9QPOHhlkkVZPd7FRvrwRLoF2G-neosq8RSNj_uH4NNkV8yQXjMmR5UrAtKURFO8wb_kcLCkszWsXBeppVcDNDTf2vWp-khfUnmSLOmB4O3u1ht5AAe7mECGfqYf4Ua37ROjwQM7Wg_QD-1I2edU01JZtud9usy0P0vbQyYdmd2iqIi8PRXQzvmHbPSbPJmrHRsU8RiPb5j-Czc7Elnm_Lj5ZULNahIEErPKMHcBwBQY7DI4IU248tTN_vWwJQabDavkzCHgJe4Jvc_W4X4wVPJ4KG2GcEWxIKHDr6Bdr4QsGUPwVcyL4rPDgdYYOqnEea3pRoYbsZ9I4j3JyDxk3N_KyWqTigJOdmj2LjpFy9G1Wjni4kXqx4P0oxsHvl7pQ-7YClmlDCDWbFdZ6xlsvboePd57eUvxs2a6iXblt9rncU77PKm5ZlhX5brs_VV3Tyoa7-OHWLdH9duchgyPz6iGrimyHKTmD54__AehuL8E.99485b15",
+      "difficulty": "easy",
+      "faction": "hollow",
+      "generator": 2,
+      "ignored_threat": 1,
+      "layout": "central_plaza",
+      "mission_seed": 4159052064,
+      "objective": "hold_ground",
+      "roster": [
+        "hollow_gravebound",
+        "hollow_archer",
+        "hollow_gravebound"
+      ],
+      "stage": 1,
+      "style": "balanced",
+      "supplies": 22,
+      "template": "courtyard_watch",
+      "template_version": 1
+    },
+    {
+      "campaign_seed": 17,
+      "code": "FT1.eJx9VMGO20YM_ZWBzoYgy5LtOKcUCNBDURRtb4uFQEm0NI00o8yM7HWC_HsfR_baiw1ysWSSIh8fH_k9oRB4nEJyyFZJq49H3cxDuCSH7wk1QVtTfZ3ZXapBjxpB5TpfJTQEdoYCV856vCaHp-dV0pBpdSvWa-x6C6M1R93NjmKqEzuPJ1yoxb5xegrxf_Lv2aq_SbcISNVnw-NF9Yw6vUJWZY9HNl6fWLU0UsfqJUv35Uo5O5uWWxWsMkyOfVC__5Wqf0YaBnYqSAcNDcrD2fQfFcyqsWNNQbl5YK9m0_RkOm7TRLr300CXytDIgPSZ_AVWlm7Mgv-13cRFrHBfX9A_C-pqAViNIFFPg5boiPXqXpr6mfsluCvhv6zS26H9dcREKPBmaJtc_Ofq3YSiQ5uu8jRO4CM5YGQ-UD1wpVtwwMLBDwHfaQNS8u3mw2a_So4LVFEJ-AnwHGnwvEriV8A42HMSU3XwrZGhQ_9QgXVRWY4NVV5_g_Mp36fZKs_TDNhrGSgB-UgOFfFpmoOcZsAAyTSSKy1FO4H0ULUiCtHqOs3eje9Pcs6e1adpcpaaXuYLgfjYLXNbQVOeF9lfsQn3120AE5sHzHfhgjBboy0gqhqARYLiwdSz7nrYngRmnpbPD76RXm4tb4C3iA3fvdrcvLFn-RH_NNkr5okWjMlBCEvQa8Mjm_CAuRA7uuSwjM9EDiq6c-DmWob7ljk_0RnVJ2pQCT3ebd-s4RssAF7tI-gTdxhA5OsxEabcs7NVT74XbVK9Luuam02z2RVFVsgyFfuWPtTbfV3m680-j4rGNyK9p-SLieyJWLGTUcy2_o8htROLbN6ejN9Euaq2uBHY6YkMzB4rLmdCG5yE0LPiFx1S9UfkULGGyd2j1ciET1o-MoWP16cEyp2QfdU4EdorY4Pys5xGDb5_dipelxe-L9q0USgYqR7nsRIMFQJOPICnyK4MVcJlsuerZkpxOGr17GUG2DLHX2ftWPYda7Fo8s123suC-_tRWPav6qRk3KhkdbPJHYz34n3M8y3F6wC3JW83Rb1b047Xu6yUAWZZvt4Wu2PZ1g3VMtN3UfdEj_delg4vWZGXu7zY4tCc0OaP_wE9fjfV.ab399265",
+      "difficulty": "easy",
+      "faction": "hollow",
+      "generator": 2,
+      "ignored_threat": 1,
+      "layout": "narrow_approach",
+      "mission_seed": 1042572466,
+      "objective": "extraction",
+      "roster": [
+        "hollow_gravebound",
+        "hollow_archer",
+        "hollow_gravebound"
+      ],
+      "stage": 1,
+      "style": "aggressive",
+      "supplies": 22,
+      "template": "homeward_passage",
+      "template_version": 1
+    },
+    {
+      "campaign_seed": 17,
+      "code": "FT1.eJx9VMuO2zoM_RVBa8Nw_Egy6bIt0OXFnbsbDAzaom21tuRKcjJp0X-_pJxMMphBN3mQNHl4eI5_SwgBpznIQ5ZIpbtOt8sYzvLwW0IbtDX1zwXduR71pKmo2uSJhDGgMxCwdtbTT3l4ek5kC0ZpxdFL7WZLQWs63S8OYqsjOk_flKJZ6Fun5xD_y_9OVvwLWlFBKr4anM5iQJozCOoqbNeh8fqIQsEEPYqXLN1XiXB2MQqVCFYYBIc-iG__pOJxgnFEJwJv0MIoPCXb4ZOgsGjt1EAQbhnRi8W0A5geVSp5ez-PcK4NTEiQvoI_UxR5G7Pif11XuoiV0pcftD8y6noFWE9Eop5HzdUR6yW9LvVR-iW4C-F_nTLYUf29YgYa8OZoRc75U_3uQjGhTV97mGbiQx7oZD5AM2KtFXGAzMEfBt9rQ6Tk2-Kh2CeyW6GySoifQJkORo-JjE8RxtGeZGzVU25DHXran1RgXVSWQwO1178o-ZTv0yzJ8zQj7A0fFAj5BI4m0qNpTuS0Ix0QTMu90oq1E0CPtWJRsFY3afbufI9EbxCf7eLCGZzi-5JAfNwWUdWkKY-r7C_YmPuLG4iJ4g7zTbhEmG1oLUJUtwSWGpR3oQF1P1DsiWHmafV8l5vg5bpyQXjLuPAtq801G3fmD87Ps71gnmHFKA9MmKRdW5zQhDvMJcdpSwzr-TxzwDhfOXBLw8d9y5yf4UTTZ2hpEu14i_2yBq-wCHCyj6CP2NMBIl_3jejKAzpbD-AH1iY0m6ppsC3aYleWWclmKvcKHprtvqnyTbHPo6LpGZbek_xhInssVvJkFLNtviNJ7Ygsm7evjC_YIRmZPc3e0khvjkfNzgKDdvHizrlCewFCkQk-MvqtjpI_tFFRFRSjblONL8QhmfOII60ZyeGbcDkf5nQ5ecUJB0ovnikkkzj8uWiHbFdS9SqpN-a6m0vc3Uy9-qfueWZ0hEyuMX6PRb-_r3m-tng9wLbCbVE2uw3scLPLKj5AluWbbbnrKtW00PBN3lXdGt2_r9k0pLA8e3jYZ9uCIkfa88__MxggWQ.ff03034e",
+      "difficulty": "easy",
+      "faction": "hollow",
+      "generator": 2,
+      "ignored_threat": 0,
+      "layout": "split_courtyard",
+      "mission_seed": 4209980631,
+      "objective": "elimination",
+      "roster": [
+        "hollow_gravebound",
+        "hollow_archer",
+        "hollow_gravebound"
+      ],
+      "stage": 1,
+      "style": "balanced",
+      "supplies": 14,
+      "template": "herbwardens",
+      "template_version": 1
+    },
+    {
+      "campaign_seed": 17,
+      "code": "FT1.eJx9VE2vm0gQ_CsjzhayAdvYe91Ie9jDKtnbU4Qapg2zDwYyM_g9J8p_3-oxL-YpUS4Gd89HVXUV3xIKgYcpJOftJtHmcjHN3Idbcv6WUBPMaKsvM7tb1ZvBYNF-l20S6gM7S4ErN3q8Juenz5ukIauNluqydndAcbQX086O4lFXdh5PtHAX-8aZKcT_yb8vo_pIRmNBqj5YHm6qY9zTKZyqxsuFrTdXVpoGalm9btNyv1FunK1mrcKoLJNjH9Rf_6Tq00B9z04FYdBQrzyaTfeHQlk141BTUG7u2avZNh3ZlnWaCHs_9XSrLA0MSB_I31BlYWPv-H_QTVzEivbyAv4sqKs7wGqAiGbqjayOWJf2ndSv2q_BLYL_9pZu7PXvV0yEC94NLc-k_1L9NKHYMLatPA0T9EjOGJkPVPdcGQ0NWDT4LuBbYyFKdshPeblJLneo4hLoE9AJbuZNEjdhyppsSOJRLXo5TmjBHy4YXXSWY0uVN1_RfMrKdLvJsnQL7LUMlIB8IIcbYZQ0gzhNjwGSbVgKe_FOINNXWkwhXt2l25_G93EGYq3-Jgte6MIdPlJl1hUM5fnu-QWYCL9EATLkK8AP10KtsQYnwKkaIMUBxarUsWk71J4EY5buP696A72-8c0BtohsH11j37qRsPxIf5rGBfNEd4zJWdRKQLThgW1YYS6kDpYc7rNzUYCqXwRwcy1jfa-Zn-gFV0_U4BoQfNS-jpbfMAHtpoyIr9xC-ijW-iDMt2M3Vh35TlxJ9W5f19zkTX4sim0hMSpKTaf6UNb7bJeXWfQy9ojpnpJnG6UTmyKN0cZj_R_DZFcWw7z_WPzJF0aEJc2SKsP4ZnwykilwHWevVplVxitSGvb_VcQf69B8NlZHS6CG04aKX02oEMsr96AZxZGByHKZyssy7700HGkze5EQ8XD8ZTaOJajw891P72K1uhfaPeK8RKdq3XjlZ-YpZvutGrrR2bonzSLQfdcPzU_HojzoHeNRHjg7Yl-Z7_TpUBwzfeGST7Tatf4SSyIAMd_lx_32cEK-ruDx_X_zsxRF.ef6ca64e",
+      "difficulty": "easy",
+      "faction": "verdant",
+      "generator": 2,
+      "ignored_threat": 1,
+      "layout": "ruined_lanes",
+      "mission_seed": 3313750695,
+      "objective": "elimination",
+      "roster": [
+        "verdant_grovekeeper",
+        "verdant_thornblade"
+      ],
+      "stage": 3,
+      "style": "elite",
+      "supplies": 28,
+      "template": "elite_hunt",
+      "template_version": 1
+    },
+    {
+      "campaign_seed": 17,
+      "code": "FT1.eJx9VE2Pm0oQ_CsjzhbCfPgrx7xI7xi95LaKUANtmJdhIDODvd4o_z3V4I1ZJcplF3c3M1XVVXyPKATuxxCdkk3U6PNZ15MJt-j0PaI66MGW3yZ2t9LoXmOo2KabiExgZylw6QaPx-j09GUT1WQb3Uj1PrvdoTjYs24nR_NRF3Ye_9HCXexrp8cw_44-Xwf1H-kGA7H6YLm_qY5xT6dwqhrOZ7ZeX1g11FPL6jmJD8VGuWGyDTcqDMoyOfZB_fsxVp96MoadCsKgJqM8mnX3TqGs6qGvKCg3GfZqsnVHtuUmjoS9Hw3dSks9A9IH8jdUWdjYBf8vupGbsaJ9fwB_FtTlArDsIaIejZbpJD7u98XrwELrzwPPwd1F_-tN3WCav0-MhCveLC5LpX8tf9vS3NC2LT31IzSJTlibD1QZLnUDHVh0-CHwW20hTLrLjtlhE50XqOIUaBTQCW7iTTS_BIhmuEbzSS1aOQ5oIQCMMLjZXI4tlV6_oPmUHuJkk6ZxAuiV7JQAvCeHC-GVOIU2tcEOydYshULsE0ibshFfiF23cfLbBt-zhaBGfTT0QrJgOMTPVJmbEqbyvPj-jkyEv8cBMmQrxA_nQq2hAingKWtAxQH5qtSxbjvUngRkGhdfVr2enl8JZ0Cbz3QfXW1fuzNj-SP9cRzumEdaMEYnkSsC05p7UFxhzqUOlhyW3dWLAuV4V8BNlez1rWp-pCvuHqnGPWD4qL0Mll9BAe7mMEO-cAvxZ7XWB2HDHbuh7Mh3YkuqtkVVcZ3V2T7Pk1yylB8aOla7Q1Wk2-yQzmbGO-K6p-irnbUTnyKSs4-H6n-Gyy4slnn7xfiHz4wcS6QlWJrx4fikJVZkeZi8WgVXaa9INfD_n3L-mEPzq7bN7AnUcFpf8rMOJUS8sAHNWRzZiIzLWq73hRfScNToyYuEyIfjb5N2LEmFoxdDvcnV6l5o98jzkh0kFQVjSFDdS63AmAMi4ixv_NK7OFNRNbttw8djsj8meG1X8C7Lq_2W9rzdJ8XqrfWnWOKAh2y3z3f5PgX2Czj8-AnyUBQK.ac2daa7d",
+      "difficulty": "easy",
+      "faction": "hollow",
+      "generator": 2,
+      "ignored_threat": 0,
+      "layout": "central_plaza",
+      "mission_seed": 1367464728,
+      "objective": "elimination",
+      "roster": [
+        "hollow_castellan",
+        "hollow_gravebound"
+      ],
+      "stage": 4,
+      "style": "elite",
+      "supplies": 28,
+      "template": "last_beacon",
+      "template_version": 1
+    },
+    {
+      "campaign_seed": 18,
+      "code": "FT1.eJyFVMtu4zAM_BVD5yDwI0nTXHd7XmB7DAqBtmhbW1l2JTlpWvTfl5STxtsN0EseJE0OhzN-FxACdkMQu3QhlK5rXY0mnMTuXUAVdG_ly4juJI3u9FQEJqCzEFC63tNPsds_LUQFVmnF0Wtl1dtaN6OD2OeAztO32GU0CH3l9BDif_HgA5RG-xZVUoIBW-Eu-Q1aoUuobfKINmiLZpGMtmrBNlTXIuFoF4mCDhqMZYEBV2ASj-Cqdil4IT8YOEkLHdKgx0B14BRlkGHaCdnnHsLFoZT255GCVkOL3UlOg2RH7OjBaK7PluklO8G5kX0N7szjN1Pa3qjvagagGV_v4eAob7HvtG2kh24w6GMgsoxSK2LCX5j44A0aGiB2-aa4L7YLUU-AWQLEUqBMDcbjQsQnwbc1nUDEfg0lU2rREAt05t5F3Ti0IL1-o-Q-3xINeb5MCX7Zjzz0JDtwNJIpytckE0P34qNzYM3iCKCNVGi9ZiVGIr9c8teANvnRjy6cpnsqh97HjRGV7Ova40TDGRpf4Cx1YqOYQb4KM1-IvqStCJCsCCs1uJuFWtRNS7E9o8yX66dZroPXy8YFwV3Ffa9ZbS_ZuDJ_cH4Y-jPmASaMYsd8CVq1wo4uP8O84jhtiWE6YU8UMMxPCtxY8n3_5c0PcKThA1Q0iFa8xt56ixdUhHexjZgP2BD9ka55I7pxi66XLZ2f5Qllti5LrIqquFut0hU7arVVcF9utuU6z4ptHkVNz7D69uLZRvJYruRfJyI9f5CUdkAWzb9vhJ9YI4QEjEnYXxr9MnnU7C6w2I8-mdk30T6BRJENbjj-4VpHyWdtVRQFxahbJ_FVB0kOPZC_dlkkh0_C5XyX4_ni62X0mdKjZwrJIw5fRu2QHUuanhQ199cMH1vs6uuzfaRvNRrVjNPpLtGyP7aku2j8_2NPl0bXM2C5Xt2rEtIKyrIq6LGNSlPMijRDhBKy7a3QtdH8pczOYZll2fp-k1PgQMt-_AWPlRmN.a15c8a20",
+      "difficulty": "standard",
+      "faction": "ashfang",
+      "generator": 2,
+      "ignored_threat": 1,
+      "layout": "open_courtyard",
+      "mission_seed": 401159621,
+      "objective": "elimination",
+      "roster": [
+        "ashfang_shieldguard",
+        "ashfang_bowhunter",
+        "ashfang_bowhunter"
+      ],
+      "stage": 0,
+      "style": "ranged",
+      "supplies": 22,
+      "template": "bowline",
+      "template_version": 1
+    }
+  ],
+  "note": "Frozen configuration examples, not saved combat or upgraded campaign heroes."
+}

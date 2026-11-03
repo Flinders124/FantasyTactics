@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="CampaignBackgroundDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/campaign_background_definition.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+stable_id = "ferryman"
+display_name = "River ferryman"
+origin = "Once guided travellers across the flooded marches."
+motivation = "Wants the roads and rivers safe for ordinary travellers."

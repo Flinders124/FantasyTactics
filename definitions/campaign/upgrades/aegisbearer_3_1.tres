@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="CampaignUpgradeDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/campaign_upgrade_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+stable_id = "aegisbearer_3_1"
+hero_id = "aegisbearer"
+required_level = 3
+display_name = "Stoneheart"
+description = "+3 HP"
+modifiers = {"health": 3}

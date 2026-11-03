@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="MissionTemplate" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/mission_template.gd" id="1"]
+[resource]
+script = ExtResource("1")
+stable_id = "bowline"
+display_name = "Silence the Bowline"
+description = "Protected shooters cover the courtyard. Break their sight lines and close by a different route."
+objective_id = "elimination"
+style = "ranged"
+layout_ids = PackedStringArray("ruined_lanes", "split_courtyard", "open_courtyard")
+role_pattern = PackedStringArray("front", "ranged", "ranged", "caster")
+minimum_stage = 0
+recovery = false
+elite = false
+finale = false

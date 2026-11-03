@@ -15,7 +15,7 @@ func result_for(state: CampaignState) -> CampaignMissionResult:
 	return CampaignMissionResult.new({"version":1,"mission_id":state.active.id,"outcome":"victory","abandoned":false,"reason":"Persistence fixture","heroes":people,"rounds":4,"tactical_result":"VICTORY"})
 func run() -> void:
 	print("Persistence phase: start")
-	var state := CampaignState.new(17,"standard")
+	var state: CampaignState = LegacyCampaignFixture.new(17,"standard")
 	print("Persistence phase: state ready")
 	var store := CampaignSaveStore.new(); store.path="user://persistence-tests/%d/active.json"%OS.get_process_id()
 	print("Persistence phase: store ready")

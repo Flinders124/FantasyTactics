@@ -24,7 +24,7 @@ func run() -> void:
 	flow.audio.settings_path="user://release-profile.cfg"; flow.audio.preferences=SettingsSchema.defaults(); flow.audio.apply_preferences(false)
 	for resolution in [Vector2i(1280,720),Vector2i(1920,1080)]:
 		root.size=resolution
-		flow.campaign.state=CampaignState.new(17,"standard"); flow.campaign.hq_open=false; flow.campaign.headquarters(); await frames(15)
+		flow.campaign.state=LegacyCampaignFixture.new(17,"standard"); flow.campaign.hq_open=false; flow.campaign.headquarters(); await frames(15)
 		await sample("camp_overview")
 		flow.menu.open_camp_page(0)
 		await sample("camp_covered_by_mission_board")

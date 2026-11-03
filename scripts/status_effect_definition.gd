@@ -6,3 +6,5 @@ extends Resource
 @export_multiline var description: String = "Movement allocation reduced by 50% for two future turns."
 @export_range(1, 10) var affected_turns: int = 2
 @export_range(0.0, 1.0) var movement_multiplier: float = 0.5
+
+@export_range(0, 100) var damage_absorption: int = 0

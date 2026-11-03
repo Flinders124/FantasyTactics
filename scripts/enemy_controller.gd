@@ -40,6 +40,58 @@ var _planning_positions: Dictionary = {}
 var _planning_map_iteration: int = 0
 var _planner_accounted: bool = false
 var _last_started_serial: int = -1
+var recent_positions: Dictionary = {}
+var failed_endpoints: Dictionary = {}
+
+func _map_iteration() -> int:
+	return NavigationServer3D.map_get_iteration_id(controller.navigation.map) if controller.navigation.map.is_valid() else 0
+
+func _occupancy(actor: CombatUnit) -> Dictionary:
+	var result := {}
+	for unit in controller.units:
+		if is_instance_valid(unit) and unit.is_alive() and unit!=actor:
+			result[unit.stable_id]=unit.global_position
+	return result
+
+func _prune_memories() -> void:
+	for id in recent_positions.keys():
+		var unit := controller.find_unit(id)
+		if unit==null or not unit.is_alive(): recent_positions.erase(id)
+	for id in failed_endpoints.keys():
+		var unit := controller.find_unit(id)
+		if unit==null or not unit.is_alive(): failed_endpoints.erase(id)
+
+func _failed_points(actor: CombatUnit) -> Array[Vector3]:
+	var result: Array[Vector3] = []
+	var records: Array = failed_endpoints.get(actor.stable_id,[])
+	var occupancy := _occupancy(actor)
+	for index in range(records.size()-1,-1,-1):
+		var record: Dictionary = records[index]
+		if actor.global_position.distance_to(record.origin)>.5 or record.map_iteration!=_map_iteration() or record.positions!=occupancy:
+			records.remove_at(index)
+		else: result.push_front(record.destination)
+	if records.is_empty(): failed_endpoints.erase(actor.stable_id)
+	return result
+
+func memory_snapshot(id: String) -> Dictionary:
+	_prune_memories()
+	var actor := controller.find_unit(id)
+	return {"positions":recent_positions.get(id,[]).duplicate(),"failed_endpoints":_failed_points(actor) if actor!=null and actor.is_alive() else []}
+
+func _remember_failure(actor: CombatUnit, destination: Vector3) -> void:
+	_failed_points(actor)
+	var records: Array = failed_endpoints.get(actor.stable_id,[])
+	for index in range(records.size()-1,-1,-1):
+		if records[index].destination.distance_to(destination)<.15: records.remove_at(index)
+	records.append({"destination":destination,"origin":actor.global_position,"map_iteration":_map_iteration(),"positions":_occupancy(actor)})
+	if records.size()>3: records.pop_front()
+	failed_endpoints[actor.stable_id]=records
+
+func _start_planner(next: EnemyTactics, actor: CombatUnit, movement: bool, actions: bool) -> void:
+	var history: Array[Vector3] = []
+	history.assign(recent_positions.get(actor.stable_id,[]))
+	next.diagnostics_enabled=diagnostics_enabled
+	next.begin(controller,actor,movement,actions,history,_failed_points(actor))
 
 class Approach extends RefCounted:
 	var target_id: String = ""
@@ -75,6 +127,10 @@ func _on_state_changed(state: CombatController.State) -> void:
 	if state==CombatController.State.SETUP:
 		decision_history.clear()
 		last_diagnostics.clear()
+		_last_started_serial=-1
+	if state in [CombatController.State.SETUP,CombatController.State.VICTORY,CombatController.State.DEFEAT,CombatController.State.DRAW]:
+		recent_positions.clear()
+		failed_endpoints.clear()
 	if state in [CombatController.State.SETUP, CombatController.State.TURN_START, CombatController.State.TURN_END, CombatController.State.VICTORY, CombatController.State.DEFEAT, CombatController.State.DRAW]:
 		cancel()
 
@@ -86,6 +142,12 @@ func _on_turn_started(unit: CombatUnit, turn_number: int) -> void:
 	if not enabled or unit.faction != CombatUnit.Faction.ENEMY or not unit.is_alive():
 		return
 	_last_started_serial=turn_number
+	_prune_memories()
+	var history: Array[Vector3] = []
+	history.assign(recent_positions.get(unit.stable_id,[]))
+	history.append(unit.global_position)
+	if history.size()>3: history.pop_front()
+	recent_positions[unit.stable_id]=history
 	actor_id = unit.stable_id
 	serial = turn_number
 	move_attempted = false
@@ -122,7 +184,7 @@ func _run_queued(ticket: int) -> void:
 	if ticket != epoch:
 		return
 	_queued = false
-	if controller.guidance_paused: return
+	if controller==null or controller.guidance_paused: return
 	var actor := _current_actor()
 	if actor == null:
 		cancel()
@@ -145,7 +207,7 @@ func _run_queued(ticket: int) -> void:
 		Stage.AFTER_MOVE:
 			# A fresh current-position evaluation, never the pre-move target snapshot.
 			var choice := EnemyTactics.new()
-			choice.begin(controller,actor,false,not attack_attempted)
+			_start_planner(choice,actor,false,not attack_attempted)
 			turn_action_queries+=choice.action_queries
 			if choice.best.action==null or not _submit_action(actor,choice.best.action):
 				stage = Stage.FINISH
@@ -170,7 +232,7 @@ func _begin_plan(actor: CombatUnit) -> void:
 	_account_planner()
 	planner=EnemyTactics.new()
 	_planner_accounted=false
-	planner.begin(controller,actor,not move_attempted,not attack_attempted)
+	_start_planner(planner,actor,not move_attempted,not attack_attempted)
 	_planning_revision=_revision
 	_planning_positions.clear()
 	for unit in controller.units:
@@ -202,6 +264,7 @@ func _recover_plan(actor: CombatUnit) -> void:
 
 func _process(_delta: float) -> void:
 	if stage!=Stage.PLANNING: return
+	if controller==null or controller.guidance_paused: return
 	var actor := _current_actor()
 	if actor==null or controller.state!=CombatController.State.AWAITING_COMMAND:
 		cancel()
@@ -223,6 +286,11 @@ func _process(_delta: float) -> void:
 		last_diagnostics.turn_action_queries=turn_action_queries
 		last_diagnostics.restarts=planning_restarts
 		last_diagnostics.seed=0
+		last_diagnostics.actor_health=actor.health
+		last_diagnostics.actor_max_health=actor.definition.maximum_health
+		last_diagnostics.actor_position=str(actor.global_position)
+		last_diagnostics.recent_positions=recent_positions.get(actor_id,[]).map(func(point: Vector3) -> String: return str(point))
+		last_diagnostics.failed_endpoints=_failed_points(actor).map(func(point: Vector3) -> String: return str(point))
 		var config: EncounterConfiguration = get_parent().get("configuration")
 		if config!=null: last_diagnostics.seed=config.battlefield_seed
 		decision_history.append(last_diagnostics.duplicate(true))
@@ -256,6 +324,7 @@ func _execute_plan(actor: CombatUnit) -> void:
 		var accepted := controller.submit_command(MoveCommand.new(id,plan.destination))
 		command_submitted.emit(id,"move",accepted)
 		if not accepted and _current_actor()!=null:
+			_remember_failure(actor,plan.destination)
 			stage=Stage.AFTER_MOVE
 			_schedule()
 	else:
@@ -285,10 +354,12 @@ func _on_navigation_finished(_success: bool) -> void:
 		stage = Stage.THINK
 		_schedule()
 
-func _on_action_completed(id: String, action: String, _reason: String) -> void:
+func _on_action_completed(id: String, action: String, reason: String) -> void:
 	if id != actor_id or _current_actor() == null:
 		return
 	if action == "move" and stage == Stage.WAIT_MOVE:
+		if reason.begins_with("Movement blocked") and planner!=null:
+			_remember_failure(_current_actor(),planner.best.destination)
 		stage = Stage.AFTER_MOVE
 		_schedule()
 	elif action == "attack" and stage == Stage.WAIT_ATTACK:
@@ -402,4 +473,3 @@ func choose_area(actor: CombatUnit) -> AreaChoice:
 				best.point = point
 				best.score = score
 	return best
-

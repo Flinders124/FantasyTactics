@@ -14,7 +14,7 @@ func result_for(state: CampaignState) -> CampaignMissionResult:
 	for id: String in state.active.party: people[id]={"health":0 if id=="knight" else 8,"maximum_health":20}
 	return CampaignMissionResult.new({"version":1,"mission_id":state.active.id,"outcome":"victory","abandoned":false,"reason":"Integrity fixture","heroes":people,"rounds":4,"tactical_result":"VICTORY"})
 func run() -> void:
-	var state := CampaignState.new(17,"standard")
+	var state: CampaignState = LegacyCampaignFixture.new(17,"standard")
 	state.commit(state.offers[0].id,["knight","ranger"]); state.resolve(result_for(state))
 	var text := CampaignSaveCodec.encode(state,"debrief")
 	check(CampaignSaveCodec.decode(text).state!=null,"Baseline valid: "+CampaignSaveCodec.decode(text).error)
@@ -23,14 +23,14 @@ func run() -> void:
 		data.state.processed.erase("00000011-000-0")
 		data.state.last_debrief={}
 		data.phase="headquarters")).state==null,"Future processed resolution must be rejected")
-	var two := CampaignState.new(17,"standard")
+	var two: CampaignState = LegacyCampaignFixture.new(17,"standard")
 	for index in range(2):
 		two.commit(two.offers[0].id,["knight","ranger"]); two.resolve(result_for(two))
 	check(CampaignSaveCodec.decode(changed(CampaignSaveCodec.encode(two,"headquarters"),func(data: Dictionary) -> void:
 		data.state.processed.erase("00000011-001-0")
 		data.state.processed["00000011-000-1"]=true
 		data.state.last_debrief={})).state==null,"Only one processed mission per resolution is valid")
-	var fresh := CampaignState.new(17,"standard")
+	var fresh: CampaignState = LegacyCampaignFixture.new(17,"standard")
 	check(CampaignSaveCodec.decode(changed(CampaignSaveCodec.encode(fresh,"headquarters"),func(data: Dictionary) -> void:
 		var offer: Dictionary=data.state.offers[0]
 		offer.final=true; offer.ignored=0
@@ -59,11 +59,12 @@ func run() -> void:
 			check(CampaignSaveCodec.decode(changed(baseline,func(data: Dictionary) -> void: data.state[field]=bad)).state==null,"Wrong type rejected for "+field)
 	check(CampaignSaveCodec.decode("{").state==null,"Malformed JSON rejected")
 	check(CampaignSaveCodec.decode(" ".repeat(CampaignSaveCodec.MAX_BYTES+1)).state==null,"Oversize input rejected")
-	var legacy := CampaignState.new(29,"standard")
-	for offer: Dictionary in legacy.offers:
-		for field: String in ["faction","stage","elite"]: offer.erase(field)
-		offer.erase("code")
-		offer.code=EncounterCode.encode(legacy.configuration_for(offer,["knight","ranger"]))
+	# Use a real pre-template save; deriving one from current offers retains new metadata.
+	var legacy_record := CampaignSaveCodec.decode(FileAccess.get_file_as_string("res://tests/legacy_campaign_v1.json"))
+	check(legacy_record.state!=null,"Shipped legacy checkpoint loads")
+	if legacy_record.state==null:
+		print("SAVE INTEGRITY RESULT: %d failures"%failures); quit(1); return
+	var legacy := legacy_record.state
 	var frozen := legacy.offers.duplicate(true)
 	var old_save := CampaignSaveCodec.decode(CampaignSaveCodec.encode(legacy,"headquarters"))
 	check(old_save.state!=null and old_save.state.offers==frozen,"Legacy v1 offers remain frozen")

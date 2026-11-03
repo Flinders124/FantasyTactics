@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="MissionTemplate" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/mission_template.gd" id="1"]
+[resource]
+script = ExtResource("1")
+stable_id = "elite_hunt"
+display_name = "The Warning Bell"
+description = "Defeat the faction leader and escorts. Watch the locked blast warning and leave its area before the leader acts again."
+objective_id = "elimination"
+style = "elite"
+layout_ids = PackedStringArray("central_plaza", "split_courtyard", "ruined_lanes")
+role_pattern = PackedStringArray("front", "ranged")
+minimum_stage = 3
+recovery = false
+elite = true
+finale = false

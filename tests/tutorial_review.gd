@@ -5,7 +5,8 @@ func capture(label: String) -> void:
 	await process_frame
 	await process_frame
 	await RenderingServer.frame_post_draw
-	viewport.get_texture().get_image().save_png(ProjectSettings.globalize_path(prefix+"-"+label+".png"))
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(prefix.get_base_dir()))
+	check(viewport.get_texture().get_image().save_png(ProjectSettings.globalize_path(prefix+"-"+label+".png"))==OK,"Actual renderer capture saved: "+label)
 func click(point: Vector2) -> void:
 	for down in [true,false]:
 		var event := InputEventMouseButton.new()
@@ -26,7 +27,7 @@ func point_at(point: Vector2) -> void:
 	for frame in range(4): await process_frame
 func run() -> void:
 	root.size=Vector2i(1920,1080) if OS.get_cmdline_user_args().has("1080") else Vector2i(1280,720)
-	prefix=("res://../verification/settings/tutorial-max-%d" if OS.get_cmdline_user_args().has("max-ui") else "res://../verification/tutorial/review-%d")%root.size.x
+	prefix=("res://verification/onboarding/tutorial-max-%d" if OS.get_cmdline_user_args().has("max-ui") else "res://verification/onboarding/basic-review-%d")%root.size.x
 	DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
 	viewport=SubViewport.new()
 	viewport.size=root.size
@@ -158,8 +159,15 @@ func run() -> void:
 	await capture("normal-setup-after-skip")
 	check(flow.screen=="party" and flow.combat==null and not paused,"Actual Skip confirmation reaches clean normal setup")
 	flow.show_title()
+	for frame in range(600):
+		if flow.retired.is_empty(): break
+		await process_frame
+	check(flow.retired.is_empty(),"Rendered encounter retirement completes before shutdown")
 	flow.queue_free()
-	await process_frame
+	for frame in range(8): await process_frame
+	# This harness owns the offscreen viewport, including its renderer/input resources.
+	viewport.queue_free()
+	for frame in range(8): await process_frame
 	if FileAccess.file_exists("user://tutorial_visual_verification.cfg"): DirAccess.remove_absolute(ProjectSettings.globalize_path("user://tutorial_visual_verification.cfg"))
 	print("TUTORIAL VISUAL RESULT: %d failures"%failures)
 	quit(0 if failures==0 else 1)

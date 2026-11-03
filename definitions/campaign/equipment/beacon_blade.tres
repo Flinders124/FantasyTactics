@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CampaignItemDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/campaign_item_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+stable_id = "beacon_blade"
+display_name = "Lantern Oathblade"
+slot = "weapon"
+description = "+2 basic damage; +0.5 m basic reach."
+rarity = "legendary"
+icon_id = "legendary_sword_a"
+vendor = "trader"
+compatible_heroes = PackedStringArray("knight", "recruit")
+cost = 45
+minimum_level = 4
+icon_variants = PackedStringArray("legendary_sword_a", "legendary_sword_b")
+modifiers = {"basic_damage": 2, "basic_range": 0.5}

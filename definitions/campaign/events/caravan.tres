@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="CampaignEventDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/campaign_event_definition.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+stable_id = "caravan"
+revision = 1
+display_name = "A Passing Caravan"
+description = "Traders offer a fair price for recovered scrap. No equipment owned by companions is included in the trade."
+eligibility = "any"
+choices = Array[Dictionary]([{ "id": "sell", "label": "Trade unclaimed scrap", "supplies": 6, "recovery": 0 },
+{ "id": "directions", "label": "Share safe directions instead", "supplies": 0, "recovery": 0 }])

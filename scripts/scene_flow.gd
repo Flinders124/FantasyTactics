@@ -102,6 +102,20 @@ func _new_seed() -> int:
 	return value
 
 func request_transition(action: String) -> void:
+	if combat!=null and combat.rescue_practice and combat.rescue_lesson!=null and action in ["main_menu","skip_tutorial","rescue_tutorial","retry","tutorial","new_battlefield","change_party","change_setup","campaign_hq"]:
+		var leave := func() -> void:
+			if action in ["rescue_tutorial","retry"]: start_rescue_tutorial()
+			elif action=="tutorial": start_tutorial()
+			elif action=="campaign_hq" and campaign.state!=null: campaign.headquarters()
+			else: show_title()
+		if combat.rescue_lesson.stage!="complete": combat.guide.open("Leave rescue practice?","This exercise will restart from its authored beginning. Your campaign remains unchanged.","Restart Exercise" if action in ["rescue_tutorial","retry"] else "Leave practice",leave)
+		else: leave.call()
+		return
+	if action=="rescue_tutorial":
+		if combat!=null and combat.tutorial!=null and combat.tutorial.step!=TutorialDirector.Step.COMPLETE:
+			combat.guide.open("Leave basic training?","Basic training progress will be discarded. Rescue practice does not mark it complete.","Start Rescue Practice",start_rescue_tutorial)
+		else: start_rescue_tutorial()
+		return
 	if action=="bestiary":
 		if menu==null or menu.has_node("EnemyReference"): return
 		var reference:=EnemyReference.new(); reference.name="EnemyReference"; menu.add_child(reference); reference.open()
@@ -132,7 +146,7 @@ func request_transition(action: String) -> void:
 				if not is_instance_valid(menu_guide):
 					menu_guide=GuideOverlay.new()
 					menu.add_child(menu_guide)
-				menu_guide.open("CONTROLS & FIELD GUIDE",(FieldGuide.camp_controls() if screen=="headquarters" else "")+ControlBindings.describe()+FieldGuide.tips())
+				menu_guide.open_dynamic("CONTROLS & FIELD GUIDE",help_text)
 		"briefing":
 			if combat!=null: combat.show_briefing()
 		"audio_settings":
@@ -170,10 +184,19 @@ func request_transition(action: String) -> void:
 		"quit":
 			get_tree().quit()
 
+func help_text() -> String:
+	return (FieldGuide.camp_controls() if screen=="headquarters" else "")+ControlBindings.describe()+FieldGuide.tips()+("\n\n"+FieldGuide.campaign(campaign.state) if campaign!=null and campaign.state!=null else "")
+
+func start_rescue_tutorial() -> void:
+	if campaign!=null and (campaign.active_mission() or (campaign.state!=null and not campaign.state.active.is_empty())):
+		campaign.feedback("Finish or leave the current mission before opening rescue practice.")
+		return
+	start_configuration(RescueTutorialEncounter.configuration(),true,true)
+
 func start_tutorial() -> void:
 	start_configuration(TutorialEncounter.configuration(),true)
 
-func start_configuration(config: EncounterConfiguration,is_tutorial: bool=false) -> void:
+func start_configuration(config: EncounterConfiguration,is_tutorial: bool=false,is_rescue: bool=false) -> void:
 	if config == null or not config.validation_error().is_empty():
 		if screen=="party":
 			party.code_feedback=config.validation_error() if config!=null else "Choose a valid encounter setup."
@@ -188,6 +211,7 @@ func start_configuration(config: EncounterConfiguration,is_tutorial: bool=false)
 	combat = ENCOUNTER_SCENE.instantiate() as CombatEncounter
 	combat.configuration = current_configuration
 	combat.tutorial_mode=is_tutorial
+	combat.rescue_practice=is_rescue
 	combat.process_mode=Node.PROCESS_MODE_PAUSABLE
 	var ticket := epoch
 	combat.loading_changed.connect(func(message: String) -> void:

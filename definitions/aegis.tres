@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+[ext_resource type="Script" path="res://scripts/ability_definition.gd" id="1"]
+[ext_resource type="Resource" path="res://definitions/aegis_ward.tres" id="2"]
+[resource]
+script = ExtResource("1")
+stable_id = "aegis"
+display_name = "Aegis"
+description = "Grant a 3-point ward for two future target turns."
+attack_type = 1
+maximum_range = 4
+magnitude = 3
+damage = 3
+cooldown_turns = 2
+effect = 2
+targeting = 1
+displacement_distance = 0
+obstruction_mask = 9
+applied_status = ExtResource("2")

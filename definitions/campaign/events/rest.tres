@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="CampaignEventDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/campaign_event_definition.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+stable_id = "rest"
+revision = 1
+display_name = "An Hour of Shelter"
+description = "A sheltered corner offers a recovering companion a little comfort before the next march."
+eligibility = "injured"
+choices = Array[Dictionary]([{ "id": "rest", "label": "Use spare bedding for recovery", "supplies": 0, "recovery": 1 },
+{ "id": "stores", "label": "Keep the bedding in reserve", "supplies": 2, "recovery": 0 }])

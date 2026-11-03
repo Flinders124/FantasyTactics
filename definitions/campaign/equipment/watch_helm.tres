@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CampaignItemDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/campaign_item_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+stable_id = "watch_helm"
+display_name = "Watch Helm"
+slot = "helmet"
+description = "+1 maximum health."
+rarity = "common"
+icon_id = "common_helmet"
+vendor = "armoury"
+compatible_heroes = PackedStringArray("knight", "ranger", "mage", "cleric", "recruit", "aegisbearer", "chainbinder")
+cost = 10
+minimum_level = 2
+icon_variants = PackedStringArray()
+modifiers = {"health": 1}

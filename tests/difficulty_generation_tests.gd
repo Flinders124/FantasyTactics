@@ -62,7 +62,7 @@ func run() -> void:
 			var scene := await prepare(config)
 			check(scene.navigation_ready and (scene.get_node("CombatController") as CombatController).units[0].definition==HeroCatalog.find(heroes[first]),"Each hero pair initializes without scaling heroes")
 			await dispose(scene)
-	check(completed==135,"Five fixed seeds across all 27 preset/objective/difficulty combinations")
+	check(completed==EncounterOptions.presets().size()*EncounterOptions.objectives().size()*EncounterOptions.difficulties().size()*5,"Five fixed seeds across every preset/objective/difficulty combination")
 	check(RegressionReport.write_json("difficulty/generation.json",records),"Regression report written")
 	print("DIFFICULTY GENERATION RESULT: %d failures; %d configurations; six hero pairs"%[failures,completed])
 	quit(0 if failures==0 else 1)

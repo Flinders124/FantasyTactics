@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="CampaignItemDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/campaign_item_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+stable_id = "beacon_spear"
+display_name = "Beacon Vigil Spear"
+slot = "weapon"
+description = "+1 basic damage; +1 Aegis absorption; +0.5 m basic reach."
+rarity = "legendary"
+icon_id = ""
+vendor = "trader"
+compatible_heroes = PackedStringArray("aegisbearer")
+minimum_level = 4
+cost = 45
+modifiers = {"basic_damage": 1, "ability_magnitude:aegis": 1, "basic_range": 0.5}

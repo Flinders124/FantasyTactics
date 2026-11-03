@@ -1,6 +1,8 @@
 class_name BattlefieldLayout
 extends Resource
 
+@export var obstacle_kinds: PackedStringArray=[]
+@export var hero_count: int=2
 @export var preset_id: String = "open_courtyard"
 @export var objective_id: String = "elimination"
 @export var generator_version: int = 2
@@ -18,7 +20,7 @@ extends Resource
 @export var placement_tries: int = 0
 
 func signature() -> String:
-	return str([preset_id, objective_id, generator_version, objective_center, objective_radius, original_seed, attempt, used_fallback, arena_size, hero_zone, enemy_zone, spawns, obstacle_centers, obstacle_sizes])
+	return str([preset_id, objective_id, generator_version, objective_center, objective_radius, original_seed, attempt, used_fallback, arena_size, hero_zone, enemy_zone, spawns, obstacle_centers, obstacle_sizes])+(str(obstacle_kinds) if generator_version>=3 else "")
 
 func geometry_signature() -> String:
-	return str([preset_id, objective_id, generator_version, objective_center, objective_radius, arena_size, spawns, obstacle_centers, obstacle_sizes])
+	return str([preset_id, objective_id, generator_version, objective_center, objective_radius, arena_size, spawns, obstacle_centers, obstacle_sizes])+(" · heroes=%d"%hero_count if hero_count!=2 else "")+(str(obstacle_kinds) if generator_version>=3 else "")

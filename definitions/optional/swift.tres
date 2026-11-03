@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="OptionalGoalDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/optional_goal_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+stable_id = "swift"
+display_name = "Swift Victory"
+description = "Win the main objective by the end of round4. Taking longer has no penalty beyond missing this bonus."
+rule = "swift"
+supplies = 6

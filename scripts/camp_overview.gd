@@ -3,9 +3,11 @@ extends Control
 const ART = preload("res://scripts/lantern_art.gd")
 ## Scene-local camp presentation; selecting a location only requests an HQ page.
 signal destination_selected(index: int)
-const TITLES: PackedStringArray = ["Mission Board","Companions’ Tents","Training Yard","Armoury Tent","Commander’s Table"]
-const PURPOSES: PackedStringArray = ["Choose a mission","Roster & recovery","Learn upgrades","Shop & equipment","Campaign history"]
-const POINTS: Array[Vector3] = [Vector3(-6.4,0,4.6),Vector3(-7,0,-3.8),Vector3(6.5,0,-3.8),Vector3(7,0,4.6),Vector3(0,0,-8)]
+const TITLES: PackedStringArray = ["Mission Board","Companions’ Tents","Training Yard","Outfitter Shop","Commander’s Tent","Visiting Trader"]
+const PURPOSES: PackedStringArray = ["Choose a mission","Roster & recovery","Learn upgrades","Buy equipment with Supplies","Squad upgrades & campaign history","Limited premium equipment"]
+const POINTS: Array[Vector3] = [Vector3(-6.4,0,4.6),Vector3(-7,0,-3.8),Vector3(6.5,0,-3.8),Vector3(7,0,4.6),Vector3(0,0,-8),Vector3(-11,0,6.6)]
+var command_tier: int=0
+var trader_present: bool=false
 var destinations: Array[Button] = []
 var landmarks: Array[MeshInstance3D] = []
 var view: SubViewport
@@ -39,6 +41,9 @@ var preference_owner: Node
 
 func setup(owner_screen: Node) -> void:
 	host=owner_screen
+	command_tier=host.coordinator.state.command_tier
+	trader_present=not host.coordinator.state.trader.is_empty()
+	set_meta("command_tier",command_tier)
 	add_to_group("headquarters_camps")
 	yaw=host.coordinator.camp_yaw; zoom=host.coordinator.camp_zoom
 	size_flags_vertical=Control.SIZE_EXPAND_FILL
@@ -56,10 +61,10 @@ func setup(owner_screen: Node) -> void:
 	build_camp()
 	guides=Control.new(); add_child(guides); guides.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	guides.mouse_filter=Control.MOUSE_FILTER_IGNORE; guides.draw.connect(draw_guides)
-	for i in range(5):
+	for i in range(6 if trader_present else 5):
 		var button := Button.new(); button.name="CampDestination%d"%i
 		button.text=TITLES[i]
-		OathUI.decorate(button,["mission","roster","training","armoury","history"][i]); button.tooltip_text=PURPOSES[i]+" — select to open"
+		OathUI.decorate(button,["mission","roster","training","armoury","history","armoury"][i]); button.tooltip_text=PURPOSES[i]+" — select to open"
 		button.add_theme_font_size_override("font_size",16)
 		for state: String in ["normal","hover","focus"]:
 			var style: StyleBoxFlat=host._style(state!="normal")
@@ -120,7 +125,14 @@ func build_camp() -> void:
 	preload("res://scripts/lantern_camp_dressing.gd").build(stage,POINTS)
 	kit.tent(stage,Vector3(-7,0,-5),Color("638181"),.12)
 	kit.tent(stage,Vector3(7,0,4),Color("966848"),-.17)
-	kit.tent(stage,Vector3(0,0,-9),Color("5b6579"),0)
+	kit.command_tent(stage,command_tier)
+	kit.outfitter(stage)
+	if command_tier>=1: kit.tent(stage,Vector3(-11,0,-7.5),Color("638181"),.45).scale=Vector3.ONE*.5
+	if command_tier>=2:
+		kit.tent(stage,Vector3(11,0,-.8),Color("638181"),-.4).scale=Vector3.ONE*.55
+		for offset in [0.0,1.1]:
+			var stores := kit.piece(stage,CourtyardKit.mesh("crate"),Vector3(9.5+offset,0,-6.6),null);stores.scale=Vector3.ONE*.7
+	if trader_present: kit.trader_wagon(stage,POINTS[5])
 	kit.tent(stage,Vector3(-10.5,0,1),Color("82715d"),.65).scale=Vector3.ONE*.65
 	kit.board(stage,POINTS[0])
 	kit.table(stage,Vector3(0,0,-6.4))
@@ -128,12 +140,19 @@ func build_camp() -> void:
 	for at: Vector3 in [Vector3(5,0,-5),Vector3(7.2,0,-5.5),Vector3(9,0,-4.2)]: kit.dummy(stage,at)
 	flame=kit.fire(stage,Vector3(0,0,1))
 	var firelight := OmniLight3D.new(); firelight.position=Vector3(0,1.5,1); firelight.light_color=Color("ffc27c"); firelight.light_energy=.9; firelight.omni_range=5; stage.add_child(firelight)
-	for data: Array in [["knight",Vector3(4.8,0,-2.8),.5],["ranger",Vector3(-5,0,4.8),-1.1],["mage",Vector3(-1.9,0,-5.8),-1.8],["cleric",Vector3(-5.3,0,-2.8),2.2]]:
-		var character := CharacterVisual.new(); character.name="Camp_"+str(data[0]); stage.add_child(character)
-		character.load_role(data[0]); character.position=data[1]; character.rotation.y=data[2]
-	for data: Array in [["crate",Vector3(9,0,6.2)],["barrel",Vector3(9.6,0,5.5)],["bench",Vector3(-2.4,0,2.5)],["bench",Vector3(2.6,0,2.5)],["cart",Vector3(-10,0,7.5)]]:
+	var people: PackedStringArray=host.coordinator.state.living_ids()
+	var positions: Array[Vector3]=[Vector3(4.8,0,-2.8),Vector3(-5,0,4.8),Vector3(-1.9,0,-5.8),Vector3(-5.3,0,-2.8)]
+	for index in range(mini(4,people.size())):
+		var person: String=people[index]
+		var character := CharacterVisual.new()
+		character.name="Camp_"+person
+		stage.add_child(character)
+		character.load_role(host.coordinator.state.blueprint_id(person))
+		character.position=positions[index]
+		character.rotation.y=[.5,-1.1,-1.8,2.2][index]
+	for data: Array in [["crate",Vector3(9,0,6.2)],["barrel",Vector3(9.6,0,5.5)],["bench",Vector3(-2.4,0,2.5)],["bench",Vector3(2.6,0,2.5)]]:
 		kit.piece(stage,CourtyardKit.mesh(data[0]),data[1],null)
-	for i in range(5):
+	for i in range(6 if trader_present else 5):
 		var pick := StaticBody3D.new(); pick.position=POINTS[i]+Vector3.UP; pick.set_meta("camp_destination",i)
 		var shape := CollisionShape3D.new(); var box := BoxShape3D.new(); box.size=Vector3(4,3,3.5); shape.shape=box; pick.add_child(shape); stage.add_child(pick)
 		var ring := TorusMesh.new(); ring.inner_radius=1.65; ring.outer_radius=1.72; ring.rings=32; ring.ring_segments=6
@@ -156,7 +175,7 @@ func reset_view() -> void:
 	host.coordinator.camp_yaw=yaw; host.coordinator.camp_zoom=zoom
 
 func select_destination(index: int) -> void:
-	if blocked() or index<0 or index>=5: return
+	if blocked() or index<0 or index>=destinations.size(): return
 	orbiting=false; destination_selected.emit(index)
 
 func highlight(index: int) -> void:
@@ -211,17 +230,32 @@ func _process(delta: float) -> void:
 	for i in range(destinations.size()):
 		var button := destinations[i]
 		var at := camera.unproject_position(POINTS[i]+Vector3.UP*3.3)
-		at+=[Vector2(-55,25),Vector2(-85,0),Vector2(85,0),Vector2(55,25),Vector2(0,-52)][i]
+		at+=[Vector2(-55,25),Vector2(-85,0),Vector2(85,0),Vector2(55,25),Vector2(0,-52),Vector2(-40,28)][i]
 		var extent := button.get_combined_minimum_size(); button.size=extent
 		button.position=Vector2(clampf(at.x-extent.x*.5,8,maxf(8,size.x-extent.x-8)),clampf(at.y-extent.y*.5,40,maxf(40,size.y-extent.y-42)))
 	# Preserve projected anchors, resolving overlap in stable front-to-back order.
 	# This also handles the largest supported text setting and camera extremes.
 	var placed: Array[Rect2] = []
-	for index: int in [4,1,2,0,3]:
+	for index: int in ([4,1,2,0,3,5] if trader_present else [4,1,2,0,3]):
 		var button := destinations[index]
 		for rect in placed:
 			if button.get_rect().grow(4).intersects(rect): button.position.y=rect.end.y+8
 		placed.append(button.get_rect())
+	# Compact camp windows use two rows rather than allowing projected labels to overlap or escape.
+	var needs_grid := false
+	for index in range(destinations.size()):
+		var rect := destinations[index].get_rect()
+		if not Rect2(Vector2(8,38),Vector2(maxf(1,size.x-16),maxf(1,size.y-62))).encloses(rect): needs_grid=true
+		for other in range(index):
+			if rect.intersects(destinations[other].get_rect()): needs_grid=true
+	if needs_grid:
+		var cell: float=(size.x-24)/3.0
+		var height: float=0.0
+		for button: Button in destinations: height=maxf(height,button.get_combined_minimum_size().y)
+		for index in range(destinations.size()):
+			var button: Button=destinations[index]
+			button.size=Vector2(minf(cell-8,maxf(button.get_combined_minimum_size().x,160)),height)
+			button.position=Vector2(12+cell*(index%3)+(cell-button.size.x)*.5,40+float(index/3)*(height+6))
 	if help!=null: help.position=Vector2(18,maxf(0,size.y-help.size.y-10))
 	guides.queue_redraw()
 

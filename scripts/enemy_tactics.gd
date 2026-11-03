@@ -56,6 +56,12 @@ var frames: int = 0
 var done: bool = false
 var allow_move: bool = true
 var allow_action: bool = true
+var awareness: AITacticalContext = AITacticalContext.new()
+var visited: Array[Vector3] = []
+var failed_points: Array[Vector3] = []
+var diagnostics_enabled: bool = false
+var alternatives: Array[Dictionary] = []
+var _point_keys: Dictionary = {}
 var _positions_seen: Dictionary = {}
 var _endpoints_seen: Dictionary = {}
 
@@ -64,17 +70,22 @@ static func profile_for(unit: CombatUnit) -> EnemyTacticalProfile:
 
 static func profile_for_definition(definition: UnitDefinition) -> EnemyTacticalProfile:
 	if definition.tactical_profile!=null: return definition.tactical_profile
+	if definition.selection_id=="cleric": return load("res://definitions/tactics_support.tres") as EnemyTacticalProfile
+	if definition.selection_id=="mage": return load("res://definitions/tactics_spellcaster.tres") as EnemyTacticalProfile
 	return load("res://definitions/tactics_ranged.tres" if definition.basic_attack!=null and definition.basic_attack.attack_type==AttackDefinition.Type.RANGED else "res://definitions/tactics_melee.tres") as EnemyTacticalProfile
 
-func begin(combat: CombatController,unit: CombatUnit,movement: bool=true,actions: bool=true) -> void:
+func begin(combat: CombatController,unit: CombatUnit,movement: bool=true,actions: bool=true,history: Array[Vector3]=[],failed: Array[Vector3]=[]) -> void:
 	var start := Time.get_ticks_usec()
 	controller=combat
 	actor=unit
+	visited.assign(history)
+	failed_points.assign(failed)
 	profile=profile_for(unit)
 	allow_move=movement and unit.movement_remaining>.05 and controller.navigation.ready_for_queries
 	allow_action=actions and unit.action_available
 	for candidate in controller.units:
-		if not is_instance_valid(candidate) or not candidate.is_alive(): continue
+		if not is_instance_valid(candidate): continue
+		if not candidate.is_alive() and not (candidate.faction==unit.faction and candidate.is_downed() and candidate.carried_by==null): continue
 		if candidate.faction==unit.faction: friends.append(candidate)
 		else: foes.append(candidate)
 	foes.sort_custom(func(a: CombatUnit,b: CombatUnit) -> bool: return a.stable_id<b.stable_id)
@@ -82,6 +93,7 @@ func begin(combat: CombatController,unit: CombatUnit,movement: bool=true,actions
 	for ability in unit.definition.abilities:
 		if ability!=null: abilities.append(ability)
 	abilities.sort_custom(func(a: AbilityDefinition,b: AbilityDefinition) -> bool: return a.stable_id<b.stable_id)
+	awareness.configure(controller,actor,profile,foes,friends,_query_allowed)
 	points=area_points(foes)
 	current_action=action_at(unit.global_position)
 	best=Plan.new()
@@ -108,7 +120,9 @@ static func area_points(targets: Array[CombatUnit]) -> Array[Vector3]:
 	return result
 
 func _key(point: Vector3) -> String:
-	return str(point.snapped(Vector3.ONE*.001))
+	var snapped := point.snapped(Vector3.ONE*.001)
+	if not _point_keys.has(snapped): _point_keys[snapped]=str(snapped)
+	return _point_keys[snapped]
 
 func _reject(reason: String) -> void:
 	rejected[reason]=int(rejected.get(reason,0))+1
@@ -129,13 +143,17 @@ func _action_better(candidate: Action,previous: Action) -> bool:
 	return previous==null or candidate.score>previous.score+EPSILON or (absf(candidate.score-previous.score)<=EPSILON and candidate.key()<previous.key())
 
 func _danger(unit: CombatUnit) -> int:
-	if danger_cache.has(unit.stable_id): return danger_cache[unit.stable_id]
-	var damage := 0
-	for foe in foes:
-		if foe.definition.basic_attack!=null and _query_allowed() and controller.evaluate_attack_position(foe,unit,foe.global_position).valid():
-			damage=maxi(damage,foe.definition.basic_attack.damage)
-	danger_cache[unit.stable_id]=damage
-	return damage
+	return awareness.incoming_damage(unit)
+
+func _tactical_action(choice: Action,target: CombatUnit,origin: Vector3) -> void:
+	var components := awareness.target_components(target,origin)
+	for key: String in components: choice.breakdown[key]=components[key]
+
+func _record_alternative(choice: Action,origin: Vector3) -> void:
+	if not diagnostics_enabled: return
+	alternatives.append({"target":choice.target_id,"ability":choice.ability_id,"position":str(origin),"score":choice.score,"breakdown":choice.breakdown.duplicate()})
+	alternatives.sort_custom(func(a: Dictionary,b: Dictionary) -> bool: return a.score>b.score if absf(a.score-b.score)>EPSILON else str(a.target)+str(a.ability)+str(a.position)<str(b.target)+str(b.ability)+str(b.position))
+	if alternatives.size()>8: alternatives.resize(8)
 
 func action_at(origin: Vector3) -> Action:
 	if not allow_action: return null
@@ -150,8 +168,10 @@ func action_at(origin: Vector3) -> Action:
 			var choice := Action.new()
 			choice.target_id=target.stable_id
 			choice.breakdown=profile.damage_components(actor.definition.basic_attack.damage,target.health)
+			_tactical_action(choice,target,origin)
 			choice.score=_total(choice.breakdown)
 			if actor.definition.basic_attack.damage>=target.health: choice.defeats.append(target.stable_id)
+			_record_alternative(choice,origin)
 			if _action_better(choice,result): result=choice
 	for ability in abilities:
 		if actor.cooldown_remaining(ability.stable_id)>0:
@@ -187,9 +207,10 @@ func action_at(origin: Vector3) -> Action:
 				choice.breakdown.multiple=float(hostile_count-1)*profile.multi_target_bonus
 				if ability.telegraphed: choice.breakdown["warning_delay"]=-1.0
 				choice.score=_total(choice.breakdown)
+				_record_alternative(choice,origin)
 				if _action_better(choice,result): result=choice
 			continue
-		var targets := friends if ability.effect==AbilityDefinition.Effect.HEAL else foes
+		var targets := friends if ability.targeting==AbilityDefinition.Target.FRIENDLY else foes
 		for target in targets:
 			if not _query_allowed(): break
 			var preview := controller.evaluate_ability_position(actor,target,origin,ability.stable_id)
@@ -204,26 +225,52 @@ func action_at(origin: Vector3) -> Action:
 				if choice.breakdown.is_empty():
 					_reject("Healing below meaningful threshold")
 					continue
+			elif ability.effect==AbilityDefinition.Effect.WARD:
+				choice.breakdown={"protection":float(maxi(0,ability.magnitude-target.ward_remaining))*profile.damage_weight*.6 if _danger(target)>0 else 0.0}
+			elif ability.effect==AbilityDefinition.Effect.TOW:
+				var endpoint := controller.displacement_endpoint(actor,target,origin,ability.displacement_distance)
+				if not endpoint.is_finite() or controller.warned_position(target,endpoint,true): continue
+				choice.breakdown={"rescue":4.0 if target.is_downed() else maxf(0,_danger(target)-_danger(actor))*.3}
 			else:
 				choice.breakdown=profile.damage_components(ability.magnitude,target.health)
+				_tactical_action(choice,target,origin)
 				if ability.magnitude>=target.health: choice.defeats.append(target.stable_id)
 				elif ability.applied_status!=null and target.definition.movement_allowance>0 and ability.applied_status.movement_multiplier<1:
 					var future := 0
 					if target.statuses.has(ability.applied_status.stable_id): future=target.statuses[ability.applied_status.stable_id].future_turns
-					choice.breakdown.status=profile.status_value(future,ability.applied_status.affected_turns)
+					choice.breakdown.status=profile.status_value(future,ability.applied_status.affected_turns)*awareness.status_relevance(target,origin)
 			choice.breakdown.cooldown=-profile.cooldown_weight*ability.cooldown_turns
 			choice.score=_total(choice.breakdown)
+			if ability.effect in [AbilityDefinition.Effect.WARD,AbilityDefinition.Effect.TOW] and choice.score<=EPSILON: continue
+			_record_alternative(choice,origin)
 			if _action_better(choice,result): result=choice
 	return result
 
 func _add_raw(point: Vector3,target: CombatUnit,attack: AttackDefinition) -> void:
 	if raw.size()>=clampi(profile.max_raw_candidates,12,80) or not point.is_finite(): return
+	for failed in failed_points:
+		if point.distance_to(failed)<.3: return
 	var key := _key(point)
 	if _positions_seen.has(key): return
 	_positions_seen[key]=true
 	raw.append({"point":NavigationService.planar(point),"target":target,"attack":attack})
 
 func _generate() -> void:
+	# Visible warnings and nearby body blockers get bounded local alternatives.
+	if not controller.pending_telegraphs.is_empty():
+		for index in range(8):
+			var angle := TAU*float(index)/8
+			_add_raw(actor.global_position+Vector3(cos(angle),0,sin(angle))*maxf(.1,actor.movement_remaining-.05),null,null)
+	var detours := 0
+	for body in controller.units:
+		if body==actor or not is_instance_valid(body) or not body.is_alive(): continue
+		if actor.global_position.distance_to(body.global_position)>minf(3,actor.movement_remaining): continue
+		var forward := NavigationService.planar(body.global_position-actor.global_position).normalized()
+		var side := Vector3(-forward.z,0,forward.x)
+		var clearance := actor.collision_radius()+body.collision_radius()+.3
+		for sign_value in [-1.0,1.0]: _add_raw(body.global_position+side*clearance*sign_value,null,null)
+		detours+=1
+		if detours>=2: break
 	if controller.objectives.definition.kind==ObjectiveDefinition.Kind.EXTRACTION:
 		for foe in foes: _add_raw(foe.ground_anchor().lerp(controller.objectives.center,.65),null,null)
 	for point in controller.objectives.tactical_points(): _add_raw(point,null,null)
@@ -232,8 +279,18 @@ func _generate() -> void:
 	var attacks: Array[AttackDefinition] = []
 	if actor.definition.basic_attack!=null: attacks.append(actor.definition.basic_attack)
 	for ability in abilities:
-		if ability.targeting!=AbilityDefinition.Target.GROUND and actor.cooldown_remaining(ability.stable_id)==0 and ability.effect==AbilityDefinition.Effect.DAMAGE:
+		if ability.targeting!=AbilityDefinition.Target.GROUND and actor.cooldown_remaining(ability.stable_id)==0 and ability.effect in [AbilityDefinition.Effect.DAMAGE,AbilityDefinition.Effect.PULL]:
 			attacks.append(ability)
+	for angle_index in range(count):
+		for ability in abilities:
+			if ability.targeting!=AbilityDefinition.Target.FRIENDLY or actor.cooldown_remaining(ability.stable_id)>0: continue
+			for friend in friends:
+				if friend==actor: continue
+				if ability.effect==AbilityDefinition.Effect.HEAL and friend.definition.maximum_health-friend.health<profile.minimum_healing: continue
+				if ability.effect==AbilityDefinition.Effect.WARD and (not friend.is_alive() or friend.ward_remaining>=ability.magnitude or _danger(friend)<=0): continue
+				if ability.effect==AbilityDefinition.Effect.TOW and not friend.is_downed() and _danger(friend)<=_danger(actor): continue
+				var angle := atan2(actor.global_position.z-friend.global_position.z,actor.global_position.x-friend.global_position.x)+TAU*float(angle_index)/count
+				_add_raw(friend.global_position+Vector3(cos(angle),0,sin(angle))*maxf(.9,ability.maximum_range-.2),friend,ability)
 	for angle_index in range(count):
 		for ring_index in range(2):
 			for target in foes:
@@ -249,13 +306,6 @@ func _generate() -> void:
 					var nearest := atan2(actor.global_position.z-center.z,actor.global_position.x-center.x)
 					var angle := nearest+TAU*float(angle_index)/count
 					_add_raw(center+Vector3(cos(angle),0,sin(angle))*radius,target,attack)
-				# Healing positions share the same bounded rings and path budget.
-				for ability in abilities:
-					if ability.effect!=AbilityDefinition.Effect.HEAL or actor.cooldown_remaining(ability.stable_id)>0: continue
-					for friend in friends:
-						if friend==actor or friend.definition.maximum_health-friend.health<profile.minimum_healing: continue
-						var angle := atan2(actor.global_position.z-friend.global_position.z,actor.global_position.x-friend.global_position.x)+TAU*float(angle_index)/count
-						_add_raw(friend.global_position+Vector3(cos(angle),0,sin(angle))*maxf(.9,ability.maximum_range-.2),friend,ability)
 
 func _route(point: Vector3) -> NavigationService.Route:
 	var key := _key(point)
@@ -265,7 +315,6 @@ func _route(point: Vector3) -> NavigationService.Route:
 		return null
 	path_queries+=1
 	var route := controller.evaluate_move(actor,point,false)
-	if route.valid() and controller.warned_position(actor,point): route.error="Friendly elite warning"
 	if route.valid():
 		if route.path.size()>MAX_PATH_SEGMENTS:
 			route.error="Path complexity cap"
@@ -273,11 +322,17 @@ func _route(point: Vector3) -> NavigationService.Route:
 			for unit in controller.units:
 				if unit==actor or not is_instance_valid(unit) or not unit.is_alive(): continue
 				var clearance := actor.collision_radius()+unit.collision_radius()+.025
+				var remaining := actor.movement_remaining
 				for index in range(1,route.path.size()):
-					var closest := Geometry3D.get_closest_point_to_segment(NavigationService.planar(unit.global_position),route.path[index-1],route.path[index])
+					if remaining<=0: break
+					var start: Vector3=route.path[index-1]
+					var length := start.distance_to(route.path[index])
+					var finish := start.lerp(route.path[index],minf(1,remaining/maxf(length,.000001)))
+					var closest := Geometry3D.get_closest_point_to_segment(NavigationService.planar(unit.global_position),start,finish)
 					if closest.distance_to(NavigationService.planar(unit.global_position))<clearance:
 						route.error="Path crosses a living unit"
 						break
+					remaining-=length
 				if not route.valid(): break
 	route_cache[key]=route
 	if not route.valid(): _reject(route.error)
@@ -287,7 +342,7 @@ func _position(origin: Vector3,ignore: Array[String]=[]) -> float:
 	var key := _key(origin)+str(ignore)
 	if position_cache.has(key): return position_cache[key]
 	var nearest := INF
-	var value := controller.objectives.position_value(origin)
+	var value := _total(awareness.position_components(origin,ignore))
 	var ranged := actor.definition.basic_attack!=null and actor.definition.basic_attack.attack_type==AttackDefinition.Type.RANGED
 	for foe in foes:
 		if ignore.has(foe.stable_id): continue
@@ -318,12 +373,21 @@ func _consider(destination: Vector3,route: NavigationService.Route,action: Actio
 	plan.moving=true
 	plan.candidate_index=index
 	plan.breakdown=action.breakdown.duplicate() if action!=null else {}
-	var objective_gain := controller.objectives.position_value(destination)-controller.objectives.position_value(actor.global_position)
-	plan.breakdown.objective=objective_gain
-	plan.breakdown.position=gain-objective_gain
+	var source_parts := awareness.position_components(actor.global_position,defeated)
+	var destination_parts := awareness.position_components(destination,defeated)
+	var contextual_gain := 0.0
+	for component: String in destination_parts:
+		var change: float=float(destination_parts[component])-float(source_parts[component])
+		plan.breakdown[component]=change
+		contextual_gain+=change
+	var revisit := 0.0
+	for recent in visited:
+		if recent.distance_to(destination)<.65 and recent.distance_to(actor.global_position)>.65: revisit=maxf(revisit,profile.oscillation_penalty)
+	plan.breakdown.revisit=-revisit
+	plan.breakdown.position=gain-contextual_gain
 	plan.breakdown.movement=-cost
 	plan.breakdown.progress=progress
-	plan.score=(action.score if action!=null else 0.0)+gain-cost+progress
+	plan.score=(action.score if action!=null else 0.0)+gain-cost+progress-revisit
 	var previous_key := best.action.key() if best.action!=null else "~"
 	var key := action.key() if action!=null else "~"
 	var tie := absf(plan.score-best.score)<=EPSILON
@@ -347,11 +411,18 @@ func step() -> void:
 			# Only pursue reachable legal attack/heal destinations, never a target centre.
 			if not _query_allowed(): continue
 			var full_valid := item.target==null or controller.evaluate_attack_position(actor,item.target,item.point,item.attack,item.target.faction==actor.faction).valid()
+			if item.target!=null and item.attack is AbilityDefinition:
+				full_valid=controller.evaluate_ability_position(actor,item.target,item.point,item.attack.stable_id).valid()
 			if not full_valid: continue
 			var endpoint := NavigationService.point_at_distance(route.path,maxf(0,actor.movement_remaining-.02))
 			route=_route(endpoint) # Requery actual route; a prefix alone is not approval.
 			if route==null or not route.valid() or route.distance>actor.movement_remaining+0.000001: continue
-			progress=maxf(0,route.distance-(full_cost-route.distance)*.08)
+			# Measure actual navigation progress to the same goal, not distance spent.
+			if path_queries>=clampi(profile.max_path_queries,16,96): continue
+			path_queries+=1
+			var remainder := controller.navigation.query_path(route.path[-1],item.point)
+			if not remainder.valid(): continue
+			progress=maxf(0,minf(route.distance,full_cost-remainder.distance))*.5
 		if route.distance<=.05: continue
 		var endpoint: Vector3 = route.path[-1]
 		var endpoint_key := _key(endpoint)
@@ -377,4 +448,9 @@ func report() -> Dictionary:
 	result.compute_ms=float(planning_usec)/1000.0
 	result.max_chunk_ms=float(max_chunk_usec)/1000.0
 	result.rejections=rejected.duplicate()
+	result.actor_position=str(actor.global_position)
+	result.actor_health=actor.health
+	result.role=actor.definition.role
+	result.alternatives=alternatives.duplicate(true)
+	result.recent_positions=visited.map(func(point: Vector3) -> String: return str(point))
 	return result

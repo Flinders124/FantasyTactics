@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="CampaignDefinition" load_steps=42 format=3]
+[gd_resource type="Resource" script_class="CampaignDefinition" load_steps=61 format=3]
 [ext_resource type="Script" path="res://scripts/campaign_definition.gd" id="1"]
 [ext_resource type="Resource" path="res://definitions/campaign/upgrades/knight_2_0.tres" id="u0"]
 [ext_resource type="Resource" path="res://definitions/campaign/upgrades/knight_2_1.tres" id="u1"]
@@ -40,7 +40,30 @@
 [ext_resource type="Resource" path="res://definitions/campaign/items/stoneweave.tres" id="i13"]
 [ext_resource type="Resource" path="res://definitions/campaign/items/trail_mantle.tres" id="i14"]
 [ext_resource type="Resource" path="res://definitions/campaign/items/votive_charm.tres" id="i15"]
+[ext_resource type="Resource" path="res://definitions/campaign/upgrades/aegisbearer_2_0.tres" id="u24"]
+[ext_resource type="Resource" path="res://definitions/campaign/upgrades/aegisbearer_2_1.tres" id="u25"]
+[ext_resource type="Resource" path="res://definitions/campaign/upgrades/aegisbearer_3_0.tres" id="u26"]
+[ext_resource type="Resource" path="res://definitions/campaign/upgrades/aegisbearer_3_1.tres" id="u27"]
+[ext_resource type="Resource" path="res://definitions/campaign/upgrades/aegisbearer_4_0.tres" id="u28"]
+[ext_resource type="Resource" path="res://definitions/campaign/upgrades/aegisbearer_4_1.tres" id="u29"]
+[ext_resource type="Resource" path="res://definitions/campaign/upgrades/chainbinder_2_0.tres" id="u30"]
+[ext_resource type="Resource" path="res://definitions/campaign/upgrades/chainbinder_2_1.tres" id="u31"]
+[ext_resource type="Resource" path="res://definitions/campaign/upgrades/chainbinder_3_0.tres" id="u32"]
+[ext_resource type="Resource" path="res://definitions/campaign/upgrades/chainbinder_3_1.tres" id="u33"]
+[ext_resource type="Resource" path="res://definitions/campaign/upgrades/chainbinder_4_0.tres" id="u34"]
+[ext_resource type="Resource" path="res://definitions/campaign/upgrades/chainbinder_4_1.tres" id="u35"]
+[ext_resource type="Resource" path="res://definitions/campaign/items/recruit_issue.tres" id="i16"]
+[ext_resource type="Resource" path="res://definitions/campaign/items/aegisbearer_issue.tres" id="i17"]
+[ext_resource type="Resource" path="res://definitions/campaign/items/chainbinder_issue.tres" id="i18"]
+[ext_resource type="Resource" path="res://definitions/campaign/items/stonepoint.tres" id="i19"]
+[ext_resource type="Resource" path="res://definitions/campaign/items/vigil_spear.tres" id="i20"]
+[ext_resource type="Resource" path="res://definitions/campaign/items/barbed_hook.tres" id="i21"]
+[ext_resource type="Resource" path="res://definitions/campaign/items/longhaft.tres" id="i22"]
 [resource]
 script = ExtResource("1")
-upgrades = Array[Resource]([ExtResource("u0"), ExtResource("u1"), ExtResource("u2"), ExtResource("u3"), ExtResource("u4"), ExtResource("u5"), ExtResource("u6"), ExtResource("u7"), ExtResource("u8"), ExtResource("u9"), ExtResource("u10"), ExtResource("u11"), ExtResource("u12"), ExtResource("u13"), ExtResource("u14"), ExtResource("u15"), ExtResource("u16"), ExtResource("u17"), ExtResource("u18"), ExtResource("u19"), ExtResource("u20"), ExtResource("u21"), ExtResource("u22"), ExtResource("u23")])
-items = Array[Resource]([ExtResource("i0"), ExtResource("i1"), ExtResource("i2"), ExtResource("i3"), ExtResource("i4"), ExtResource("i5"), ExtResource("i6"), ExtResource("i7"), ExtResource("i8"), ExtResource("i9"), ExtResource("i10"), ExtResource("i11"), ExtResource("i12"), ExtResource("i13"), ExtResource("i14"), ExtResource("i15")])
+version = 2
+maximum_ignored_threat = 1
+failure_supplies = 12
+enemy_count_caps = PackedInt32Array(2, 2, 3, 3, 3)
+upgrades = Array[Resource]([ExtResource("u0"), ExtResource("u1"), ExtResource("u2"), ExtResource("u3"), ExtResource("u4"), ExtResource("u5"), ExtResource("u6"), ExtResource("u7"), ExtResource("u8"), ExtResource("u9"), ExtResource("u10"), ExtResource("u11"), ExtResource("u12"), ExtResource("u13"), ExtResource("u14"), ExtResource("u15"), ExtResource("u16"), ExtResource("u17"), ExtResource("u18"), ExtResource("u19"), ExtResource("u20"), ExtResource("u21"), ExtResource("u22"), ExtResource("u23"), ExtResource("u24"), ExtResource("u25"), ExtResource("u26"), ExtResource("u27"), ExtResource("u28"), ExtResource("u29"), ExtResource("u30"), ExtResource("u31"), ExtResource("u32"), ExtResource("u33"), ExtResource("u34"), ExtResource("u35")])
+items = Array[Resource]([ExtResource("i0"), ExtResource("i1"), ExtResource("i2"), ExtResource("i3"), ExtResource("i4"), ExtResource("i5"), ExtResource("i6"), ExtResource("i7"), ExtResource("i8"), ExtResource("i9"), ExtResource("i10"), ExtResource("i11"), ExtResource("i12"), ExtResource("i13"), ExtResource("i14"), ExtResource("i15"), ExtResource("i16"), ExtResource("i17"), ExtResource("i18"), ExtResource("i19"), ExtResource("i20"), ExtResource("i21"), ExtResource("i22")])

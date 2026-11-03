@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="MissionTemplate" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/mission_template.gd" id="1"]
+[resource]
+script = ExtResource("1")
+stable_id = "courtyard_watch"
+display_name = "The Lantern Watch"
+description = "Take the marked ground from a mixed patrol. A controlled round counts only after every living unit has acted."
+objective_id = "hold_ground"
+style = "balanced"
+layout_ids = PackedStringArray("central_plaza", "open_courtyard", "split_courtyard")
+role_pattern = PackedStringArray("mobile", "ranged", "support", "front")
+minimum_stage = 0
+recovery = false
+elite = false
+finale = false

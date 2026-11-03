@@ -1,7 +1,10 @@
 class_name EncounterOptions
 extends RefCounted
+const PRESET_IDS: PackedStringArray=["open_courtyard","ruined_lanes","central_plaza","narrow_approach","split_courtyard"]
 static func presets() -> Array[BattlefieldSettings]:
-	return [load("res://definitions/presets/open_courtyard.tres") as BattlefieldSettings,load("res://definitions/presets/ruined_lanes.tres") as BattlefieldSettings,load("res://definitions/presets/central_plaza.tres") as BattlefieldSettings]
+	var result: Array[BattlefieldSettings]=[]
+	for id in PRESET_IDS: result.append(load("res://definitions/presets/"+id+".tres") as BattlefieldSettings)
+	return result
 static func objectives() -> Array[ObjectiveDefinition]:
 	return [load("res://definitions/objectives/elimination.tres") as ObjectiveDefinition,load("res://definitions/objectives/hold_ground.tres") as ObjectiveDefinition,load("res://definitions/objectives/extraction.tres") as ObjectiveDefinition]
 

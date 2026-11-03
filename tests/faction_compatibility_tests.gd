@@ -11,7 +11,7 @@ func run() -> void:
 		var before:=legacy.state.offers.duplicate(true)
 		check(legacy.state.prepare(before[0].id,["knight","ranger"]).faction_id=="legacy","Frozen legacy offers keep original enemies")
 		check(legacy.state.offers==before,"Load cannot reroll legacy offers")
-	var state:=CampaignState.new(17,"standard")
+	var state: CampaignState = LegacyCampaignFixture.new(17,"standard")
 	for stage in range(5):
 		state.victories=stage; state.resolutions=stage; state.generate_offers()
 		for offer in state.offers:
@@ -23,7 +23,7 @@ func run() -> void:
 			check(decoded.configuration!=null,"New faction code roundtrip: "+decoded.error)
 			if decoded.configuration!=null: check(decoded.configuration.resolved_enemy_ids==config.resolved_enemy_ids,"Frozen roster deterministic")
 		if stage==4: check(state.offers.size()==1 and state.offers[0].elite,"Finale has one elite mission")
-	state=CampaignState.new(17,"standard")
+	state=LegacyCampaignFixture.new(17,"standard")
 	var decoded:=CampaignSaveCodec.decode(CampaignSaveCodec.encode(state,"headquarters"))
 	check(decoded.state!=null,"New campaign roundtrip: "+decoded.error)
 	var config:=state.commit(state.offers[0].id,["knight","ranger"])

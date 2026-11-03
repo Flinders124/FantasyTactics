@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="CampaignEventDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/campaign_event_definition.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+stable_id = "remembrance"
+revision = 1
+display_name = "A Name at the Fire"
+description = "The Watch leaves a space at the fire for its fallen. A companion asks how their name should be remembered."
+eligibility = "loss"
+choices = Array[Dictionary]([{ "id": "stone", "label": "Carve a memorial stone", "supplies": 0, "recovery": 0 },
+{ "id": "letter", "label": "Write a letter to their home", "supplies": 0, "recovery": 0 }])

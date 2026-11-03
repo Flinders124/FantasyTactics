@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CampaignItemDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/campaign_item_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+stable_id = "wayfinder_charm"
+display_name = "Wayfinder Charm"
+slot = "accessory"
+description = "+0.5 m movement."
+rarity = "rare"
+icon_id = ""
+vendor = "armoury"
+compatible_heroes = PackedStringArray("knight", "ranger", "mage", "cleric", "recruit", "aegisbearer", "chainbinder")
+cost = 22
+minimum_level = 3
+icon_variants = PackedStringArray()
+modifiers = {"movement": 0.5}

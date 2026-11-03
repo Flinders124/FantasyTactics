@@ -57,7 +57,7 @@ func run() -> void:
 		var recovered := await prepare(difficult)
 		check(recovered.navigation_ready and difficult.layout.used_fallback and difficult.layout.preset_id==difficult.generator_settings.preset_id,"Invalid dimensions/long exit use bounded preset fallback")
 		await dispose(recovered)
-	check(completed==90,"Ten seeds across all nine combinations")
+	check(completed==EncounterOptions.presets().size()*EncounterOptions.objectives().size()*10,"Ten seeds across every preset/objective combination")
 	check(RegressionReport.write_json("objectives/generation.json",records),"Regression report written")
 	generator.queue_free()
 	await process_frame

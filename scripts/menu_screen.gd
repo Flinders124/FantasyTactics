@@ -94,6 +94,7 @@ func title(game_name: String) -> void:
 	_button(box,"New Campaign","new_campaign")
 	new_button = _button(box, "Skirmish", "new_encounter")
 	_button(box,"Tutorial","tutorial")
+	_button(box,"Rescue Practice","rescue_tutorial")
 	_button(box,"Controls & Help","controls")
 	tutorial_suggestion=_label(box,"New here? Try the short guided tutorial, or start a skirmish.",14,GOLD)
 	tutorial_suggestion.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
@@ -351,9 +352,13 @@ func _refresh_setup() -> void:
 	var roster:=FactionCatalog.roster(resolved,difficulty.stable_id,3,model.elite_choice,seed_value)
 	if model.imported_configuration!=null:
 		resolved=model.imported_configuration.faction_id
-		roster=model.imported_configuration.resolved_enemy_ids
+		if model.uses_frozen_roster(seed_value): roster=model.imported_configuration.resolved_enemy_ids
+		elif resolved=="legacy": roster=difficulty.roster_for(objective.stable_id,seed_value)
+		else: roster=FactionCatalog.roster(resolved,difficulty.stable_id,model.imported_configuration.campaign_stage,model.elite_choice,seed_value)
 	var faction_name:=FactionCatalog.find(resolved).display_name if FactionCatalog.find(resolved)!=null else "Legacy opposing party"
 	summary_label.text="Party: %s\n%s / %s / %s\nSeed: %d%s\n%s%s · %d enemies:\n%s"%[" + ".join(names) if not names.is_empty() else "Choose two",EncounterOptions.presets()[model.preset_index].display_name,objective.display_name,difficulty.display_name,seed_value," (random)" if model.seed_text.strip_edges().is_empty() else "",faction_name," · ELITE" if model.elite_choice else "",roster.size(),difficulty.roster_summary(roster)]
+	var bonus_id: String=model.imported_configuration.optional_goal_id if model.imported_configuration!=null else OptionalGoals.pick(seed_value)
+	summary_label.text+="\n"+OptionalGoals.briefing(bonus_id)
 
 func set_tutorial_suggestion(show_suggestion: bool) -> void:
 	if tutorial_suggestion!=null: tutorial_suggestion.visible=show_suggestion
