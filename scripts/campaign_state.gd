@@ -1,8 +1,15 @@
 class_name CampaignState
 extends RefCounted
 ## Persistent plain-data state. No references to live encounters or UI.
-const VERSION: int = 2
+const VERSION: int = 5
 const INTRODUCTORY_ENEMIES: PackedStringArray = ["ashfang_raider", "ashfang_bowhunter"]
+var command_tier: int=0
+var trader: Dictionary={}
+var opening_version: int=1
+var headquarters_rules: HeadquartersRules=load("res://definitions/campaign/headquarters_rules.tres")
+var pending_event: Dictionary={}
+var event_records: Array[Dictionary]=[]
+var resolved_events: Dictionary={}
 var next_hero: int=1
 var roster_rules: Resource=load("res://definitions/roster_rules.tres")
 var campaign_id: String = Crypto.new().generate_random_bytes(16).hex_encode()
@@ -39,6 +46,9 @@ func generate_offers() -> void:
 	if not ending.is_empty():
 		offers.clear(); return
 	if not active.is_empty(): return
+	# A loaded board is frozen data, including its generator/content version.
+	# Only an actual new resolution/stage creates a new board.
+	if not offers.is_empty() and offers[0].id=="%08x-%03d-0"%[seed_value,resolutions] and int(offers[0].get("stage",mini(victories,4)))==mini(victories,4) and bool(offers[0].final)==(victories>=4):return
 	offers.clear()
 	var rng := RandomNumberGenerator.new()
 	rng.seed=(seed_value ^ 0x4d495353 ^ (resolutions*104729))&0x7fffffffffffffff
@@ -60,6 +70,9 @@ func generate_offers() -> void:
 		used_layouts.append(layout_id)
 		var faction := FactionCatalog.find(faction_id)
 		var chosen := {"id":"%08x-%03d-%d"%[seed_value,resolutions,index],"name":faction.display_name+" · "+template.display_name,"seed":mission_seed,"preset":MissionCatalog.preset_index(layout_id),"objective":objective,"recovery":recovery,"final":final,"supplies":(rules.recovery_supplies if recovery else rules.mission_supplies)+(faction.elite_supplies_bonus if elite else 0),"ignored":0 if recovery or final else rules.ignored_threat,"faction":faction_id,"stage":stage,"elite":elite,"template":template.metadata()}
+		if opening_version==1 and victories<3:
+			chosen.name=headquarters_rules.opening_titles[victories]+" · "+str(chosen.name)
+			chosen.template.briefing=headquarters_rules.opening_briefings[victories]+"\n"+str(chosen.template.briefing)
 		var config := configuration_for(chosen,PackedStringArray(heroes.keys().slice(0,2)))
 		# Freeze the tested recruit opening only when creating a new offer; never rewrite saved codes.
 		if config!=null and victories==0 and not heroes.values().any(func(hero: Dictionary) -> bool: return bool(hero.get("legacy_specialist",false))):
@@ -71,6 +84,11 @@ func generate_offers() -> void:
 			if config.resolved_enemy_ids.size()>limit:
 				config.resolved_enemy_ids=config.resolved_enemy_ids.slice(0,limit)
 				config.enemies=config.enemies.slice(0,limit)
+		if config!=null and opening_version==1 and victories<3 and headquarters_rules.opening_rosters.has(faction_id):
+			var curated := PackedStringArray(headquarters_rules.opening_rosters[faction_id])
+			if FactionCatalog.valid_roster(curated,faction_id,difficulty_id,stage,false):
+				config.resolved_enemy_ids=curated;config.enemies.clear()
+				for enemy_id: String in curated: config.enemies.append(EnemyCatalog.find(enemy_id).duplicate(true) as UnitDefinition)
 		if config==null or not config.validation_error().is_empty():
 			push_error("Mission template %s produced an invalid encounter, seed=%d"%[template.stable_id,mission_seed])
 			offers.clear(); return
@@ -86,8 +104,13 @@ func offer(id: String) -> Dictionary:
 func deployment_error(id: String,party: PackedStringArray) -> String:
 	if not ending.is_empty(): return "This campaign has ended."
 	if not active.is_empty(): return "A mission is already committed."
+	if not pending_event.is_empty(): return "Resolve or decline the pending camp event in History before deploying."
 	if offer(id).is_empty(): return "This mission offer is no longer available."
-	if party.size()!=2 or party[0]==party[1] or not living_ids().has(party[0]) or not living_ids().has(party[1]): return "Choose exactly two distinct companions. Injured heroes may deploy."
+	if party.size()<2 or party.size()>deployment_capacity(): return "Choose 2 to %d distinct living companions. Upgrade capacity at the Commander’s Tent."%deployment_capacity()
+	var seen: Dictionary={}
+	for person: String in party:
+		if seen.has(person) or not living_ids().has(person): return "Choose distinct living companions. Injured heroes may deploy."
+		seen[person]=true
 	return ""
 func upgrade(id: String) -> CampaignUpgradeDefinition:
 	for value in rules.upgrades:
@@ -105,6 +128,7 @@ func learn(id: String,upgrade_id: String) -> bool:
 	var choice := upgrade(upgrade_id)
 	if choice==null or choice.hero_id!=blueprint_id(id) or choice.required_level!=pending_level(id) or heroes[id].upgrades.has(upgrade_id): return false
 	heroes[id].upgrades.append(upgrade_id)
+	CampaignEvents.service(self,id,"upgrade","Learned "+choice.display_name+".")
 	history.append("%s learned %s."%[hero_name(id),choice.display_name])
 	return true
 func modifiers_for(id: String) -> Dictionary:
@@ -140,6 +164,8 @@ func configuration_for(chosen: Dictionary,party: PackedStringArray) -> Encounter
 	config.elite_encounter=bool(chosen.get("elite",false))
 	config.battlefield_seed=chosen.seed
 	config.generator_settings=EncounterOptions.presets()[chosen.preset].duplicate(true) as BattlefieldSettings
+	config.generator_settings.generator_version=3
+	config.optional_goal_id=OptionalGoals.pick(config.battlefield_seed)
 	config.objective=EncounterOptions.objectives()[chosen.objective].duplicate(true) as ObjectiveDefinition
 	config.difficulty=difficulty().duplicate(true) as DifficultyDefinition
 	if chosen.final:
@@ -156,20 +182,24 @@ func commit(id: String,party: PackedStringArray) -> EncounterConfiguration:
 	var config := prepare(id,party)
 	if config==null or not config.validation_error().is_empty(): return null
 	active=offer(id); active.party=Array(party); active.configuration_seed=config.battlefield_seed
+	trader={}
 	active.encounter={"seed":config.battlefield_seed,"preset":config.generator_settings.preset_id,"generator_version":config.generator_settings.generator_version,"objective":config.objective.stable_id,"difficulty":difficulty_id,"difficulty_version":config.difficulty.configuration_version,"health_multiplier":config.difficulty.enemy_health_multiplier,"damage_multiplier":config.difficulty.enemy_damage_multiplier,"enemy_ids":Array(config.resolved_enemy_ids),"code":EncounterCode.encode(config)}
 	history.append("Deployed %s to %s."%[", ".join(party),active.name])
 	return config
 func resolve(record: CampaignMissionResult) -> bool:
 	var data := record.snapshot()
-	if active.is_empty() or data.get("version") not in [1,2] or data.get("mission_id")!=active.id or processed.has(data.mission_id): return false
+	if active.is_empty() or data.get("version") not in [1,2,3] or data.get("mission_id")!=active.id or processed.has(data.mission_id): return false
 	if data.get("outcome") not in ["victory","failure"] or not data.get("heroes") is Dictionary: return false
 	if data.heroes.size()!=active.party.size(): return false
 	for id: String in active.party:
 		if not data.heroes.has(id) or not data.heroes[id] is Dictionary: return false
 		var hero: Dictionary=data.heroes[id]
 		if not hero.has("health") or not hero.has("maximum_health") or not EncounterCode._whole(hero.maximum_health,1,99) or not EncounterCode._whole(hero.health,0,hero.maximum_health): return false
-		if data.version==2 and (hero.get("survival","") not in ["recovered","extracted","dead"] or not hero.get("death_cause") is String): return false
-		if data.version==2 and hero.survival in ["active","downed","stabilised"]: return false
+		if data.version>=2 and (hero.get("survival","") not in ["recovered","extracted","dead"] or not hero.get("death_cause") is String): return false
+		if data.version>=2 and hero.survival in ["active","downed","stabilised"]: return false
+	if data.version==3:
+		var frozen := EncounterCode.decode(active.encounter.code).configuration
+		if frozen==null or not OptionalGoals.valid_report(data.get("optional"),frozen.optional_goal_id,data.outcome,bool(data.get("abandoned",false))):return false
 	processed[data.mission_id]=true
 	var mission := active.duplicate(true)
 	active.clear(); resolutions+=1
@@ -178,9 +208,11 @@ func resolve(record: CampaignMissionResult) -> bool:
 	var lines: Array=last_debrief.lines
 	for id: String in mission.party:
 		heroes[id].missions_completed=int(heroes[id].get("missions_completed",0))+1
+		CampaignEvents.service(self,id,"mission",mission.name+": "+data.tactical_result+" ("+str(data.heroes[id].get("survival","recovered"))+").")
 		if str(data.heroes[id].get("survival","recovered"))=="dead":
 			heroes[id].dead=true; heroes[id].death_cause=str(data.heroes[id].get("death_cause","Lost on mission"))
 			heroes[id].injury={}
+			CampaignEvents.service(self,id,"death","Died: "+heroes[id].death_cause+".")
 			lines.append("%s died: %s. Remembered by the Watch."%[hero_name(id),heroes[id].death_cause])
 			continue
 		var earned_xp: int=rules.participation_xp+(rules.success_xp if data.outcome=="victory" else 0)
@@ -189,6 +221,9 @@ func resolve(record: CampaignMissionResult) -> bool:
 			if heroes[id].experience>=rules.xp_thresholds[index]: heroes[id].level=index+1
 		lines.append("%s +%d XP → level %d (%d XP).%s"%[hero_name(id),earned_xp,heroes[id].level,heroes[id].experience," Training choice available." if pending_level(id)>0 else ""])
 	var earned: int=mission.supplies if data.outcome=="victory" else rules.failure_supplies
+	if data.version==3 and data.optional.completed:
+		earned+=int(data.optional.reward)
+		lines.append("Optional completed: %s (+%d Supplies)."%[OptionalGoals.find(data.optional.id).display_name,data.optional.reward])
 	supplies+=earned
 	lines.append("Supplies +%d"%earned)
 	var ignored: int=0
@@ -206,8 +241,10 @@ func resolve(record: CampaignMissionResult) -> bool:
 		var hero: Dictionary=heroes[id]
 		if hero.get("dead",false) or hero.injury.is_empty(): continue
 		var recovery: int=(1 if mission.party.has(id) else 2)+(1 if mission.recovery and data.outcome=="victory" else 0)
-		hero.injury.remaining=maxi(0,int(hero.injury.remaining)-recovery)
-		lines.append("%s recovered %d step(s): %d remaining"%[hero_name(id),recovery,hero.injury.remaining])
+		var recovered_steps := mini(int(hero.injury.remaining),recovery)
+		hero.injury.remaining-=recovered_steps
+		lines.append("%s recovered %d step(s): %d remaining"%[hero_name(id),recovered_steps,hero.injury.remaining])
+		CampaignEvents.service(self,id,"recovery","Recovered %d injury step(s); %d remaining."%[recovered_steps,hero.injury.remaining])
 		if hero.injury.remaining==0: hero.injury={}
 	for id: String in mission.party:
 		if heroes[id].get("dead",false): continue
@@ -216,6 +253,7 @@ func resolve(record: CampaignMissionResult) -> bool:
 		if duration>0:
 			var previous: int=int(heroes[id].injury.get("remaining",0))
 			heroes[id].injury={"name":"Severe injury" if int(result.health)<=0 else "Battle strain","remaining":maxi(duration,previous)}
+			CampaignEvents.service(self,id,"injury","%s: %d subsequent mission resolutions."%[heroes[id].injury.name,heroes[id].injury.remaining])
 			lines.append("%s: %s (%d subsequent mission resolutions; %d max HP, %.1f m movement)"%[hero_name(id),heroes[id].injury.name,heroes[id].injury.remaining,rules.injury_health,rules.injury_movement])
 	if data.outcome=="victory" and mission.final: ending="victory"
 	elif threat>=rules.threat_maximum or (living_ids().size()<2 and supplies<(2-living_ids().size())*int(roster_rules.recruit_cost)): ending="defeat"
@@ -226,20 +264,25 @@ func resolve(record: CampaignMissionResult) -> bool:
 	for line: String in lines: history.append(line)
 	while history.size()>60: history.pop_front()
 	generate_offers()
+	pending_event=CampaignEvents.offer(self)
+	trader=CampaignTrader.arrival(self)
 	return true
 
 func item(id: String) -> CampaignItemDefinition:
 	for value in rules.items:
 		if value.stable_id==id: return value as CampaignItemDefinition
-	return null
-func create_item(id: String) -> String:
+	return CampaignEquipment.find(id)
+func create_item(id: String,art_variant: String="") -> String:
+	var definition := item(id)
+	if definition==null: return ""
+	var variant: String=art_variant if definition.icon_variants.has(art_variant) else CampaignEquipment.variant_for(self,definition,next_item)
 	var instance := "gear-%04d"%next_item; next_item+=1
-	inventory[instance]={"id":instance,"definition_id":id}
+	inventory[instance]={"id":instance,"definition_id":id,"art_variant":variant}
 	return instance
 func purchase(id: String,request_id: String="") -> String:
 	if not active.is_empty() or not ending.is_empty() or used_operations.has(request_id) and not request_id.is_empty(): return ""
 	var definition := item(id)
-	if definition==null or definition.cost<=0 or not can_spend(definition.cost): return ""
+	if not CampaignEquipment.purchase_error(self,definition).is_empty(): return ""
 	supplies-=definition.cost
 	var instance := create_item(id)
 	if not request_id.is_empty(): used_operations[request_id]=true
@@ -252,7 +295,7 @@ func owner_of(instance: String) -> String:
 func equip(id: String,instance: String) -> bool:
 	if not active.is_empty() or not ending.is_empty() or not living_ids().has(id) or not inventory.has(instance): return false
 	var definition := item(inventory[instance].definition_id)
-	if not definition.compatible_heroes.has(blueprint_id(id)): return false
+	if not equipment_error(id,instance).is_empty(): return false
 	var previous := owner_of(instance)
 	if previous==id: return false
 	if not previous.is_empty(): heroes[previous].equipment.erase(definition.slot)
@@ -280,12 +323,13 @@ func medical(id: String) -> bool:
 	if record.injury.is_empty() or record.medical_at==resolutions or not can_spend(rules.medical_cost): return false
 	supplies-=rules.medical_cost; record.medical_at=resolutions
 	record.injury.remaining-=1
+	CampaignEvents.service(self,id,"recovery","Herbwarden treatment: one injury step recovered.")
 	if record.injury.remaining<=0: record.injury={}
 	history.append("Herbwardens treated %s: recovery advanced one step (-%d Supplies)."%[hero_name(id),rules.medical_cost])
 	return true
 
 func snapshot() -> Dictionary:
-	return {"version":VERSION,"campaign_id":campaign_id,"rules_version":rules.version,"seed":seed_value,"difficulty":difficulty_id,"heroes":heroes.duplicate(true),"offers":offers.duplicate(true),"active":active.duplicate(true),"processed":processed.duplicate(true),"history":history.slice(maxi(0,history.size()-60)),"victories":victories,"resolutions":resolutions,"threat":threat,"supplies":supplies,"ending":ending,"inventory":inventory.duplicate(true),"next_item":next_item,"next_hero":next_hero,"used_operations":used_operations.duplicate(true),"last_debrief":last_debrief.duplicate(true)}
+	return {"command_tier":command_tier,"trader":trader.duplicate(true),"opening_version":opening_version,"pending_event":pending_event.duplicate(true),"event_records":event_records.duplicate(true),"resolved_events":resolved_events.duplicate(true),"version":VERSION,"campaign_id":campaign_id,"rules_version":rules.version,"seed":seed_value,"difficulty":difficulty_id,"heroes":heroes.duplicate(true),"offers":offers.duplicate(true),"active":active.duplicate(true),"processed":processed.duplicate(true),"history":history.slice(maxi(0,history.size()-60)),"victories":victories,"resolutions":resolutions,"threat":threat,"supplies":supplies,"ending":ending,"inventory":inventory.duplicate(true),"next_item":next_item,"next_hero":next_hero,"used_operations":used_operations.duplicate(true),"last_debrief":last_debrief.duplicate(true)}
 
 
 func hero_name(id: String) -> String:
@@ -301,6 +345,7 @@ func _add_recruit() -> String:
 	while heroes.has("hero-%04d"%next_hero): next_hero+=1
 	var id := "hero-%04d"%next_hero; next_hero+=1
 	heroes[id]={"id":id,"name":recruit_name(next_hero-1),"specialisation":"","legacy_specialist":false,"dead":false,"death_cause":"","trained":false,"missions_completed":0,"experience":0,"level":1,"upgrades":[],"injury":{},"equipment":{},"medical_at":-1}
+	CampaignEvents.initialise_hero(self,id)
 	for item_id: String in ["recruit_issue","watch_kit"]:
 		var instance := create_item(item_id)
 		heroes[id].equipment[item(item_id).slot]=instance
@@ -326,6 +371,7 @@ func specialise(id: String,class_id: String) -> bool:
 	if not active.is_empty() or not ending.is_empty() or not living_ids().has(id) or not SpecialisationCatalog.ids().has(class_id): return false
 	if heroes[id].level<2 or blueprint_id(id)!="recruit": return false
 	heroes[id].specialisation=class_id
+	CampaignEvents.service(self,id,"specialisation","Became a "+HeroCatalog.find(class_id).display_name+".")
 	for slot: String in heroes[id].equipment.keys():
 		var gear := item(inventory[heroes[id].equipment[slot]].definition_id)
 		if not gear.compatible_heroes.has(class_id): heroes[id].equipment.erase(slot)
@@ -345,3 +391,34 @@ func recruitment_reserve() -> int:
 func can_spend(cost: int) -> bool:
 	# Preserve a route back to a two-person deployment after roster losses.
 	return cost>=0 and supplies-cost>=recruitment_reserve()
+
+func choose_event(instance: String,choice_id: String) -> bool:
+	return CampaignEvents.choose(self,instance,choice_id)
+
+func deployment_capacity() -> int:
+	return 2+command_tier
+func command_upgrade_error(tier: int) -> String:
+	if not headquarters_rules.valid(): return "Headquarters rules are unavailable; no Supplies spent."
+	if not active.is_empty() or not ending.is_empty(): return "Headquarters upgrades are available only between missions."
+	if tier!=command_tier+1 or tier<1 or tier>2: return "This upgrade is already owned or requires the previous tier."
+	if victories<headquarters_rules.command_victories[tier-1]: return "Requires %d campaign victories."%headquarters_rules.command_victories[tier-1]
+	if not can_spend(headquarters_rules.command_costs[tier-1]): return "Not enough spare Supplies; replacement reserves are protected."
+	return ""
+func buy_command_upgrade(tier: int) -> bool:
+	if not command_upgrade_error(tier).is_empty(): return false
+	supplies-=headquarters_rules.command_costs[tier-1];command_tier=tier
+	history.append("Commander’s Tent upgraded: deploy up to %d companions (-%d Supplies)."%[deployment_capacity(),headquarters_rules.command_costs[tier-1]])
+	return true
+
+func equipment_error(hero_id: String,instance: String) -> String:
+	if not active.is_empty() or not ending.is_empty(): return "Equipment changes are available only between missions."
+	if not living_ids().has(hero_id) or not inventory.has(instance): return "Choose a living companion and an owned item."
+	var definition := item(inventory[instance].definition_id)
+	if not definition.compatible_heroes.has(blueprint_id(hero_id)): return "This class cannot use that equipment."
+	var required := CampaignEquipment.level_for(definition,headquarters_rules)
+	if int(heroes[hero_id].level)<required: return "Unlocks at level %d."%required
+	if owner_of(instance)==hero_id: return "Already equipped."
+	return ""
+
+func purchase_trader(offer_id: String) -> String:
+	return CampaignTrader.purchase(self,offer_id)

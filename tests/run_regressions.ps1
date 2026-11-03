@@ -2,7 +2,7 @@ param(
     [Parameter(Mandatory = $true)][string]$Godot,
     [int]$TimeoutSeconds = 60,
     [string]$ReportDirectory = '',
-    [ValidateSet('all','fast','integration','simulation','stress','mission','roster')][string]$Category = 'all',
+    [ValidateSet('all','fast','integration','simulation','stress','mission','roster','onboarding','events','headquarters')][string]$Category = 'all',
     [int]$StressEncounters = 60,
     [string[]]$TestNames = @()
 )
@@ -25,15 +25,25 @@ $suites = @(
 $suites += @('mission_template_tests','mission_layout_tests','mission_variety_tests','mission_simulation_tests','mission_replay_tests')
 $roster = @('campaign_recovery_tests','recruit_opening_tests','specialisation_tests','unit_survival_tests','roster_character_tests','rescue_ui_tests','roster_combat_tests','roster_contract_tests','roster_campaign_tests','roster_save_tests','roster_flow_tests','roster_simulation_tests','rescue_validation_tests','roster_campaign_play_tests','survival_pose_tests','roster_ai_tests')
 $suites += $roster
+$events = @('campaign_identity_tests','campaign_events_tests','campaign_event_rules_tests','campaign_events_flow_tests')
+$suites += $events
+$headquarters = @('headquarters_rules_tests','headquarters_squad_tests','headquarters_equipment_tests','headquarters_flow_tests','headquarters_trader_tests','headquarters_camp_tests','headquarters_opening_tests','headquarters_generation_tests','headquarters_simulation_tests')
+$suites += $headquarters
+$suites += @('tactical_movement_tests','architecture_tests','tactical_optional_tests','tactical_generation_tests','tactical_encounter_tests')
 $suites += 'environment_tests'
 $suites += 'authored_character_tests'
 $suites += 'combat_fx_tests'
 $suites += @('ai_positioning_tests','ai_awareness_tests','ai_execution_tests','ai_compatibility_tests','ai_lifecycle_tests','ai_simulation_tests')
 $suites += @('oath_ui_tests', 'resource_lifecycle_tests', 'visual_lifecycle_tests', 'save_integrity_tests', 'turn_lifecycle_tests', 'faction_tests', 'faction_compatibility_tests', 'telegraph_tests', 'faction_spawn_tests', 'faction_encounter_tests', 'combat_stress_tests', 'session_lifecycle_tests')
+$onboarding = @('onboarding_bindings_tests','onboarding_help_tests','rescue_tutorial_tests','onboarding_campaign_tests','tutorial_tests','usability_tests','rescue_validation_tests','roster_flow_tests','settings_lifecycle_tests','campaign_flow_tests','player_input_tests','interface_tests','campaign_recovery_tests','roster_save_tests','save_flow_tests','transition_stability_tests','unit_survival_tests','objective_tests')
+$suites += @('onboarding_bindings_tests','onboarding_help_tests','rescue_tutorial_tests','onboarding_campaign_tests')
 $fast = @('run_tests','tactics_tests','objective_tests','difficulty_tests','campaign_tests','persistence_tests','save_integrity_tests','turn_lifecycle_tests','resource_lifecycle_tests','visual_lifecycle_tests','faction_tests','ai_positioning_tests','ai_awareness_tests','ai_execution_tests','ai_compatibility_tests','ai_lifecycle_tests','mission_template_tests')
 $fast += @('specialisation_tests','unit_survival_tests','roster_campaign_tests','roster_save_tests')
 $simulation = @('playable_encounter_tests','objective_encounter_tests','difficulty_encounter_tests','campaign_play_tests','faction_encounter_tests','combat_stress_tests','ai_simulation_tests','mission_simulation_tests')
 $mission = @('mission_template_tests','mission_layout_tests','mission_variety_tests','mission_simulation_tests','mission_replay_tests','objective_tests','campaign_tests','persistence_tests','faction_compatibility_tests','ai_awareness_tests')
+if ($Category -eq 'headquarters') { $suites = $headquarters }
+if ($Category -eq 'events') { $suites = $events }
+if ($Category -eq 'onboarding') { $suites = $onboarding }
 if ($Category -eq 'roster') { $suites = $roster }
 if ($Category -eq 'mission') { $suites = $mission }
 if ($Category -eq 'fast') { $suites = $fast }
@@ -49,7 +59,8 @@ if ($TestNames.Count -gt 0) {
 # Refresh import/class metadata so a fresh checkout can run newly added tests.
 $importLog = Join-Path $ReportDirectory 'import.log'
 & $enginePath --headless --editor --import --path $projectRoot *> $importLog
-if ($LASTEXITCODE -ne 0 -or (Select-String -Path $importLog -Pattern '^(SCRIPT )?ERROR:' -Quiet)) { throw "Import/type-check failed: $importLog" }
+$importExit = $LASTEXITCODE
+if ($importExit -ne 0 -or (Select-String -Path $importLog -Pattern '^(SCRIPT )?ERROR:' -Quiet)) { throw "Import/type-check failed (exit $importExit): $importLog" }
 $results = @()
 foreach ($suite in $suites) {
     $stdout = Join-Path $ReportDirectory "$suite.stdout.log"

@@ -11,6 +11,7 @@ enum Mode { NONE, MOVE, ATTACK }
 var controller: CombatController
 var camera: Camera3D
 var line: MeshInstance3D
+var requested_marker: MeshInstance3D
 var destination_marker: MeshInstance3D
 var destination_label: Label3D
 var marker_material: StandardMaterial3D
@@ -49,6 +50,14 @@ func bind(combat: CombatController, view: Camera3D) -> void:
 	marker_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	destination_marker.material_override = marker_material
 	add_child(destination_marker)
+	requested_marker=MeshInstance3D.new()
+	requested_marker.mesh=CombatUnit.outline_mesh(true)
+	var requested_material := StandardMaterial3D.new()
+	requested_material.shading_mode=BaseMaterial3D.SHADING_MODE_UNSHADED
+	requested_material.albedo_color=Color.ORANGE_RED
+	requested_marker.material_override=requested_material
+	requested_marker.visible=false
+	add_child(requested_marker)
 	destination_label = Label3D.new()
 	destination_label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	destination_label.position = Vector3(0, 0.2, 0)
@@ -57,6 +66,7 @@ func bind(combat: CombatController, view: Camera3D) -> void:
 	destination_label.no_depth_test = true
 	destination_marker.add_child(destination_label)
 	destination_marker.visible = false
+	if requested_marker!=null: requested_marker.visible=false
 	area_marker = MeshInstance3D.new()
 	area_ring = TorusMesh.new()
 	area_marker.mesh = area_ring
@@ -216,7 +226,7 @@ func _process(_delta: float) -> void:
 		if selected_rescue >= 0:
 			var rescue_preview: Variant = controller.evaluate_rescue(active, hovered_unit, selected_rescue)
 			_highlight(hovered_unit, rescue_preview.valid())
-			var rescue_message: String = RESCUE_NAMES[selected_rescue] + " · 1 shared action\n" + ("Click ally to confirm. Esc cancels." if rescue_preview.valid() else rescue_preview.error)
+			var rescue_message: String = RESCUE_NAMES[selected_rescue] + " · 1 shared action\n" + (ControlBindings.instructions("Click ally to confirm. Escape cancels.") if rescue_preview.valid() else rescue_preview.error)
 			attack_preview_changed.emit(hovered_unit.definition.display_name if hovered_unit != null else "", rescue_preview.distance, rescue_preview.valid(), rescue_message)
 			return
 		var preview := controller.evaluate_attack(active, hovered_unit) if selected_ability_id.is_empty() else controller.evaluate_ability(active, hovered_unit, selected_ability_id)
@@ -237,11 +247,7 @@ func _process(_delta: float) -> void:
 		_clear()
 		_feedback(0.0, false, "Point at walkable ground")
 		return
-	var route := controller.evaluate_move(active, hit.position)
-	route_previewed.emit(hit.position,route.distance,route.valid())
-	_draw(route.path, route.valid())
-	_show_destination(hit.position, route.valid(), route.distance)
-	_feedback(route.distance, route.valid(), route.error if not route.valid() else "Click destination to move. Cost follows the full route.")
+	show_move_preview(hit.position)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if controller == null:
@@ -286,7 +292,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		elif mode == Mode.MOVE:
 			var hit := _ground_hit(screen_point)
 			if not hit.is_empty():
-				controller.submit_player_command(MoveCommand.new(active.stable_id, hit.position))
+				var command := MoveCommand.new(active.stable_id, hit.position)
+				command.allow_partial=true
+				controller.submit_player_command(command)
 		else:
 			controller.feedback_changed.emit("Choose Move [M] or Attack [T] first")
 		get_viewport().set_input_as_handled()
@@ -302,6 +310,7 @@ func _ground_hit(screen_position: Vector2 = Vector2.INF) -> Dictionary:
 func _clear() -> void:
 	line.mesh = null
 	destination_marker.visible = false
+	if requested_marker!=null: requested_marker.visible=false
 	_feedback(0.0, false, "")
 
 func _feedback(distance: float, affordable: bool, message: String) -> void:
@@ -317,25 +326,42 @@ func _show_destination(destination: Vector3, valid: bool, distance: float) -> vo
 	marker_material.albedo_color = Color(0.3, 1, 0.7) if valid else Color.ORANGE_RED
 	destination_label.text = "%.2f m" % distance if valid else "INVALID"
 
+func show_move_preview(point: Vector3) -> void:
+	var active := controller.scheduler.active_unit()
+	var plan := controller.plan_player_move(active,point)
+	route_previewed.emit(point,plan.full_route.distance,plan.valid())
+	requested_marker.visible=plan.valid() and plan.limited
+	if not plan.valid():
+		_draw(plan.full_route.path,false)
+		_show_destination(point,false,0)
+		_feedback(0,false,plan.route.error);return
+	_draw_parts(plan.route.path,NavigationService.slice_path(plan.full_route.path,plan.route.distance) if plan.limited else PackedVector3Array())
+	_show_destination(plan.route.path[-1],true,plan.route.distance)
+	requested_marker.position=NavigationService.planar(point)+Vector3.UP*.065
+	destination_label.text=("STOP · " if plan.limited else "MOVE · ")+"%.2f m"%plan.route.distance
+	_feedback(plan.route.distance,true,"%.2f m target · green STOP / red beyond limit"%plan.full_route.distance if plan.limited else "Click to move along this route")
+
 func _draw(path: PackedVector3Array, valid: bool) -> void:
-	if path.size() < 2:
-		line.mesh = null
-		return
+	_draw_parts(path if valid else PackedVector3Array(),PackedVector3Array() if valid else path)
+
+func _draw_parts(affordable: PackedVector3Array, beyond: PackedVector3Array) -> void:
 	var mesh := ImmediateMesh.new()
-	var material := StandardMaterial3D.new()
-	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	material.cull_mode = BaseMaterial3D.CULL_DISABLED
-	material.albedo_color = Color(0.3, 1, 0.7) if valid else Color.ORANGE_RED
-	mesh.surface_begin(Mesh.PRIMITIVE_TRIANGLES, material)
-	for index in range(1, path.size()):
-		var start := path[index - 1] + Vector3.UP * 0.07
-		var finish := path[index] + Vector3.UP * 0.07
-		var direction := finish - start
-		var side := Vector3(-direction.z, 0, direction.x).normalized() * 0.045
-		for vertex in [start - side, start + side, finish + side, start - side, finish + side, finish - side]:
-			mesh.surface_add_vertex(vertex)
-	mesh.surface_end()
-	line.mesh = mesh
+	for section in range(2):
+		var path := affordable if section==0 else beyond
+		if path.size()<2: continue
+		var material := StandardMaterial3D.new()
+		material.shading_mode=BaseMaterial3D.SHADING_MODE_UNSHADED
+		material.cull_mode=BaseMaterial3D.CULL_DISABLED
+		material.albedo_color=Color(.3,1,.7) if section==0 else Color.ORANGE_RED
+		mesh.surface_begin(Mesh.PRIMITIVE_TRIANGLES,material)
+		for index in range(1,path.size()):
+			var start := path[index-1]+Vector3.UP*.07
+			var finish := path[index]+Vector3.UP*.07
+			var direction := finish-start
+			var side := Vector3(-direction.z,0,direction.x).normalized()*.045
+			for vertex in [start-side,start+side,finish+side,start-side,finish+side,finish-side]:mesh.surface_add_vertex(vertex)
+		mesh.surface_end()
+	line.mesh=mesh if mesh.get_surface_count()>0 else null
 
 
 func _ground_ability() -> AbilityDefinition:

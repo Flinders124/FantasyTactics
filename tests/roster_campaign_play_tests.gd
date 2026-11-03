@@ -22,6 +22,7 @@ func run() -> void:
      if upgrade.hero_id==state.blueprint_id(id) and upgrade.required_level==pending:
       state.learn(id,upgrade.stable_id)
       break
+  if not state.pending_event.is_empty():check(state.choose_event(state.pending_event.id,"decline"),"Playthrough explicitly resolves camp decision")
   var chosen: Dictionary=state.offers[0]
   for offer in state.offers:
    if offer.objective==0: chosen=offer; break

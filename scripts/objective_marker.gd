@@ -44,4 +44,4 @@ func refresh() -> void:
 	if objective.definition.kind==ObjectiveDefinition.Kind.HOLD_GROUND:
 		label.text="HOLD\n%d / %d - %s"%[objective.progress,objective.definition.required_rounds,objective.control.to_upper()]
 	else:
-		label.text="EXIT\n%d / 2 HEROES"%objective.heroes_inside
+		label.text="EXIT\n%d / %d HEROES"%[objective.heroes_inside,objective.required_heroes.size()]

@@ -39,7 +39,7 @@ func run() -> void:
  check(player.ability_preview_text(ability, null).contains("3 damage") and player.ability_preview_text(ability, null).contains("pull up to 2.0 m"), "Reel distinguishes damage and displacement")
  ability.effect = AbilityDefinition.Effect.TOW
  check(player.ability_preview_text(ability, null).contains("Tow ally up to 2.0 m") and player.ability_preview_text(ability, null).contains("no damage"), "Tow never claims healing or damage")
- check(hud.rescue_buttons[0].tooltip_text.contains("3 future round-end") and hud.rescue_buttons[1].tooltip_text.contains("halves movement") and hud.rescue_buttons[3].tooltip_text.contains("permanent"), "Rescue controls explain campaign survival consequences")
+ check(hud.rescue_buttons[0].tooltip_text.contains("%d future round"%int(load("res://definitions/roster_rules.tres").bleed_rounds)) and hud.rescue_buttons[1].tooltip_text.contains("halves movement") and hud.rescue_buttons[3].tooltip_text.contains("permanent"), "Rescue controls explain campaign survival consequences")
  player.cancel_targeting()
  encounter.queue_free()
  await process_frame

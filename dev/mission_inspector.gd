@@ -18,6 +18,8 @@ func run() -> void:
 		var state: CampaignState = LegacyCampaignFixture.new((seed_value+index)&0xffffffff,difficulty)
 		# Inspect every real board in a successful short campaign, including recovery and finale.
 		for stage in range(5):
+			if not state.pending_event.is_empty():
+				if not state.choose_event(state.pending_event.id,"decline"): failures+=1;push_error("Inspector could not resolve camp decision")
 			for offer in state.offers:
 				var config:=state.prepare(offer.id,["knight","ranger"])
 				if config==null or not config.validation_error().is_empty(): failures+=1; push_error("Invalid mission: "+str(offer.id)); continue

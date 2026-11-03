@@ -1,0 +1,241 @@
+{
+  "godot": "4.7.2 stable ed1daf0bf",
+  "source": [
+    {
+      "suite": "transition_stability_tests",
+      "category": "all",
+      "exit_code": 0,
+      "passed": true,
+      "timed_out": false,
+      "seconds": 49.39
+    },
+    {
+      "suite": "settings_lifecycle_tests",
+      "category": "all",
+      "exit_code": 0,
+      "passed": true,
+      "timed_out": false,
+      "seconds": 12.45
+    },
+    {
+      "suite": "campaign_tests",
+      "category": "all",
+      "exit_code": 0,
+      "passed": true,
+      "timed_out": false,
+      "seconds": 48.24
+    },
+    {
+      "suite": "campaign_flow_tests",
+      "category": "all",
+      "exit_code": 0,
+      "passed": true,
+      "timed_out": false,
+      "seconds": 97.3
+    },
+    {
+      "suite": "camp_tests",
+      "category": "all",
+      "exit_code": 0,
+      "passed": true,
+      "timed_out": false,
+      "seconds": 17.18
+    },
+    {
+      "suite": "persistence_tests",
+      "category": "all",
+      "exit_code": 0,
+      "passed": true,
+      "timed_out": false,
+      "seconds": 22.96
+    },
+    {
+      "suite": "save_flow_tests",
+      "category": "all",
+      "exit_code": 0,
+      "passed": true,
+      "timed_out": false,
+      "seconds": 91.39
+    },
+    {
+      "suite": "campaign_recovery_tests",
+      "category": "all",
+      "exit_code": 0,
+      "passed": true,
+      "timed_out": false,
+      "seconds": 40.44
+    },
+    {
+      "suite": "specialisation_tests",
+      "category": "all",
+      "exit_code": 0,
+      "passed": true,
+      "timed_out": false,
+      "seconds": 2.06
+    },
+    {
+      "suite": "unit_survival_tests",
+      "category": "all",
+      "exit_code": 0,
+      "passed": true,
+      "timed_out": false,
+      "seconds": 1.44
+    },
+    {
+      "suite": "roster_contract_tests",
+      "category": "all",
+      "exit_code": 0,
+      "passed": true,
+      "timed_out": false,
+      "seconds": 1.26
+    },
+    {
+      "suite": "roster_campaign_tests",
+      "category": "all",
+      "exit_code": 0,
+      "passed": true,
+      "timed_out": false,
+      "seconds": 12.11
+    },
+    {
+      "suite": "roster_save_tests",
+      "category": "all",
+      "exit_code": 0,
+      "passed": true,
+      "timed_out": false,
+      "seconds": 3.03
+    },
+    {
+      "suite": "roster_flow_tests",
+      "category": "all",
+      "exit_code": 0,
+      "passed": true,
+      "timed_out": false,
+      "seconds": 39.21
+    },
+    {
+      "suite": "campaign_identity_tests",
+      "category": "all",
+      "exit_code": 0,
+      "passed": true,
+      "timed_out": false,
+      "seconds": 14.68
+    },
+    {
+      "suite": "campaign_events_tests",
+      "category": "all",
+      "exit_code": 0,
+      "passed": true,
+      "timed_out": false,
+      "seconds": 14.24
+    },
+    {
+      "suite": "campaign_event_rules_tests",
+      "category": "all",
+      "exit_code": 0,
+      "passed": true,
+      "timed_out": false,
+      "seconds": 53.9
+    },
+    {
+      "suite": "campaign_events_flow_tests",
+      "category": "all",
+      "exit_code": 0,
+      "passed": true,
+      "timed_out": false,
+      "seconds": 34.61
+    },
+    {
+      "suite": "save_integrity_tests",
+      "category": "all",
+      "exit_code": 0,
+      "passed": true,
+      "timed_out": false,
+      "seconds": 61.18
+    },
+    {
+      "suite": "onboarding_bindings_tests",
+      "category": "all",
+      "exit_code": 0,
+      "passed": true,
+      "timed_out": false,
+      "seconds": 8.23
+    },
+    {
+      "suite": "rescue_tutorial_tests",
+      "category": "all",
+      "exit_code": 0,
+      "passed": true,
+      "timed_out": false,
+      "seconds": 16.55
+    },
+    {
+      "suite": "onboarding_campaign_tests",
+      "category": "all",
+      "exit_code": 0,
+      "passed": true,
+      "timed_out": false,
+      "seconds": 12.68
+    }
+  ],
+  "production": [
+    {
+      "exit_code": 0,
+      "seconds": 80.26,
+      "passed": true,
+      "timed_out": false,
+      "name": "render-final"
+    },
+    {
+      "exit_code": 0,
+      "seconds": 33.26,
+      "passed": true,
+      "timed_out": false,
+      "name": "export"
+    },
+    {
+      "exit_code": 0,
+      "seconds": 6.88,
+      "passed": true,
+      "timed_out": false,
+      "name": "events-pack"
+    }
+  ],
+  "pack_smoke": [
+    {
+      "phase": 1,
+      "passed": true,
+      "exit_code": 0,
+      "timed_out": false,
+      "seconds": 8.3387068
+    },
+    {
+      "phase": 2,
+      "passed": true,
+      "exit_code": 0,
+      "timed_out": false,
+      "seconds": 6.1677773
+    },
+    {
+      "phase": 3,
+      "passed": true,
+      "exit_code": 0,
+      "timed_out": false,
+      "seconds": 13.3049545
+    },
+    {
+      "phase": 4,
+      "passed": true,
+      "exit_code": 0,
+      "timed_out": false,
+      "seconds": 5.2827498
+    }
+  ],
+  "actual_pack_encounter": {
+    "outcome": "VICTORY",
+    "rounds": 6
+  },
+  "standalone_windows_exe_verified": false,
+  "screenshots": 16,
+  "human_balance_playtest": false
+}

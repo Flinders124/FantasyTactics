@@ -48,12 +48,15 @@ func _on_event(kind: String, data: Dictionary) -> void:
 			message = str(data.get("message",""))
 		"downed":
 			message = "%s is downed. Rescue before bleed-out." % data.actor
+		"optional":
+			message=data.message
 		"objective":
 			message = data.message
 		"result":
 			message = "DRAW · Both factions eliminated." if data.get("draw", false) else ("VICTORY · All enemies defeated." if data.victory else "DEFEAT · All heroes defeated.")
 	if kind=="result" and data.has("reason"):
 		message=("DRAW" if data.get("draw",false) else ("VICTORY" if data.victory else "DEFEAT"))+" · "+str(data.reason)
+	if kind=="result" and not str(data.get("optional","")).is_empty():message+="\n"+str(data.optional)
 	if message.is_empty():
 		return
 	entries.append(message)

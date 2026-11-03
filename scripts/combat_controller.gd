@@ -16,6 +16,7 @@ var retreat_center: Vector3 = Vector3.ZERO
 var retreat_radius: float = 2.8
 var guidance_paused: bool = false
 var player_command_policy: Callable
+var optional_goals: OptionalGoalController=OptionalGoalController.new()
 var objectives: ObjectiveController = ObjectiveController.new()
 var outcome_reason: String = ""
 var completed_rounds: int = 0
@@ -233,6 +234,7 @@ func configure_movement(service: NavigationService, movement_motor: MovementMoto
 		objectives.refresh(units)
 		encounter_updated.emit())
 	motor.completed.connect(_movement_completed)
+	optional_goals.changed.connect(func() -> void: encounter_updated.emit())
 
 func evaluate_move(actor: CombatUnit, destination: Vector3, enforce_budget: bool = true, expected_state: State = State.AWAITING_COMMAND) -> NavigationService.Route:
 	var route := NavigationService.Route.new()
@@ -252,6 +254,28 @@ func evaluate_move(actor: CombatUnit, destination: Vector3, enforce_budget: bool
 			elif enforce_budget and route.distance > actor.movement_remaining + 0.000001:
 				route.error = "Not enough movement"
 	return route
+
+func plan_player_move(actor: CombatUnit, destination: Vector3, expected_state: State=State.AWAITING_COMMAND) -> PlayerMovePlan:
+	var plan := PlayerMovePlan.new()
+	if actor==null or actor.faction!=CombatUnit.Faction.HERO or guidance_paused:
+		plan.route.error="Only an active hero can receive player movement";return plan
+	plan.full_route=evaluate_move(actor,destination,false,expected_state)
+	if not plan.full_route.valid(): plan.route=plan.full_route;return plan
+	if actor.movement_remaining<=motor.arrival_tolerance:
+		plan.route.error="No movement remaining";return plan
+	if plan.full_route.distance<=actor.movement_remaining+.000001:
+		plan.route=plan.full_route;return plan
+	plan.limited=true
+	# Bound occupancy recovery and requery the actual route to every candidate.
+	# Never accept a partial map route to an unreachable requested destination.
+	for attempt in range(20):
+		var distance := actor.movement_remaining-.0001-float(attempt)*.15
+		if distance<=motor.arrival_tolerance: break
+		var endpoint := NavigationService.point_at_distance(plan.full_route.path,distance)
+		var approved := evaluate_move(actor,endpoint,true,expected_state)
+		if approved.valid(): plan.route=approved;return plan
+	plan.route.error="No clear stopping point within remaining movement"
+	return plan
 
 func evaluate_approach(actor: CombatUnit, target: CombatUnit, destination: Vector3) -> NavigationService.Route:
 	var route := evaluate_move(actor, destination, false)
@@ -293,6 +317,7 @@ func setup(roster: Array[CombatUnit], manager: TurnManager, reset_presentation: 
 		_reset_presentation()
 	_finalizing_outcome=false
 	units.assign(roster)
+	optional_goals.reset()
 	scheduler = manager
 	var ids: Dictionary = {}
 	for unit in units:
@@ -348,10 +373,15 @@ func _round_completed(round_number: int) -> void:
 func _check_outcome(completed_action: bool = false) -> bool:
 	if _finalizing_outcome or state in [State.VICTORY, State.DEFEAT, State.DRAW]: return true
 	var ticket := _lifecycle_epoch
+	optional_goals.sample(units,completed_action)
+	if ticket!=_lifecycle_epoch:return true
 	var proposal := objectives.proposed_outcome(units,completed_action)
 	if ticket!=_lifecycle_epoch: return true
 	if proposal.is_empty(): return false
 	_finalizing_outcome=true
+	optional_goals.finish(proposal.result,units,scheduler.round_number)
+	if ticket!=_lifecycle_epoch:
+		_finalizing_outcome=false;return true
 	_damage_in_progress=true
 	if survival_enabled:
 		if proposal.result=="victory" and objectives.definition.kind==ObjectiveDefinition.Kind.EXTRACTION:
@@ -381,7 +411,7 @@ func _check_outcome(completed_action: bool = false) -> bool:
 	result_summary={"completed_rounds":completed_rounds,"ended_round":scheduler.round_number,"defeated_heroes":defeated_heroes,"defeated_enemies":defeated_enemies,"reason":outcome_reason}
 	var result: String=proposal.result
 	_set_state(State.DRAW if result=="draw" else (State.VICTORY if result=="victory" else State.DEFEAT))
-	_publish_event("result", {"victory":result=="victory","draw":result=="draw","reason":outcome_reason,"completed_rounds":completed_rounds,"defeated_heroes":defeated_heroes,"defeated_enemies":defeated_enemies})
+	_publish_event("result", {"victory":result=="victory","draw":result=="draw","reason":outcome_reason,"completed_rounds":completed_rounds,"defeated_heroes":defeated_heroes,"defeated_enemies":defeated_enemies,"optional":optional_goals.summary()})
 	if motor!=null: motor.stop("Encounter ended")
 	selection_changed.emit(null)
 	encounter_updated.emit()
@@ -478,7 +508,7 @@ func _submit_command(command: CombatCommand) -> bool:
 		var target := find_unit(command.target_id)
 		return _resolve_attack(active, target)
 	if command is MoveCommand:
-		var route := evaluate_move(active, command.destination)
+		var route := plan_player_move(active,command.destination).route if command.allow_partial else evaluate_move(active, command.destination)
 		if not route.valid():
 			feedback_changed.emit(route.error)
 			return false
@@ -486,7 +516,7 @@ func _submit_command(command: CombatCommand) -> bool:
 		var ticket := _lifecycle_epoch
 		_set_state(State.RESOLVING_ACTION)
 		feedback_changed.emit("%s moves" % active.definition.display_name)
-		route = evaluate_move(active, command.destination, true, State.RESOLVING_ACTION)
+		route = plan_player_move(active,command.destination,State.RESOLVING_ACTION).route if command.allow_partial else evaluate_move(active, command.destination, true, State.RESOLVING_ACTION)
 		if not _turn_is_current(ticket, serial) or not route.valid():
 			if _turn_is_current(ticket, serial) and state == State.RESOLVING_ACTION:
 				_set_state(State.AWAITING_COMMAND)
@@ -544,9 +574,11 @@ func _on_unit_died(unit: CombatUnit) -> void:
 		_record_death(unit)
 
 func _record_death(unit: CombatUnit) -> void:
+	optional_goals.observe("death",unit)
 	_publish_event("death", {"actor_id": unit.stable_id, "actor": unit.definition.display_name})
 
 func _on_runtime_event(kind: String, data: Dictionary, unit: CombatUnit) -> void:
+	optional_goals.observe(kind,unit)
 	data["actor_id"] = unit.stable_id
 	data["actor"] = unit.definition.display_name
 	_publish_event(kind, data)

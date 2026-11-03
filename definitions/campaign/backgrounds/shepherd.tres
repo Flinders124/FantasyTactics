@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="CampaignBackgroundDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/campaign_background_definition.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+stable_id = "shepherd"
+display_name = "Upland shepherd"
+origin = "Kept flocks through long winters along the forest edge."
+motivation = "Fights for the scattered homes beyond the great roads."

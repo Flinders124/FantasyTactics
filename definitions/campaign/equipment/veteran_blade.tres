@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CampaignItemDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/campaign_item_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+stable_id = "veteran_blade"
+display_name = "Veteran Blade"
+slot = "weapon"
+description = "+2 basic damage; -0.25 m movement."
+rarity = "rare"
+icon_id = "rare_sword"
+vendor = "armoury"
+compatible_heroes = PackedStringArray("knight", "recruit")
+cost = 28
+minimum_level = 4
+icon_variants = PackedStringArray()
+modifiers = {"basic_damage": 2, "movement": -0.25}

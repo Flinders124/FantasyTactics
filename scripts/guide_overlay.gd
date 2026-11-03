@@ -10,7 +10,10 @@ var confirm_button: Button
 var on_confirm: Callable
 var encounter: CombatEncounter
 var owns_pause: bool = false
+var text_provider: Callable
+var raw_text: String=""
 func _ready() -> void:
+	add_to_group("preference_consumers")
 	layer=45
 	process_mode=Node.PROCESS_MODE_ALWAYS
 	panel=Control.new()
@@ -61,9 +64,9 @@ func _ready() -> void:
 		var options := HBoxContainer.new()
 		box.add_child(options)
 		for entry: Array in [["Skip Tutorial","skip_tutorial"],["Exit to Main Menu","main_menu"],["Restart Tutorial","tutorial"]]:
-			var action: String=entry[1]
+			var action: String="rescue_tutorial" if encounter.rescue_practice and entry[1]=="tutorial" else entry[1]
 			var option := Button.new()
-			option.text=entry[0]
+			option.text="Restart Exercise" if encounter.rescue_practice and entry[1]=="tutorial" else entry[0]
 			option.custom_minimum_size.y=38
 			options.add_child(option)
 			option.pressed.connect(func() -> void: encounter.flow_requested.emit(action))
@@ -75,6 +78,8 @@ func open(title: String,text: String,confirm_text: String="",callback: Callable=
 			owns_pause=true
 			encounter.set_guidance_paused(true)
 	heading.text=title
+	text_provider=Callable()
+	raw_text=text
 	body.text=ControlBindings.instructions(text)
 	on_confirm=callback
 	confirm_button.text=confirm_text
@@ -83,8 +88,16 @@ func open(title: String,text: String,confirm_text: String="",callback: Callable=
 	panel.show()
 	OathUI.reveal(panel)
 	close_button.grab_focus()
+func open_dynamic(title: String,provider: Callable) -> void:
+	open(title,str(provider.call()))
+	text_provider=provider
+func apply_preferences(_owner: GameAudio) -> void:
+	if panel==null or not panel.visible: return
+	var refreshed := ControlBindings.instructions(str(text_provider.call()) if text_provider.is_valid() else raw_text)
+	if body.text!=refreshed: body.text=refreshed
 func close() -> void:
 	panel.hide()
+	text_provider=Callable()
 	on_confirm=Callable()
 	if owns_pause:
 		owns_pause=false
@@ -94,6 +107,11 @@ func _input(event: InputEvent) -> void:
 	if not panel.visible: return
 	var owner := get_tree().get_first_node_in_group("game_audio") as GameAudio
 	if owner!=null and owner.panel.visible: return
+	if event is InputEventKey and event.pressed and event.keycode in [KEY_PAGEUP,KEY_PAGEDOWN]:
+		var scroll := body.get_v_scroll_bar()
+		scroll.value+=(1 if event.keycode==KEY_PAGEDOWN else -1)*body.size.y*.85
+		get_viewport().set_input_as_handled()
+		return
 	if event is InputEventKey and event.pressed and event.keycode in [KEY_TAB,KEY_UP,KEY_DOWN,KEY_LEFT,KEY_RIGHT]:
 		var buttons: Array[Button]=[]
 		for control in panel.find_children("*","Button",true,false):
@@ -110,5 +128,6 @@ func _input(event: InputEvent) -> void:
 		if event.keycode not in [KEY_TAB,KEY_ENTER,KEY_KP_ENTER,KEY_SPACE,KEY_UP,KEY_DOWN,KEY_LEFT,KEY_RIGHT]: get_viewport().set_input_as_handled()
 
 func _exit_tree() -> void:
+	text_provider=Callable()
 	if owns_pause and get_tree()!=null:
 		get_tree().paused=false

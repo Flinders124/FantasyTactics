@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CampaignItemDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/campaign_item_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+stable_id = "veteran_plate"
+display_name = "Veteran Plate"
+slot = "garb"
+description = "+4 maximum health; -0.5 m movement."
+rarity = "rare"
+icon_id = "rare_armour"
+vendor = "armoury"
+compatible_heroes = PackedStringArray("knight", "ranger", "mage", "cleric", "recruit", "aegisbearer", "chainbinder")
+cost = 26
+minimum_level = 4
+icon_variants = PackedStringArray()
+modifiers = {"health": 4, "movement": -0.5}

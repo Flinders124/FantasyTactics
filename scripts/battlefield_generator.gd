@@ -4,12 +4,14 @@ extends Node
 var total_placement_tries: int = 0
 var validation_error: String = ""
 
-func make_layout(seed_value: int, settings: BattlefieldSettings, attempt: int, fallback: bool = false, objective: ObjectiveDefinition = null, enemy_count: int = 2) -> BattlefieldLayout:
-	if enemy_count < 2 or enemy_count > 4: return null
+func make_layout(seed_value: int, settings: BattlefieldSettings, attempt: int, fallback: bool = false, objective: ObjectiveDefinition = null, enemy_count: int = 2, hero_count: int = 2) -> BattlefieldLayout:
+	var requested_version := settings.generator_version if settings!=null else 2
+	if enemy_count < 2 or enemy_count > 4 or hero_count<2 or hero_count>4: return null
 	if fallback:
 		var preset_id := settings.preset_id if settings!=null else "open_courtyard"
 		settings=BattlefieldSettings.new()
 		settings.preset_id=preset_id
+		settings.generator_version=requested_version
 	if settings == null or not settings.valid():
 		if not fallback:
 			return null
@@ -20,6 +22,7 @@ func make_layout(seed_value: int, settings: BattlefieldSettings, attempt: int, f
 		settings=settings.duplicate(true) as BattlefieldSettings
 		settings.arena_size.x=maxf(settings.arena_size.x,(objective.minimum_exit_travel+settings.boundary_margin+settings.spawn_zone_size.x*.5+objective.radius)/.74+1.0)
 	var layout := BattlefieldLayout.new()
+	layout.hero_count=hero_count
 	layout.preset_id=settings.preset_id
 	layout.generator_version=settings.generator_version
 	if objective!=null:
@@ -44,10 +47,17 @@ func make_layout(seed_value: int, settings: BattlefieldSettings, attempt: int, f
 	for extra in range(enemy_count - 2):
 		var center := layout.enemy_zone.get_center()
 		layout.spawns.append(Vector3(center.x + (-1.0 if extra == 0 else 1.0) * layout.enemy_zone.size.x * .28, 0, center.y))
-	for index in range(4, layout.spawns.size()):
+	# Insert extra heroes without consuming gameplay RNG or moving existing spawn points.
+	for extra in range(hero_count-2):
+		var center := layout.hero_zone.get_center()
+		layout.spawns.insert(2+extra,Vector3(center.x+(-1.0 if extra==0 else 1.0)*layout.hero_zone.size.x*.28,0,center.y))
+	for index in range(layout.spawns.size()):
 		for other in range(index):
-			var separation := settings.opposing_separation if (index < 2) != (other < 2) else settings.spawn_spacing
-			if layout.spawns[index].distance_to(layout.spawns[other]) < separation: return null
+			var separation := settings.opposing_separation if (index<hero_count)!=(other<hero_count) else settings.spawn_spacing
+			if layout.spawns[index].distance_to(layout.spawns[other])<separation: return null
+	if settings.generator_version==3:
+		CourtyardArchitecture.compose(layout,settings,objective)
+		return layout if _structural_clearance(layout,settings) else null
 	if settings.preset_id in ["narrow_approach", "split_courtyard"]:
 		# Reserve a broad central objective corridor and two perimeter bypasses.
 		var narrow := settings.preset_id == "narrow_approach"
@@ -109,7 +119,7 @@ func build(region: NavigationRegion3D, layout: BattlefieldLayout, settings: Batt
 	CourtyardKit.boundary(region, "WestBoundary", Vector3(-width * 0.5 - 0.25, 0.4, 0), Vector3(0.5, 0.8, depth))
 	CourtyardKit.boundary(region, "EastBoundary", Vector3(width * 0.5 + 0.25, 0.4, 0), Vector3(0.5, 0.8, depth))
 	for index in range(layout.obstacle_centers.size()):
-		CourtyardKit.blocker(region,"Obstacle%d" % index,layout.obstacle_centers[index],layout.obstacle_sizes[index],CourtyardKit.obstacle_kind(layout,index))
+		(CourtyardArchitecture.build(region,"Obstacle%d" % index,layout.obstacle_centers[index],layout.obstacle_sizes[index],layout.obstacle_kinds[index]) if layout.generator_version>=3 else CourtyardKit.blocker(region,"Obstacle%d" % index,layout.obstacle_centers[index],layout.obstacle_sizes[index],CourtyardKit.obstacle_kind(layout,index)))
 	var old := region.get_parent().get_node_or_null("CourtyardDressing")
 	if old!=null: old.free()
 	var dressing := CourtyardDressing.new()
@@ -137,9 +147,9 @@ static func add_box(parent: Node3D, box_name: String, center: Vector3, size: Vec
 	body.add_child(visual)
 	parent.add_child(body)
 
-func validate_spawns(layout: BattlefieldLayout, navigation: NavigationService, world: World3D, settings: BattlefieldSettings, enemy_count: int = 2) -> bool:
+func validate_spawns(layout: BattlefieldLayout, navigation: NavigationService, world: World3D, settings: BattlefieldSettings, enemy_count: int = 2, hero_count: int = 2) -> bool:
 	validation_error = ""
-	if not navigation.ready_for_queries or enemy_count < 2 or enemy_count > 4 or layout.spawns.size() != 2 + enemy_count:
+	if not navigation.ready_for_queries or enemy_count < 2 or enemy_count > 4 or layout.spawns.size() != hero_count + enemy_count or layout.hero_count!=hero_count:
 		validation_error = "Navigation is unavailable"
 		return false
 	if layout.used_fallback:
@@ -148,7 +158,7 @@ func validate_spawns(layout: BattlefieldLayout, navigation: NavigationService, w
 		settings.preset_id=requested_preset
 	for index in range(layout.spawns.size()):
 		var point := layout.spawns[index]
-		var zone := layout.hero_zone if index < 2 else layout.enemy_zone
+		var zone := layout.hero_zone if index < hero_count else layout.enemy_zone
 		if not zone.has_point(Vector2(point.x, point.z)) or not navigation.query_path(point, point).valid():
 			validation_error = "Spawn is outside walkable ground"
 			return false
@@ -163,7 +173,7 @@ func validate_spawns(layout: BattlefieldLayout, navigation: NavigationService, w
 			validation_error = "Spawn lacks body clearance"
 			return false
 		for other in range(index):
-			var separation := settings.opposing_separation if (index < 2) != (other < 2) else settings.spawn_spacing
+			var separation := settings.opposing_separation if (index < hero_count) != (other < hero_count) else settings.spawn_spacing
 			if point.distance_to(layout.spawns[other]) < separation or not navigation.query_path(point, layout.spawns[other]).valid():
 				validation_error = "Spawns overlap or lack a connected route"
 				return false
@@ -187,7 +197,7 @@ func validate_objective(layout: BattlefieldLayout, navigation: NavigationService
 		if not route.valid():
 			validation_error="Objective lacks a spawn connection"
 			return false
-		if objective.kind==ObjectiveDefinition.Kind.EXTRACTION and index<2 and route.distance-objective.radius<objective.minimum_exit_travel-.000001:
+		if objective.kind==ObjectiveDefinition.Kind.EXTRACTION and index<layout.hero_count and route.distance-objective.radius<objective.minimum_exit_travel-.000001:
 			validation_error="Exit travel is too short"
 			return false
 	for index in range(layout.obstacle_sizes.size()):

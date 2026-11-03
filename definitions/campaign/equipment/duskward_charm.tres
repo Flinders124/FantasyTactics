@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CampaignItemDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/campaign_item_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+stable_id = "duskward_charm"
+display_name = "Duskward Charm"
+slot = "accessory"
+description = "+0.5 m movement; +1 basic damage."
+rarity = "legendary"
+icon_id = ""
+vendor = "trader"
+compatible_heroes = PackedStringArray("knight", "ranger", "mage", "cleric", "recruit", "aegisbearer", "chainbinder")
+cost = 40
+minimum_level = 3
+icon_variants = PackedStringArray()
+modifiers = {"movement": 0.5, "basic_damage": 1}

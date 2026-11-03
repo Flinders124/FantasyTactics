@@ -17,6 +17,7 @@ func mission_configuration(index: int) -> EncounterConfiguration:
 		for id: String in state.active.party: people[id]={"health":20,"maximum_health":20}
 		var result:=CampaignMissionResult.new({"version":1,"mission_id":state.active.id,"outcome":"victory","abandoned":false,"reason":"Mission simulation stage fixture","heroes":people,"rounds":2,"tactical_result":"VICTORY"})
 		check(state.resolve(result),"Campaign stage fixture resolves through real result pipeline")
+	if not state.pending_event.is_empty():check(state.choose_event(state.pending_event.id,"decline"),"Simulation explicitly resolves camp decision")
 	var offer:=state.offers[int(index/15)%state.offers.size()]
 	mission_details=offer.template.duplicate(true)
 	mission_details.campaign_seed=state.seed_value

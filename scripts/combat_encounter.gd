@@ -11,6 +11,8 @@ const UNIT_SCENE: PackedScene = preload("res://scenes/combat_unit.tscn")
 @export var sentinel_definition: UnitDefinition = preload("res://definitions/sentinel.tres")
 var pause_sources: Dictionary = {}
 var tutorial_mode: bool = false
+var rescue_practice: bool = false
+var rescue_lesson: RescueTutorialDirector
 var tutorial: TutorialDirector
 var guide: GuideOverlay
 var configuration: EncounterConfiguration
@@ -54,7 +56,7 @@ func _ready() -> void:
 
 func _prepare_generated() -> bool:
 	if not configuration.valid_party():
-		setup_error = "Choose exactly two companions and two to four opponents."
+		setup_error = "Choose two to four companions and two to four opponents."
 		return false
 	generator = BattlefieldGenerator.new()
 	generator.name = "BattlefieldGenerator"
@@ -63,7 +65,7 @@ func _prepare_generated() -> bool:
 	if settings == null:
 		settings = BattlefieldSettings.new()
 	var cached := configuration.layout
-	if cached!=null and (cached.spawns.size()!=2+configuration.enemies.size() or cached.original_seed!=configuration.battlefield_seed or cached.preset_id!=settings.preset_id or cached.objective_id!=configuration.objective.stable_id or cached.generator_version!=settings.generator_version):
+	if cached!=null and (cached.spawns.size()!=configuration.hero_ids.size()+configuration.enemies.size() or cached.hero_count!=configuration.hero_ids.size() or cached.original_seed!=configuration.battlefield_seed or cached.preset_id!=settings.preset_id or cached.objective_id!=configuration.objective.stable_id or cached.generator_version!=settings.generator_version):
 		setup_error="Cached battlefield does not match its encounter configuration."
 		return false
 	var limit := clampi(settings.generation_attempts, 1, 8)
@@ -72,7 +74,7 @@ func _prepare_generated() -> bool:
 			return false
 		loading_changed.emit("Preparing your battlefield…" if attempt == 1 else "Preparing a clear route between the parties…")
 		var fallback := attempt == limit + 1
-		var layout := cached if cached != null else generator.make_layout(configuration.battlefield_seed, settings, attempt, fallback, configuration.objective, configuration.enemies.size())
+		var layout := cached if cached != null else generator.make_layout(configuration.battlefield_seed, settings, attempt, fallback, configuration.objective, configuration.enemies.size(),configuration.hero_ids.size())
 		if layout == null:
 			await get_tree().process_frame
 			continue
@@ -82,7 +84,7 @@ func _prepare_generated() -> bool:
 		await $NavigationService.synchronize($NavigationRegion3D)
 		if cancelled:
 			return false
-		if generator.validate_spawns(layout, $NavigationService, get_world_3d(), settings, configuration.enemies.size()) and generator.validate_objective(layout,$NavigationService,configuration.objective):
+		if generator.validate_spawns(layout, $NavigationService, get_world_3d(), settings, configuration.enemies.size(),configuration.hero_ids.size()) and generator.validate_objective(layout,$NavigationService,configuration.objective):
 			if tutorial_mode and not TutorialEncounter.valid_routes(layout,$NavigationService):
 				setup_error="Training routes are unavailable. Return to the title screen and retry Tutorial."
 				return false
@@ -97,30 +99,34 @@ func _prepare_generated() -> bool:
 
 func _spawn_and_bind() -> void:
 	var roster: Array[CombatUnit] = []
+	var hero_count: int=configuration.hero_ids.size() if configuration!=null else 2
 	var definitions: Array[UnitDefinition] = [hero_definition, scout_definition, enemy_definition, sentinel_definition]
 	var positions: PackedVector3Array = [Vector3(-4, 0, 3), Vector3(-2, 0, 4), Vector3(4, 0, -3), Vector3(2, 0, -4)]
 	if configuration != null:
-		definitions = [HeroCatalog.find(configuration.hero_ids[0]), HeroCatalog.find(configuration.hero_ids[1])]
+		definitions=[]
+		for id: String in configuration.hero_ids: definitions.append(HeroCatalog.find(id))
 		for enemy in configuration.enemies:
 			definitions.append(configuration.difficulty.adjusted(enemy))
 		if not configuration.hero_overrides.is_empty():
-			definitions[0]=configuration.hero_overrides[0]
-			definitions[1]=configuration.hero_overrides[1]
+			for index in range(hero_count): definitions[index]=configuration.hero_overrides[index]
 		positions = configuration.layout.spawns
 	# Stable numbering follows roster order, including repeated enemy definitions.
 	for index in range(definitions.size()):
 		var unit := UNIT_SCENE.instantiate() as CombatUnit
-		unit.stable_id = ("hero-%02d" % (index + 1)) if index < 2 else ("enemy-%02d" % (index - 1))
-		if index<2 and configuration!=null and not configuration.campaign_hero_ids.is_empty(): unit.campaign_id=configuration.campaign_hero_ids[index]
-		unit.survival_enabled = configuration!=null and configuration.survival_enabled and index<2
-		unit.definition = definitions[index]
-		unit.faction = CombatUnit.Faction.HERO if index < 2 else CombatUnit.Faction.ENEMY
+		unit.stable_id = ("hero-%02d" % (index + 1)) if index < hero_count else ("enemy-%02d" % (index-hero_count+1))
+		if index<hero_count and configuration!=null and not configuration.campaign_hero_ids.is_empty(): unit.campaign_id=configuration.campaign_hero_ids[index]
+		unit.survival_enabled = configuration!=null and configuration.survival_enabled and index<hero_count
+		unit.definition = RescueTutorialEncounter.private_hero(definitions[index],index,definitions[2].basic_attack.damage) if rescue_practice and index<hero_count else definitions[index]
+		unit.faction = CombatUnit.Faction.HERO if index < hero_count else CombatUnit.Faction.ENEMY
 		unit.position = positions[index]
 		$Units.add_child(unit)
 		roster.append(unit)
 	$CombatController.selection_changed.connect($TacticalCamera.select_unit)
 	$CombatController.survival_enabled=configuration!=null and configuration.survival_enabled
 	$CombatController.retreat_center=(positions[0]+positions[1])*.5
+	if rescue_practice:
+		$CombatController.retreat_center=RescueTutorialEncounter.SAFE_POINT
+		$CombatController.retreat_radius=.9
 	$CombatController.configure_movement($NavigationService, $MovementMotor)
 	if configuration!=null:
 		$CombatController.objectives.configure(configuration.objective,configuration.layout)
@@ -128,6 +134,15 @@ func _spawn_and_bind() -> void:
 		marker.name="ObjectiveMarker"
 		add_child(marker)
 		marker.bind($CombatController.objectives)
+	if configuration!=null:
+		var goal: OptionalGoalController=$CombatController.optional_goals
+		goal.configure(configuration.optional_goal_id,configuration.survival_enabled and not configuration.deployment_id.is_empty())
+		goal.changed.connect(func() -> void:
+			if goal.collected and not goal.finished:$CombatController._publish_event("optional",{"message":"Optional cache collected; win the mission to complete the challenge."}))
+		if not goal.place(configuration.layout,$NavigationService):
+			setup_error="Optional cache has no reachable location.";cancelled=true;return
+		if goal.definition!=null and goal.definition.rule=="cache":
+			var goal_marker := OptionalGoalMarker.new();goal_marker.name="OptionalGoalMarker";add_child(goal_marker);goal_marker.bind(goal)
 	if $CombatController.survival_enabled and configuration.objective.kind!=ObjectiveDefinition.Kind.EXTRACTION:
 		var retreat := Node3D.new()
 		retreat.name="RetreatMarker"
@@ -135,8 +150,8 @@ func _spawn_and_bind() -> void:
 		retreat.position=$CombatController.retreat_center
 		var ring := MeshInstance3D.new()
 		var mesh := TorusMesh.new()
-		mesh.inner_radius=2.74
-		mesh.outer_radius=2.8
+		mesh.inner_radius=maxf(.1,$CombatController.retreat_radius-.06)
+		mesh.outer_radius=$CombatController.retreat_radius
 		ring.mesh=mesh
 		ring.position.y=.06
 		var material := StandardMaterial3D.new()
@@ -150,6 +165,7 @@ func _spawn_and_bind() -> void:
 		label.position=Vector3(0,.35,0)
 		label.billboard=BaseMaterial3D.BILLBOARD_ENABLED
 		retreat.add_child(label)
+	$HUD.rescue_practice_ui=rescue_practice
 	$HUD.bind($CombatController)
 	if configuration != null:
 		$HUD.bind_flow(configuration.battlefield_seed,configuration)
@@ -166,6 +182,7 @@ func _spawn_and_bind() -> void:
 	$HUD.bind_targeting($PlayerController)
 	$EnemyController.tutorial_policy=tutorial_mode
 	if tutorial_mode: $EnemyController.presentation_delay=.5
+	if rescue_practice: $EnemyController.enabled=false
 	$EnemyController.bind($CombatController)
 	$HUD.bind_enemy($EnemyController)
 	if configuration!=null:
@@ -181,13 +198,19 @@ func _spawn_and_bind() -> void:
 		$HUD.code_button.hide()
 		$HUD.result_flow_buttons["retry"].text="Replay Tutorial"
 		$HUD.result_flow_buttons["new_battlefield"].text="New Skirmish"
-		tutorial=TutorialDirector.new()
-		add_child(tutorial)
-		tutorial.bind(self)
-		tutorial.completed.connect(func() -> void:
-			$HUD.tutorial_finished=true
-			$HUD._refresh())
-		tutorial.requested.connect(func(action: String) -> void: flow_requested.emit(action))
+		if rescue_practice:
+			rescue_lesson=RescueTutorialDirector.new()
+			add_child(rescue_lesson)
+			rescue_lesson.bind(self)
+			rescue_lesson.requested.connect(func(action: String) -> void: flow_requested.emit(action))
+		else:
+			tutorial=TutorialDirector.new()
+			add_child(tutorial)
+			tutorial.bind(self)
+			tutorial.completed.connect(func() -> void:
+				$HUD.tutorial_finished=true
+				$HUD._refresh())
+			tutorial.requested.connect(func(action: String) -> void: flow_requested.emit(action))
 	# Synchronize newly spawned collision bodies before granting any turn.
 	await get_tree().physics_frame
 	if cancelled:
@@ -204,6 +227,7 @@ func shutdown() -> void:
 	pause_sources.clear()
 	set_guidance_paused(false)
 	if tutorial!=null: tutorial.shutdown()
+	if rescue_lesson!=null: rescue_lesson.shutdown()
 	if guide!=null: guide.close()
 	cancelled = true
 	if has_node("StandaloneAudio"): ($StandaloneAudio as GameAudio).silence()
@@ -269,8 +293,12 @@ func show_briefing() -> void:
 	if guide==null: return
 	var definition := configuration.objective if configuration!=null else ObjectiveDefinition.new()
 	var intro := "TRAINING: Warden and Scout. Training opponents have 10 / 8 health and hold their positions and end turns; normal skirmish enemies use tactical AI. Blue rings mark required movement. Only the requested commands are enabled until the final free-play step.\n\n" if tutorial_mode else ""
-	guide.open("OBJECTIVE · "+definition.display_name,intro+FieldGuide.objective(definition)+("\n\n"+$HUD.SURVIVAL_HELP if $CombatController.survival_enabled else ""))
+	if rescue_practice: intro="RESCUE PRACTICE: the companion uses reduced training health so one attack demonstrates downing; campaign heroes keep their normal stats. Later training opponents hold position. Stabilise, carry, move and extract with normal commands. No campaign progress or saved tutorial completion is changed.\n\n"
+	guide.open("OBJECTIVE · "+definition.display_name,intro+FieldGuide.objective(definition)+( "\n\n"+OptionalGoals.briefing(configuration.optional_goal_id) if configuration!=null and not configuration.optional_goal_id.is_empty() else "")+("\n\n"+$HUD.SURVIVAL_HELP if $CombatController.survival_enabled else ""))
 func show_help() -> void:
-	if guide!=null: guide.open("CONTROLS & FIELD GUIDE",ControlBindings.describe()+FieldGuide.tips())
+	if guide!=null: guide.open_dynamic("CONTROLS & FIELD GUIDE",help_text)
 
 
+
+func help_text() -> String:
+	return ControlBindings.describe()+FieldGuide.tips()+("\n\n"+FieldGuide.survival() if $CombatController.survival_enabled else "")

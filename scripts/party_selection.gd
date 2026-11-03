@@ -53,7 +53,7 @@ func validation_error() -> String:
 	if not difficulty.valid(): return "Selected difficulty has invalid tuning or an unsupported enemy roster."
 	var settings := EncounterOptions.presets()[preset_index]
 	if imported_configuration!=null and imported_configuration.generator_settings.preset_id==settings.preset_id: settings=imported_configuration.generator_settings
-	if settings.generator_version!=2 or settings.preset_id not in ["open_courtyard","ruined_lanes","central_plaza","narrow_approach","split_courtyard"]: return "Selected battlefield version is unsupported."
+	if settings.generator_version not in [2,3] or settings.preset_id not in ["open_courtyard","ruined_lanes","central_plaza","narrow_approach","split_courtyard"]: return "Selected battlefield version is unsupported."
 	var value := seed_text.strip_edges()
 	if not value.is_empty() and (not value.is_valid_int() or value.to_int()<0 or value.to_int()>4294967295 or value.length()>10): return "Seed: enter a whole number from 0 to 4294967295, or leave blank for random."
 	return ""
@@ -86,6 +86,8 @@ func configuration(seed_value: int, open_settings: BattlefieldSettings = null) -
 	var difficulty := EncounterOptions.difficulties()[difficulty_index]
 	if imported_configuration==null or config.difficulty.stable_id!=difficulty.stable_id: config.difficulty=difficulty.duplicate(true) as DifficultyDefinition
 	if imported_configuration==null:
+		config.generator_settings.generator_version=3
+		config.optional_goal_id=OptionalGoals.pick(config.battlefield_seed)
 		config.faction_id=faction_choice
 		config.campaign_stage=3
 		config.elite_encounter=elite_choice

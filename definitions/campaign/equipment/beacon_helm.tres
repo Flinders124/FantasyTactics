@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CampaignItemDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/campaign_item_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+stable_id = "beacon_helm"
+display_name = "Beacon Helm"
+slot = "helmet"
+description = "+3 maximum health."
+rarity = "legendary"
+icon_id = "legendary_helmet_a"
+vendor = "trader"
+compatible_heroes = PackedStringArray("knight", "ranger", "mage", "cleric", "recruit", "aegisbearer", "chainbinder")
+cost = 35
+minimum_level = 2
+icon_variants = PackedStringArray("legendary_helmet_a", "legendary_helmet_b")
+modifiers = {"health": 3}

@@ -78,14 +78,14 @@ func proposed_outcome(units: Array[CombatUnit], completed_action: bool) -> Dicti
 		if heroes==0: return {"result":"defeat","reason":"No heroes remain to hold the courtyard."}
 		if progress>=definition.required_rounds: return {"result":"victory","reason":"Ground held for %d consecutive rounds."%definition.required_rounds}
 	else:
-		if required_alive!=required_heroes.size() or required_heroes.size()!=2: return {"result":"defeat","reason":"A required companion was lost. Extraction is impossible."}
-		if completed_action and heroes_inside==2: return {"result":"victory","reason":"Both companions reached the exit alive."}
+		if required_alive!=required_heroes.size() or required_heroes.size()<2: return {"result":"defeat","reason":"A required companion was lost. Extraction is impossible."}
+		if completed_action and heroes_inside==required_heroes.size(): return {"result":"victory","reason":"All deployed companions reached the exit alive."}
 	return {}
 
 func summary() -> String:
 	match definition.kind:
 		ObjectiveDefinition.Kind.HOLD_GROUND: return "Hold Ground · %d / %d rounds · %s"%[progress,definition.required_rounds,control]
-		ObjectiveDefinition.Kind.EXTRACTION: return "Extraction · Heroes at exit: %d / 2"%heroes_inside
+		ObjectiveDefinition.Kind.EXTRACTION: return "Extraction · Heroes at exit: %d / %d"%[heroes_inside,required_heroes.size()]
 	return "Elimination · Defeat all enemies"
 
 func tactical_points() -> Array[Vector3]:
@@ -118,7 +118,7 @@ func _survival_proposal(units: Array[CombatUnit], completed_action: bool) -> Dic
 		if unit.life_state==CombatUnit.LifeState.EXTRACTED or (contains(exit_anchor) and (unit.is_alive() or unit.carried_by!=null)): at_exit+=1
 	if definition.kind==ObjectiveDefinition.Kind.EXTRACTION:
 		if lost>0: return {"result":"defeat","reason":"A companion died. Extraction is impossible."}
-		if completed_action and at_exit==required_heroes.size() and at_exit==2: return {"result":"victory","reason":"Both companions reached safety alive."}
+		if completed_action and at_exit==required_heroes.size() and required_heroes.size()>=2: return {"result":"victory","reason":"All deployed companions reached safety alive."}
 	if conscious==0:
 		if enemies==0 and extracted==0 and definition.kind==ObjectiveDefinition.Kind.ELIMINATION: return {"result":"draw","reason":"No conscious combatants remain. Stabilised companions are recovered."}
 		return {"result":"defeat","reason":"The party withdrew or no conscious heroes remain. Only extracted companions survive."}

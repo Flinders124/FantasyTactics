@@ -231,3 +231,14 @@ Mission variety development: [Milestone 3 report](docs/MISSION_VARIETY_REPORT.md
 
 
 Milestone4 roster/rescue and the approved Aegisbearer + Chainbinder classes: see [roster report](docs/ROSTER_SPECIALISATION_REPORT.md). New campaigns start with four individual sword recruits; use Camp → Training to specialise at Level2. Campaign HUD adds Stabilise, Carry, Drop and Extract. Unextracted companions are permanently lost on retreat.
+
+Campaign Events and Character Identity (current roadmap milestone 4): eight optional camp-event templates, deterministic companion backgrounds, service dossiers/memorials and explicit save-v3 migration. Resolve or decline a pending camp decision before deployment. See [implementation, tuning and verification](docs/CAMPAIGN_EVENTS_MILESTONE_4.md).
+
+
+### Opening campaign and headquarters progression
+
+Commander’s Tent upgrades now unlock optional3/4-companion deployments, with a growing camp. The permanent Outfitter sells shared equipment; character slots manage loadouts. A visiting trader arrives every two mission resolutions. See [the implementation and verification report](docs/HEADQUARTERS_MILESTONE_1.md) for exact prices, slot levels, save compatibility, screenshots and regression commands.
+
+## Tactical situations and courtyard architecture
+
+See [Milestone2 implementation and verification](docs/TACTICAL_SITUATIONS_MILESTONE_2.md) for movement clipping, optional goals, architecture, compatibility, screenshots and current export limitations.

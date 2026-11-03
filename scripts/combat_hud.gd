@@ -2,6 +2,8 @@ extends CanvasLayer
 
 signal flow_requested(action: String)
 var tutorial_finished: bool = false
+var suppress_result_overlay: bool = false
+var rescue_practice_ui: bool = false
 var encounter_configuration: EncounterConfiguration
 var code_button: Button
 var code_overlay: EncounterCodeOverlay
@@ -25,7 +27,7 @@ var move_button: Button
 var ability_buttons: Array[Button] = []
 var rescue_buttons: Array[Button] = []
 var rescue_row: HBoxContainer
-const SURVIVAL_HELP: String = "Downed heroes bleed out after 3 future round-end checks; the round they fall does not count. Stabilise stops bleeding. Carry halves movement; Drop and Extract each cost one shared action. Extract in the marked retreat zone. Unrescued losses are permanent. Victory recovers conscious and stabilised heroes; retreat preserves only extracted heroes."
+var SURVIVAL_HELP: String = FieldGuide.survival()
 var attack_button: Button
 var restart_button: Button
 var preview_label: Label
@@ -329,7 +331,7 @@ func show_attack_preview(target_name: String, distance: float, valid: bool, mess
 func show_preview(distance: float, affordable: bool, message: String) -> void:
 	var active := controller.scheduler.active_unit() if controller.scheduler != null else null
 	var remaining := active.movement_remaining if active != null else 0.0
-	preview_label.text = "" if message.is_empty() else "Route %.2f m / %.2f m left · %s\n%s" % [distance, remaining, "AFFORDABLE" if affordable else "INVALID", message]
+	preview_label.text = "" if message.is_empty() else "%.2f / %.2f m · %s · %s" % [distance, remaining, "AFFORDABLE" if affordable else "INVALID", message]
 	preview_label.visible = not message.is_empty()
 	preview_label.add_theme_color_override("font_color", Color(0.45, 1, 0.75) if affordable else Color(1, 0.65, 0.45))
 
@@ -378,7 +380,7 @@ func _refresh() -> void:
 	if controller.scheduler == null:
 		return
 	var active := controller.scheduler.active_unit()
-	objective_label.text=controller.objectives.summary()
+	objective_label.text=controller.objectives.summary()+("\n"+controller.optional_goals.summary() if controller.optional_goals.definition!=null else "")
 	round_label.text = "ROUND %d" % controller.scheduler.round_number
 	_refresh_initiative(active)
 	name_label.text = active.definition.display_name if active != null else "Preparing…"
@@ -397,14 +399,14 @@ func _refresh() -> void:
 	var available := controller.state == CombatController.State.AWAITING_COMMAND and active != null and active.is_alive() and active.faction == CombatUnit.Faction.HERO
 	for index in range(ability_buttons.size()):
 		var item := ability_buttons[index]
-		item.visible = active != null and index < active.definition.abilities.size()
+		item.visible = not rescue_practice_ui and active != null and index < active.definition.abilities.size()
 		if not item.visible:
 			continue
 		var ability := active.definition.abilities[index]
 		OathUI.decorate(item,"aegisbearer" if ability.effect==AbilityDefinition.Effect.WARD else "chainbinder" if ability.effect in [AbilityDefinition.Effect.PULL,AbilityDefinition.Effect.TOW] else "health" if ability.effect==AbilityDefinition.Effect.HEAL else "fireburst" if ability.targeting==AbilityDefinition.Target.GROUND else "slow" if ability.applied_status!=null else "attack")
 		var cooldown := active.cooldown_remaining(ability.stable_id)
 		item.text = "%s [%s]\n%s" % [ability.display_name, ControlBindings.label("ability_"+str(index+1)), "COOLDOWN" if cooldown > 0 else "1 action"]
-		item.tooltip_text = "%s\nCosts 1 shared action · blocks next %d owner turns\n%s" % [ability.description, ability.cooldown_turns, "Ready in %d owner turn start(s)" % cooldown if cooldown > 0 else ("Ready" if available and active.action_available else "Unavailable: action spent or not your turn")]
+		item.tooltip_text = "%s\nCosts 1 shared action · blocks next %d owner turns\n%s" % [ability.description, ability.cooldown_turns, "Ready in %d owner turn start(s)" % cooldown if cooldown > 0 else ("Enemy turn" if active.faction==CombatUnit.Faction.ENEMY else ("Ready" if available and active.action_available else controller._action_error(active,CombatController.State.AWAITING_COMMAND)))]
 		item.disabled = not available or not active.action_available or cooldown > 0
 		item.set_pressed_no_signal(player != null and player.selected_ability_id == ability.stable_id and available)
 	rescue_row.visible = controller.survival_enabled
@@ -413,7 +415,7 @@ func _refresh() -> void:
 		rescue.disabled = not available or not active.action_available
 		rescue.set_pressed_no_signal(available and player != null and player.selected_rescue == index)
 	var ability_panel := root.get_node("AbilitiesPanel") as Control
-	ability_panel.offset_top = -288 if controller.survival_enabled and active!=null and not active.definition.abilities.is_empty() else -244
+	ability_panel.offset_top = -288 if controller.survival_enabled and not rescue_practice_ui and active!=null and not active.definition.abilities.is_empty() else -244
 	button.disabled = not available
 	var minimum_move := controller.motor.arrival_tolerance if controller.motor != null else 0.005
 	move_button.disabled = not available or active.movement_remaining <= minimum_move
@@ -447,19 +449,36 @@ func _refresh() -> void:
 	mode_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	button.tooltip_text = "End this hero's turn [%s]" % ControlBindings.label("end_turn") if available else reason
 	move_button.tooltip_text = "No movement remaining" if available and move_button.disabled else ("Preview and spend movement [%s]" % ControlBindings.label("move") if available else reason)
-	attack_button.tooltip_text = "Action SPENT · 0 / 1" if available and not active.attack_available else ("Preview equipped attack [%s]" % ControlBindings.label("attack") if available else reason)
+	attack_button.tooltip_text = controller._action_error(active,CombatController.State.AWAITING_COMMAND)+"; movement may still be available" if available and not active.attack_available else ("Preview equipped attack [%s]" % ControlBindings.label("attack") if available else reason)
 	if available and active.definition.basic_attack == null:
-		attack_button.tooltip_text = "No melee attack is defined for this unit"
-	overlay.visible = terminal
+		attack_button.tooltip_text = "No basic attack is defined for this unit"
+	if rescue_practice_ui and selected_mode==PlayerController.Mode.NONE:
+		mode_label.text="Rescue practice: follow the step on the right. Cancel: "+ControlBindings.label("cancel")
+	if rescue_practice_ui and active!=null and controller.player_command_policy.is_valid():
+		var policy := controller.player_command_policy
+		attack_button.disabled=true
+		attack_button.tooltip_text="This exercise teaches rescue. Basic attacks and abilities remain available in normal combat."
+		var end_reason: String=policy.call(EndTurnCommand.new(active.stable_id))
+		button.disabled=button.disabled or not end_reason.is_empty()
+		if not end_reason.is_empty(): button.tooltip_text=end_reason
+		var can_move: bool=str(policy.call(MoveCommand.new(active.stable_id,RescueTutorialEncounter.APPROACH_POINT))).is_empty() or str(policy.call(MoveCommand.new(active.stable_id,RescueTutorialEncounter.SAFE_POINT))).is_empty()
+		move_button.disabled=move_button.disabled or not can_move
+		if not can_move: move_button.tooltip_text="Follow the current practice instruction; the marked movement step is not active."
+		for index in range(rescue_buttons.size()):
+			var target := "hero-01" if index in [RescueCommand.Kind.STABILISE,RescueCommand.Kind.PICKUP] else ""
+			var rescue_reason: String=policy.call(RescueCommand.new(active.stable_id,target,index))
+			rescue_buttons[index].disabled=rescue_buttons[index].disabled or not rescue_reason.is_empty()
+			rescue_buttons[index].tooltip_text=(rescue_reason+"\n\n" if not rescue_reason.is_empty() else "")+SURVIVAL_HELP
+	overlay.visible = terminal and not suppress_result_overlay
 	if terminal:
 		overlay_title.text = "DRAW" if controller.state == CombatController.State.DRAW else ("VICTORY" if controller.state == CombatController.State.VICTORY else "DEFEAT")
 		var result := controller.result_summary
 		var defeated_enemies: PackedStringArray=result.get("defeated_enemies",PackedStringArray())
 		var defeated_heroes: PackedStringArray=result.get("defeated_heroes",PackedStringArray())
 		var setup := (encounter_configuration.difficulty.display_name if encounter_configuration!=null else "Standard")+" / "+controller.objectives.definition.display_name
-		overlay_summary.text=setup+"\n"+controller.outcome_reason+"\nRounds completed: %d (ended in round %d)"%[controller.completed_rounds,controller.scheduler.round_number]+"\nEnemies defeated: "+(", ".join(defeated_enemies) if not defeated_enemies.is_empty() else "None")+"\nHeroes defeated: "+(", ".join(defeated_heroes) if not defeated_heroes.is_empty() else "None")
+		overlay_summary.text=setup+"\n"+controller.outcome_reason+"\nRounds completed: %d (ended in round %d)"%[controller.completed_rounds,controller.scheduler.round_number]+"\nEnemies defeated: "+(", ".join(defeated_enemies) if not defeated_enemies.is_empty() else "None")+"\nHeroes defeated: "+(", ".join(defeated_heroes) if not defeated_heroes.is_empty() else "None")+("\n"+controller.optional_goals.summary() if controller.optional_goals.definition!=null else "")
 
-		if tutorial_finished: overlay_summary.text+="\nTutorial complete! Replay any time from the title."
+		if tutorial_finished: overlay_summary.text+="\nTutorial complete! Optional next: Rescue Practice (title or camp)."
 
 func show_area_preview(message: String, valid: bool) -> void:
 	attack_preview_label.add_theme_font_size_override("font_size", 14)
@@ -530,7 +549,7 @@ func add_guidance(encounter: CombatEncounter) -> void:
 	objective_label.mouse_filter=Control.MOUSE_FILTER_PASS
 	label.tooltip_text="Movement follows the full navigation route. Basic attacks and abilities share ONE action. Movement resets only at this unit's next turn start."
 	round_label.tooltip_text="Living units act by descending initiative, regardless of faction. Stable unit IDs break ties. One round ends after every scheduled living unit has acted."
-	objective_label.tooltip_text=FieldGuide.objective(controller.objectives.definition) + ("\n\n" + SURVIVAL_HELP if controller.survival_enabled else "")
+	objective_label.tooltip_text=FieldGuide.objective(controller.objectives.definition)+("\n\n"+OptionalGoals.briefing(controller.optional_goals.definition.stable_id) if controller.optional_goals.definition!=null else "") + ("\n\n" + SURVIVAL_HELP if controller.survival_enabled else "")
 	var tooltips := ReadableTooltips.new()
 	tooltips.name="ReadableTooltips"
 	root.add_child(tooltips)

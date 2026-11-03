@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="CampaignEventDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/campaign_event_definition.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+stable_id = "herbs"
+revision = 1
+display_name = "A Herbwarden’s Visit"
+description = "A travelling herbwarden offers a small bundle of remedies. Choose between recovery now and supplies for the road."
+eligibility = "injured"
+choices = Array[Dictionary]([{ "id": "treat", "label": "Buy a remedy for the named companion", "supplies": -4, "recovery": 1 },
+{ "id": "trade", "label": "Trade spare herbs", "supplies": 3, "recovery": 0 }])

@@ -85,3 +85,27 @@ Run six deterministic campaign scenarios (3 Standard seeds, an early-loss develo
 ```
 
 The harness uses real commands and legal training/rest/specialisation decisions. It records campaign victories AND defeats; `passed` means the scenario completed cleanly with zero assertions, not that the player won. A nonzero native exit remains failed even after a printed success record. Use a fresh report directory. See docs/CAMPAIGN_BALANCE_MILESTONE_1.md for results, strategy differences and manual-playtesting limits.
+
+## Onboarding and tactical clarity
+
+Run `./tests/run_regressions.ps1 -Godot C:/Tools/Godot_console.exe -Category onboarding -TimeoutSeconds 240 -ReportDirectory verification/onboarding/local`. This imports first and runs 18 focused source suites, including real rescue commands, live help rebinding, campaign save isolation and lifecycle recovery. Use private APPDATA and LOCALAPPDATA directories.
+
+The external `tests/onboarding_pack_smoke.gd` is self-contained: run Godot with `--headless --path . --main-pack <exported.pck> --script <absolute-path-to-onboarding_pack_smoke.gd>` against isolated user data. It exercises rescue practice and camp return using packaged production resources. See `docs/ONBOARDING_MILESTONE_3.md` for native review results and manual playtest steps.
+
+## Campaign events and character identity
+
+Run `./tests/run_regressions.ps1 -Godot C:/Tools/Godot_console.exe -Category events -TimeoutSeconds 240 -ReportDirectory verification/campaign-events/local` with isolated APPDATA/LOCALAPPDATA. Four suites cover deterministic identities and legacy migrations, complete campaign event timing, all 24 authored branches/ten seeds, and transactional UI/save failure recovery. Actual pre-change v2 fixtures are retained under tests/fixtures.
+
+`dev/campaign_events_showcase.gd` captures actual renderer views at both resolutions/default and enlarged UI; run with a native display and private user data. `tests/campaign_events_pack_smoke.gd` is an external standalone SceneTree harness for production PCK verification; set OATH_TEST_ISOLATED=1 and isolated APPDATA, then run `Godot --headless --main-pack <absolute.pck> --script <absolute-script-path>`. It must never point at player user data. See docs/CAMPAIGN_EVENTS_MILESTONE_4.md for scope and observed results.
+
+
+## Opening campaign, shop and headquarters progression
+
+Use `-Category headquarters -TimeoutSeconds 300` with the existing regression runner and isolated APPDATA/LOCALAPPDATA. Nine suites cover capacity purchases, 2/3/4-hero navigation and Extraction, schema-3 migration and interrupted deployment, all six classes’ equipment eligibility, ownership and variants, transactional write rollback, frozen trader stock, camp destinations/layout, authored opening missions, 90 generated maps and six complete automated encounters. Source comparisons are documented in `docs/HEADQUARTERS_MILESTONE_1.md`.
+
+`tests/headquarters_pack_smoke.gd` runs externally against a production PCK with OATH_TEST_ISOLATED=1. `dev/headquarters_showcase.gd` captures real rendered interfaces, actual mouse/button purchases and equipment, and larger-party deployments at 720p/1080p plus larger text. It uses staged authoritative mission results for checkpoints; this is not a complete human campaign playthrough.
+
+
+## Tactical situations and courtyard architecture
+
+Use the regression runner with `-TestNames tactical_movement_tests,architecture_tests,tactical_optional_tests,tactical_generation_tests,tactical_encounter_tests -TimeoutSeconds 300` (separate the parameter/value with a space). These cover budget-limited real moves and split previews; arch/house collision and interior camera fading; optional-goal timing/reward guards and real v4-save migration;90 new-layout map combinations plus bounded fallbacks; and complete real-command encounters/restart. Always use isolated APPDATA/LOCALAPPDATA. The external `tests/tactical_pack_smoke.gd` exercises production PCK resources, actual partial movement, cache collection, v5 checkpoints and reward-once processing. See `docs/TACTICAL_SITUATIONS_MILESTONE_2.md` for measured results and honest verification limits.

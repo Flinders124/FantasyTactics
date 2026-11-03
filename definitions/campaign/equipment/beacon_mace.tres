@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="CampaignItemDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/campaign_item_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+stable_id = "beacon_mace"
+display_name = "Beacon Cleric’s Mercy Mace"
+slot = "weapon"
+description = "+1 basic damage; +2 healing."
+rarity = "legendary"
+icon_id = ""
+vendor = "trader"
+compatible_heroes = PackedStringArray("cleric")
+minimum_level = 4
+cost = 45
+modifiers = {"basic_damage": 1, "healing": 2}

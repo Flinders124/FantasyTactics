@@ -111,3 +111,43 @@ func fire(parent: Node3D,at: Vector3) -> MeshInstance3D:
 	var flame := PrismMesh.new(); flame.size=Vector3(.7,1.0,.6)
 	glow.emission_enabled=true; glow.emission=Color("e78c39"); glow.emission_energy_multiplier=1.4
 	return piece(parent,flame,at+Vector3.UP*.65,glow)
+
+func command_tent(parent: Node3D,tier: int) -> Node3D:
+	var tent_root := tent(parent,Vector3(0,0,-9),Color("5b6579"),0)
+	tent_root.name="CommandTentTier%d"%tier
+	tent_root.scale=Vector3(1.0+.12*tier,1.0+.08*tier,1.0+.10*tier)
+	for side: float in [-1.0,1.0]:
+		if tier>=1:
+			beam(tent_root,Vector3(side*2.5,0,1.8),Vector3(side*2.5,3.1,1.8),.07,timber)
+			cloth(tent_root,[Vector3(side*2.5,3.1,1.8),Vector3(side*2.5,2.9,.9),Vector3(side*2.5,2.2,1.2)],blue)
+		if tier>=2:
+			cloth(tent_root,[Vector3(side*1.7,1.55,1.9),Vector3(side*2.7,1.45,2.8),Vector3(side*.6,1.9,2.7),Vector3(0,3.1,1.95)],canvas)
+			beam(tent_root,Vector3(side*2.7,0,2.8),Vector3(side*2.7,1.5,2.8),.065,timber)
+	if tier>=1:
+		box(parent,Vector3(0,.04,-5.9),Vector3(3.6,.08,1.2),timber)
+	if tier>=2:
+		for index in range(3): box(parent,Vector3(-1.1+index*1.1,.025,-4.7),Vector3(.95,.05,1.0),parchment)
+	return tent_root
+func outfitter(parent: Node3D) -> Node3D:
+	var root := Node3D.new();root.name="OutfitterStall";root.position=Vector3(7,0,5.5);parent.add_child(root)
+	for side: float in [-1.0,1.0]:
+		beam(root,Vector3(side*1.65,0,.8),Vector3(side*1.65,2.7,.8),.075,timber)
+	cloth(root,[Vector3(-1.8,2.7,-.7),Vector3(1.8,2.7,-.7),Vector3(1.8,2.3,1.3),Vector3(-1.8,2.3,1.3)],blue)
+	box(root,Vector3(0,.85,.7),Vector3(3.4,.15,1.2),timber)
+	for side: float in [-1.2,0,1.2]: box(root,Vector3(side,.4,.7),Vector3(.12,.8,.8),timber)
+	rack(root,Vector3(0,0,-.5))
+	var helm := SphereMesh.new();helm.radius=.24;helm.height=.45;helm.radial_segments=8;helm.rings=4
+	piece(root,helm,Vector3(-.9,1.11,.8),iron)
+	box(root,Vector3(.5,1.0,.8),Vector3(.65,.12,.5),trim)
+	return root
+func trader_wagon(parent: Node3D,at: Vector3) -> Node3D:
+	var root := Node3D.new();root.name="TraderWagon";root.position=at;parent.add_child(root)
+	piece(root,CourtyardKit.mesh("cart"),Vector3.ZERO,null)
+	for side: float in [-1.0,1.0]: beam(root,Vector3(side*1.1,0,0),Vector3(side*1.1,2.8,0),.07,timber)
+	cloth(root,[Vector3(-1.5,2.7,-1),Vector3(0,3.1,-1),Vector3(1.5,2.7,-1),Vector3(1.5,2.7,1.2),Vector3(0,3.1,1.2),Vector3(-1.5,2.7,1.2)],material(Color("c77556")))
+	box(root,Vector3(0,.95,1.3),Vector3(2.8,.15,.75),timber)
+	for index in range(3):
+		box(root,Vector3(-.8+index*.8,1.15,1.3),Vector3(.5,.3,.5),blue if index==1 else trim)
+	beam(root,Vector3(1.5,1.4,.7),Vector3(1.5,2.7,.7),.045,iron)
+	var lantern := PrismMesh.new();lantern.size=Vector3(.25,.45,.25);piece(root,lantern,Vector3(1.5,2.2,.7),glow)
+	return root

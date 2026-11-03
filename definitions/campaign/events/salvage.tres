@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="CampaignEventDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/campaign_event_definition.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+stable_id = "salvage"
+revision = 1
+display_name = "The Broken Waycart"
+description = "A companion brings back a damaged waycart. The Watch can salvage its fittings or leave them for the next travellers."
+eligibility = "any"
+choices = Array[Dictionary]([{ "id": "salvage", "label": "Salvage useful fittings", "supplies": 4, "recovery": 0 },
+{ "id": "leave", "label": "Leave a roadside repair cache", "supplies": 0, "recovery": 0 }])

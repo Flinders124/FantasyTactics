@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="HeadquartersRules" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/headquarters_rules.gd" id="1"]
+[resource]
+script = ExtResource("1")
+version = 1
+command_costs = PackedInt32Array(20, 30)
+command_victories = PackedInt32Array(1, 2)
+trader_interval = 2
+trader_offer_count = 3
+helmet_level = 2
+accessory_level = 3

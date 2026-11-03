@@ -24,6 +24,7 @@ func run() -> void:
  var reserves := PackedStringArray(["hero-0003","hero-0004"])
  check(state.train_recruit(reserves[0]) and state.train_recruit(reserves[1]),"Two reserves can train after an early casualty")
  check(state.specialise(reserves[0],"knight") and state.specialise(reserves[1],"ranger"),"Trained reserves are ready for replacement deployment")
+ if not state.pending_event.is_empty(): check(state.choose_event(state.pending_event.id,"decline"),"Neutral camp choice preserves original recovery scenario")
  state.commit(state.offers[0].id,reserves)
  check(state.resolve(outcome(state,"victory")),"Recovery party resolves a victory")
  check(state.heroes[party[1]].injury.is_empty(),"Resting heals existing strain in one mission resolution")

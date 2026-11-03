@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CampaignItemDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/campaign_item_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+stable_id = "beacon_plate"
+display_name = "Beacon Cuirass"
+slot = "garb"
+description = "+5 maximum health; -0.25 m movement."
+rarity = "legendary"
+icon_id = "legendary_armour_a"
+vendor = "trader"
+compatible_heroes = PackedStringArray("knight", "ranger", "mage", "cleric", "recruit", "aegisbearer", "chainbinder")
+cost = 42
+minimum_level = 3
+icon_variants = PackedStringArray("legendary_armour_a", "legendary_armour_b")
+modifiers = {"health": 5, "movement": -0.25}

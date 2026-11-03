@@ -123,3 +123,19 @@ func query_path(origin: Vector3, destination: Vector3) -> Route:
 		route.path.append(planar(destination))
 	route.distance = path_length(route.path)
 	return route
+
+
+static func slice_path(path: PackedVector3Array, start_distance: float, end_distance: float=INF) -> PackedVector3Array:
+	var result: PackedVector3Array=[]
+	if path.is_empty(): return result
+	var total := path_length(path)
+	var begin := clampf(start_distance,0,total)
+	var finish := clampf(end_distance,begin,total)
+	result.append(point_at_distance(path,begin))
+	var travelled: float=0
+	for index in range(1,path.size()):
+		travelled+=path[index-1].distance_to(path[index])
+		if travelled>begin+.000001 and travelled<finish-.000001: result.append(path[index])
+	var endpoint := point_at_distance(path,finish)
+	if endpoint.distance_to(result[-1])>.000001: result.append(endpoint)
+	return result

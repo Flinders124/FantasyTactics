@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="OptionalGoalDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/optional_goal_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+stable_id = "together"
+display_name = "Stand Together"
+description = "Win without any deployed hero becoming downed or defeated. Healing afterward does not erase an incapacitation."
+rule = "together"
+supplies = 6

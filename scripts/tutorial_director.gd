@@ -77,7 +77,7 @@ func _build() -> void:
 	box.add_child(instructions)
 	var row := VBoxContainer.new()
 	box.add_child(row)
-	for item: Array in [["Restart Tutorial","tutorial"],["Skip Tutorial","skip_tutorial"],["Exit to Main Menu","main_menu"],["Help","controls"]]:
+	for item: Array in [["Rescue Practice","rescue_tutorial"],["Restart Tutorial","tutorial"],["Skip Tutorial","skip_tutorial"],["Exit to Main Menu","main_menu"],["Help","controls"]]:
 		var action: String=item[1]
 		var button := Button.new()
 		button.text=item[0]
@@ -117,7 +117,7 @@ func _refresh() -> void:
 		Step.MOVE_AGAIN:"5 · MOVE AFTER ATTACK: No action remains, but movement does! Choose Move (%s) and click the new blue ring. This uses the SAME turn budget." % ControlBindings.label("move"),
 		Step.END_TURN:"6 · END TURN: Use %s or End Turn. Watch initiative advance. Training opponents hold position and legally end their turns; normal enemies fight back." % ControlBindings.label("end_turn"),
 		Step.OBSERVE:"Watch the enemy turn finish. Camera, help and audio remain available.",
-		Step.ABILITY:"7 · RANGED ABILITY: Scout is active. Select Crippling Shot (%s), inspect Sentinel, then click. It spends the shared action and applies Slowed for two future turns; cooldown blocks Scout's next two turns." % ControlBindings.label("ability_1"),
+		Step.ABILITY:"7 · RANGED ABILITY: Scout is active. Select Crippling Shot (%s), inspect Sentinel, then click. It spends the shared action and applies Slowed for two future turns; cooldown blocks the next %d owner turns." % [ControlBindings.label("ability_1"),HeroCatalog.find("ranger").abilities[0].cooldown_turns],
 		Step.FINISH:"8 · FINISH: Defeat both training opponents. End turns to regain actions. Move, use basic attacks or abilities; inspect previews first. Training enemies continue holding position. Help has optional tips.",
 		Step.RECOVERY:"The required demonstration can no longer be completed safely. Restart Tutorial to restore the authored encounter, or Skip / Exit. No partial-state rewind is attempted.",
 		Step.COMPLETE:"Tutorial complete! You can replay it from the title screen."}
